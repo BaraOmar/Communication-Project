@@ -1,0 +1,92 @@
+﻿@model CommunicationProject.ViewModels.ImportCommunicationLinksViewModel
+
+@{
+    ViewData["Title"] = "Import Communication Links";
+}
+
+<h1>Import Communication Links</h1>
+
+<p class="text-muted">
+    Upload the delivered Access database and import
+    its LINKS table into CommunicationLinks.
+</p>
+
+@if (TempData["ImportMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["ImportMessage"]
+    </div>
+}
+
+<div class="card">
+    <div class="card-header">
+        <strong>Access Database Import</strong>
+    </div>
+
+    <div class="card-body">
+        <form asp-controller="CommunicationLinks"
+              asp-action="Import"
+              method="post"
+              enctype="multipart/form-data">
+
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger mb-3">
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="AccessFile"
+                       class="form-label">
+                </label>
+
+                <input asp-for="AccessFile"
+                       type="file"
+                       accept=".accdb"
+                       class="form-control" />
+
+                <span asp-validation-for="AccessFile"
+                      class="text-danger">
+                </span>
+
+                <div class="form-text">
+                    Select the delivered 666.accdb file.
+                    Maximum size: 20 MB.
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="LinkTypeId"
+                       class="form-label">
+                </label>
+
+                <select asp-for="LinkTypeId"
+                        asp-items="Model.LinkTypeOptions"
+                        class="form-select">
+                    <option value="">
+                        -- Select link type --
+                    </option>
+                </select>
+
+                <span asp-validation-for="LinkTypeId"
+                      class="text-danger">
+                </span>
+            </div>
+
+            <button type="submit"
+                    class="btn btn-primary">
+                Upload and Import
+            </button>
+
+            <a asp-action="Index"
+                   class="btn btn-secondary">
+                Back to Links
+            </a>
+        </form>
+    </div>
+</div>
+
+@section Scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+}

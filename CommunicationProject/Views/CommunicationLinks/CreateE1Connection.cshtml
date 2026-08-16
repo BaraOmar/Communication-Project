@@ -1,0 +1,315 @@
+﻿@model CommunicationProject.ViewModels.CreateE1ConnectionViewModel
+
+@{
+    ViewData["Title"] = "Create E1 Connection";
+}
+
+<h1>Create E1 Connection</h1>
+
+<p class="text-muted">
+    Select one available E1 channel from each site and connect them.
+</p>
+
+<hr />
+
+<div class="row">
+    <div class="col-lg-10">
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <strong>Communication Link</strong>
+            </div>
+
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-3">Link</dt>
+                    <dd class="col-sm-9">@Model.LinkName</dd>
+
+                    <dt class="col-sm-3">Site From</dt>
+                    <dd class="col-sm-9">@Model.SiteFromName</dd>
+
+                    <dt class="col-sm-3">Site To</dt>
+                    <dd class="col-sm-9">@Model.SiteToName</dd>
+                </dl>
+            </div>
+        </div>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+
+        <form asp-action="CreateE1Connection" method="post">
+            <input asp-for="LinkId" type="hidden" />
+
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger mb-3">
+            </div>
+
+            <div class="row">
+
+                <!-- Site From -->
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <strong>@Model.SiteFromName</strong>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="form-group mb-3">
+                                <label asp-for="FromStmId"
+                                       class="form-label">
+                                </label>
+
+                                <select asp-for="FromStmId"
+                                        asp-items="Model.FromStmOptions"
+                                        class="form-select">
+                                    <option value="">
+                                        -- Select STM --
+                                    </option>
+                                </select>
+
+                                <span asp-validation-for="FromStmId"
+                                      class="text-danger">
+                                </span>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label asp-for="FromE1Id"
+                                       class="form-label">
+                                </label>
+
+                                <select asp-for="FromE1Id"
+                                        asp-items="Model.FromE1Options"
+                                        class="form-select">
+                                    <option value="">
+                                        -- Select Available E1 --
+                                    </option>
+                                </select>
+
+                                <span asp-validation-for="FromE1Id"
+                                      class="text-danger">
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Site To -->
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <strong>@Model.SiteToName</strong>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="form-group mb-3">
+                                <label asp-for="ToStmId"
+                                       class="form-label">
+                                </label>
+
+                                <select asp-for="ToStmId"
+                                        asp-items="Model.ToStmOptions"
+                                        class="form-select">
+                                    <option value="">
+                                        -- Select STM --
+                                    </option>
+                                </select>
+
+                                <span asp-validation-for="ToStmId"
+                                      class="text-danger">
+                                </span>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label asp-for="ToE1Id"
+                                       class="form-label">
+                                </label>
+
+                                <select asp-for="ToE1Id"
+                                        asp-items="Model.ToE1Options"
+                                        class="form-select">
+                                    <option value="">
+                                        -- Select Available E1 --
+                                    </option>
+                                </select>
+
+                                <span asp-validation-for="ToE1Id"
+                                      class="text-danger">
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Description"
+                       class="form-label">
+                </label>
+
+                <textarea asp-for="Description"
+                          class="form-control"
+                          rows="3"
+                          placeholder="Optional description"></textarea>
+
+                <span asp-validation-for="Description"
+                      class="text-danger">
+                </span>
+            </div>
+
+            <button type="submit"
+                    class="btn btn-primary">
+                Connect E1 Channels
+            </button>
+
+            <a asp-action="Details"
+                   asp-route-id="@Model.LinkId"
+                   class="btn btn-secondary">
+                Back to Link
+            </a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const linkId =
+                document.getElementById("LinkId").value;
+
+            const fromStmSelect =
+                document.getElementById("FromStmId");
+
+            const fromE1Select =
+                document.getElementById("FromE1Id");
+
+            const toStmSelect =
+                document.getElementById("ToStmId");
+
+            const toE1Select =
+                document.getElementById("ToE1Id");
+
+            const availableE1Url =
+                '@Url.Action(
+                                            "GetAvailableE1sForConnection",
+                                            "CommunicationLinks")';
+
+            function resetE1Dropdown(selectElement, message) {
+                selectElement.innerHTML = "";
+
+                const option =
+                    document.createElement("option");
+
+                option.value = "";
+                option.textContent = message;
+
+                selectElement.appendChild(option);
+            }
+
+            function addE1Options(selectElement, records) {
+                for (const record of records) {
+                    const option =
+                        document.createElement("option");
+
+                    option.value = record.value;
+                    option.textContent = record.text;
+
+                    selectElement.appendChild(option);
+                }
+            }
+
+            async function loadAvailableE1s(
+                stmId,
+                e1SelectElement) {
+
+                resetE1Dropdown(
+                    e1SelectElement,
+                    "-- Select Available E1 --");
+
+                if (!stmId) {
+                    e1SelectElement.disabled = true;
+                    return;
+                }
+
+                e1SelectElement.disabled = true;
+
+                try {
+                    const url =
+                        `${availableE1Url}` +
+                        `?linkId=${encodeURIComponent(linkId)}` +
+                        `&stmId=${encodeURIComponent(stmId)}`;
+
+                    const response = await fetch(url);
+
+                    if (!response.ok) {
+                        throw new Error(
+                            "Unable to load available E1 channels.");
+                    }
+
+                    const records = await response.json();
+
+                    if (records.length === 0) {
+                        resetE1Dropdown(
+                            e1SelectElement,
+                            "-- No Available E1 Channels --");
+
+                        return;
+                    }
+
+                    resetE1Dropdown(
+                        e1SelectElement,
+                        "-- Select Available E1 --");
+
+                    addE1Options(
+                        e1SelectElement,
+                        records);
+                }
+                catch (error) {
+                    console.error(error);
+
+                    resetE1Dropdown(
+                        e1SelectElement,
+                        "-- Unable to Load E1 Channels --");
+
+                    alert(
+                        "The available E1 channels could not be loaded.");
+                }
+                finally {
+                    e1SelectElement.disabled = false;
+                }
+            }
+
+            fromStmSelect.addEventListener(
+                "change",
+                async function () {
+                    await loadAvailableE1s(
+                        fromStmSelect.value,
+                        fromE1Select);
+                });
+
+            toStmSelect.addEventListener(
+                "change",
+                async function () {
+                    await loadAvailableE1s(
+                        toStmSelect.value,
+                        toE1Select);
+                });
+
+            if (!fromStmSelect.value) {
+                fromE1Select.disabled = true;
+            }
+
+            if (!toStmSelect.value) {
+                toE1Select.disabled = true;
+            }
+        });
+    </script>
+}

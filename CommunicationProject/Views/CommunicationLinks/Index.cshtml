@@ -1,0 +1,182 @@
+﻿@model IEnumerable<CommunicationProject.Models.CommunicationLink>
+
+@{
+    ViewData["Title"] = "Communication Links";
+}
+
+<h1>Communication Links</h1>
+
+<p class="text-muted">
+    Showing page @ViewBag.CurrentPage of
+    @ViewBag.TotalPages —
+    @ViewBag.TotalItems total STM records.
+</p>
+<p>
+    <a asp-action="Create"
+           class="btn btn-primary">
+        Create New Link
+    </a>
+<a asp-action="Import"
+       class="btn btn-success mb-3">
+    Import Links
+</a>
+</p>
+<form asp-controller="CommunicationLinks"
+      asp-action="GenerateStmsAndE1sFromCapacity"
+      method="post"
+      class="d-inline">
+
+    @Html.AntiForgeryToken()
+
+    <button type="submit"
+            class="btn btn-primary"
+            onclick="return confirm(
+        'Generate STM and E1 inventory from link capacities?');">
+        Generate STM/E1 From Capacity
+    </button>
+</form>
+
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>Link ID</th>
+            <th>Link Name</th>
+            <th>Link Type</th>
+            <th>Site From</th>
+            <th>Site To</th>
+            <th>Capacity</th>
+            <th>STM Count</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Id</td>
+
+                <td>@item.Name</td>
+
+                <td>
+                    @(item.LinkType?.Name ?? "Not available")
+                </td>
+
+                <td>
+                    @if (item.SiteFrom != null)
+                    {
+                        <span>
+                            @item.SiteFrom.Id -
+                            @item.SiteFrom.Name
+                        </span>
+                    }
+                    else
+                    {
+                        <span>Not available</span>
+                    }
+                </td>
+
+                <td>
+                    @if (item.SiteTo != null)
+                    {
+                        <span>
+                            @item.SiteTo.Id -
+                            @item.SiteTo.Name
+                        </span>
+                    }
+                    else
+                    {
+                        <span>Not available</span>
+                    }
+                </td>
+                <td>
+                    @(string.IsNullOrWhiteSpace(item.Capacity)
+                        ? "-"
+                        : item.Capacity)
+                </td>
+                <td>
+                    @item.Stms.Count
+                </td>
+
+                <td>
+                    <a asp-action="Edit"
+                           asp-route-id="@item.Id"
+                           class="btn btn-sm btn-warning">
+                        Edit
+                    </a>
+
+                    <a asp-action="Details"
+                           asp-route-id="@item.Id"
+                           class="btn btn-sm btn-info">
+                        Details
+                    </a>
+
+                    <a asp-action="Delete"
+                           asp-route-id="@item.Id"
+                           class="btn btn-sm btn-danger">
+                        Delete
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+@if (ViewBag.TotalPages > 1)
+{
+    <nav aria-label="STM pages">
+        <ul class="pagination">
+
+            <li class="page-item
+                @(ViewBag.CurrentPage <= 1
+                                    ? "disabled"
+                                    : "")">
+
+                <a class="page-link"
+                       asp-action="Index"
+                       asp-route-page="@(ViewBag.CurrentPage - 1)">
+                    Previous
+                </a>
+            </li>
+
+            @{
+                int startPage = Math.Max(
+                    1,
+                    (int)ViewBag.CurrentPage - 2);
+
+                int endPage = Math.Min(
+                    (int)ViewBag.TotalPages,
+                    (int)ViewBag.CurrentPage + 2);
+            }
+
+            @for (int pageNumber = startPage;
+                  pageNumber <= endPage;
+                  pageNumber++)
+            {
+                <li class="page-item
+                    @(pageNumber == ViewBag.CurrentPage
+                                            ? "active"
+                                            : "")">
+
+                    <a class="page-link"
+                           asp-action="Index"
+                           asp-route-page="@pageNumber">
+                        @pageNumber
+                    </a>
+                </li>
+            }
+
+            <li class="page-item
+                @(ViewBag.CurrentPage >= ViewBag.TotalPages
+                                    ? "disabled"
+                                    : "")">
+
+                <a class="page-link"
+                       asp-action="Index"
+                       asp-route-page="@(ViewBag.CurrentPage + 1)">
+                    Next
+                </a>
+            </li>
+
+        </ul>
+    </nav>
+}

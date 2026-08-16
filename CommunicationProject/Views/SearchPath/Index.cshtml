@@ -1,0 +1,183 @@
+﻿@model CommunicationProject.ViewModels.SearchPathViewModel
+
+@{
+    ViewData["Title"] = "Search Path";
+}
+
+<h1>Search Path</h1>
+
+<p class="text-muted">
+    Search saved communication paths by description,
+    link, or source site.
+</p>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <strong>Search Filters</strong>
+    </div>
+
+    <div class="card-body">
+        <form asp-controller="SearchPath"
+              asp-action="Index"
+              method="get">
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="Description"
+                           class="form-label">
+                    </label>
+
+                    <input asp-for="Description"
+                           class="form-control"
+                           placeholder="Example: التربية" />
+                </div>
+
+                <div class="col-md-4">
+                    <label asp-for="LinkName"
+                           class="form-label">
+                    </label>
+
+                    <select asp-for="LinkName"
+                            asp-items="Model.LinkOptions"
+                            class="form-select">
+                        <option value="">
+                            -- Any link --
+                        </option>
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label asp-for="SourceSiteId"
+                           class="form-label">
+                    </label>
+
+                    <select asp-for="SourceSiteId"
+                            asp-items="Model.SiteOptions"
+                            class="form-select">
+                        <option value="">
+                            -- Any source site --
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <button type="submit"
+                        class="btn btn-primary">
+                    Search
+                </button>
+
+                <a asp-controller="SearchPath"
+                       asp-action="Index"
+                       class="btn btn-secondary">
+                    Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (Model.Results.Count == 0)
+{
+    <div class="alert alert-info">
+        No paths matched the selected search criteria.
+    </div>
+}
+else
+{
+    <div class="card">
+        <div class="card-header">
+            <strong>
+                Search Results (@Model.Results.Count)
+            </strong>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered
+                    table-striped
+                    table-hover
+                    mb-0">
+                    <thead>
+                        <tr>
+                            <th>Path #</th>
+                            <th>Description</th>
+                            <th>Start Site</th>
+                            <th>End Site</th>
+                            <th>Site Path</th>
+                            <th>Link Path</th>
+                            <th>Link Count</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var path in Model.Results)
+                        {
+                            <tr>
+                                <td>
+                                    @path.PathNumber
+                                </td>
+
+                                <td>
+                                    @if (string.IsNullOrWhiteSpace(
+                                            path.Description))
+                                    {
+                                        <span class="text-muted">
+                                            No description
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        @path.Description
+                                    }
+                                </td>
+
+                                <td>
+                                    @path.StartSiteId
+                                </td>
+
+                                <td>
+                                    @path.EndSiteId
+                                </td>
+
+                                <td>
+                                    @{
+                                        string[] siteSteps = path.SitePath.Split(
+                                            new[] { " → " },
+                                            StringSplitOptions.RemoveEmptyEntries);
+                                    }
+
+                                    @for (int index = 0; index < siteSteps.Length; index++)
+                                    {
+                                        <div class="mb-1">
+                                            @siteSteps[index]
+                                        </div>
+
+                                        @if (index < siteSteps.Length - 1)
+                                        {
+                                            <div class="text-center text-muted">
+                                                ↓
+                                            </div>
+                                        }
+                                    }
+                                </td>
+
+                                <td class="text-nowrap">
+                                    @path.LinkPath
+                                </td>
+
+
+
+                                <td>
+                                    @path.LinkCount
+                                </td>
+
+
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}

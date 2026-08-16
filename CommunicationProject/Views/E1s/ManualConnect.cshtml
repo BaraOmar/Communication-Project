@@ -1,0 +1,386 @@
+﻿@model CommunicationProject.ViewModels.ManualE1ConnectionViewModel
+
+@{
+    ViewData["Title"] = "Manual E1 Connection";
+}
+
+<h1>Manual E1 Connection</h1>
+
+<p class="text-muted">
+    Select an available E1 from each site and connect them together.
+</p>
+
+<hr />
+
+<div class="row">
+    <div class="col-lg-8">
+        <form asp-action="ManualConnect" method="post">
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger mb-3">
+            </div>
+
+            <div class="row">
+                <!-- Source side -->
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <strong>Source Side</strong>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="form-group mb-3">
+                                <label asp-for="SiteFromId"
+                                       class="control-label">
+                                </label>
+
+                                <select asp-for="SiteFromId"
+                                        asp-items="Model.SiteOptions"
+                                        class="form-select">
+                                    <option value="">
+                                        -- Select Source Site --
+                                    </option>
+                                </select>
+
+                                <span asp-validation-for="SiteFromId"
+                                      class="text-danger">
+                                </span>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label asp-for="FromStmId"
+                                       class="control-label">
+                                </label>
+
+                                <select asp-for="FromStmId"
+                                        asp-items="Model.FromStmOptions"
+                                        class="form-select">
+                                    <option value="">
+                                        -- Select Source STM --
+                                    </option>
+                                </select>
+
+                                <span asp-validation-for="FromStmId"
+                                      class="text-danger">
+                                </span>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label asp-for="FromE1Id"
+                                       class="control-label">
+                                </label>
+
+                                <select asp-for="FromE1Id"
+                                        asp-items="Model.FromE1Options"
+                                        class="form-select">
+                                    <option value="">
+                                        -- Select Available Source E1 --
+                                    </option>
+                                </select>
+
+                                <span asp-validation-for="FromE1Id"
+                                      class="text-danger">
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Destination side -->
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <strong>Destination Side</strong>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="form-group mb-3">
+                                <label asp-for="SiteToId"
+                                       class="control-label">
+                                </label>
+
+                                <select asp-for="SiteToId"
+                                        asp-items="Model.SiteOptions"
+                                        class="form-select">
+                                    <option value="">
+                                        -- Select Destination Site --
+                                    </option>
+                                </select>
+
+                                <span asp-validation-for="SiteToId"
+                                      class="text-danger">
+                                </span>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label asp-for="ToStmId"
+                                       class="control-label">
+                                </label>
+
+                                <select asp-for="ToStmId"
+                                        asp-items="Model.ToStmOptions"
+                                        class="form-select">
+                                    <option value="">
+                                        -- Select Destination STM --
+                                    </option>
+                                </select>
+
+                                <span asp-validation-for="ToStmId"
+                                      class="text-danger">
+                                </span>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label asp-for="ToE1Id"
+                                       class="control-label">
+                                </label>
+
+                                <select asp-for="ToE1Id"
+                                        asp-items="Model.ToE1Options"
+                                        class="form-select">
+                                    <option value="">
+                                        -- Select Available Destination E1 --
+                                    </option>
+                                </select>
+
+                                <span asp-validation-for="ToE1Id"
+                                      class="text-danger">
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Description"
+                       class="control-label">
+                </label>
+
+                <textarea asp-for="Description"
+                          class="form-control"
+                          rows="3"
+                              placeholder="Optional connection description">
+                </textarea>
+
+                    <span asp-validation-for="Description"
+                          class="text-danger">
+                    </span>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Connect E1 Channels
+                    </button>
+
+                    <a asp-action="Index"
+                           class="btn btn-secondary">
+                        Back to E1 List
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @section Scripts {
+        @{
+            await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        }
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const siteFrom = document.getElementById("SiteFromId");
+                const fromStm = document.getElementById("FromStmId");
+                const fromE1 = document.getElementById("FromE1Id");
+
+                const siteTo = document.getElementById("SiteToId");
+                const toStm = document.getElementById("ToStmId");
+                const toE1 = document.getElementById("ToE1Id");
+
+                const getStmsUrl =
+                    '@Url.Action("GetAvailableStms", "E1s")';
+
+                const getE1sUrl =
+                    '@Url.Action("GetAvailableE1s", "E1s")';
+
+                function clearDropdown(select, placeholder) {
+                    select.innerHTML = "";
+
+                    const option = document.createElement("option");
+                    option.value = "";
+                    option.textContent = placeholder;
+
+                    select.appendChild(option);
+                }
+
+                function addOptions(select, records) {
+                    for (const record of records) {
+                        const option = document.createElement("option");
+
+                        option.value = record.value;
+                        option.textContent = record.text;
+
+                        select.appendChild(option);
+                    }
+                }
+
+                async function loadStms(siteId, stmSelect, e1Select) {
+                    clearDropdown(
+                        stmSelect,
+                        "-- Select STM --"
+                    );
+
+                    clearDropdown(
+                        e1Select,
+                        "-- Select Available E1 --"
+                    );
+
+                    if (!siteId) {
+                        return;
+                    }
+
+                    stmSelect.disabled = true;
+
+                    try {
+                        const response = await fetch(
+                            `${getStmsUrl}?siteId=${encodeURIComponent(siteId)}`
+                        );
+
+                        if (!response.ok) {
+                            throw new Error("Unable to load STMs.");
+                        }
+
+                        const records = await response.json();
+                        addOptions(stmSelect, records);
+                    }
+                    catch (error) {
+                        console.error(error);
+                        alert("The available STMs could not be loaded.");
+                    }
+                    finally {
+                        stmSelect.disabled = false;
+                    }
+                }
+
+                async function loadE1s(stmId, e1Select) {
+                    clearDropdown(
+                        e1Select,
+                        "-- Select Available E1 --"
+                    );
+
+                    if (!stmId) {
+                        return;
+                    }
+
+                    e1Select.disabled = true;
+
+                    try {
+                        const response = await fetch(
+                            `${getE1sUrl}?stmId=${encodeURIComponent(stmId)}`
+                        );
+
+                        if (!response.ok) {
+                            throw new Error("Unable to load E1 channels.");
+                        }
+
+                        const records = await response.json();
+                        addOptions(e1Select, records);
+                    }
+                    catch (error) {
+                        console.error(error);
+                        alert("The available E1 channels could not be loaded.");
+                    }
+                    finally {
+                        e1Select.disabled = false;
+                    }
+                }
+
+                function synchronizeSiteOptions() {
+                    const sourceSiteId = siteFrom.value;
+                    const destinationSiteId = siteTo.value;
+
+                    for (const option of siteTo.options) {
+                        option.disabled =
+                            option.value !== "" &&
+                            option.value === sourceSiteId;
+                    }
+
+                    for (const option of siteFrom.options) {
+                        option.disabled =
+                            option.value !== "" &&
+                            option.value === destinationSiteId;
+                    }
+                }
+
+                siteFrom.addEventListener("change", async function () {
+                    if (
+                        siteFrom.value !== "" &&
+                        siteFrom.value === siteTo.value
+                    ) {
+                        siteTo.value = "";
+
+                        clearDropdown(
+                            toStm,
+                            "-- Select Destination STM --"
+                        );
+
+                        clearDropdown(
+                            toE1,
+                            "-- Select Available Destination E1 --"
+                        );
+                    }
+
+                    synchronizeSiteOptions();
+
+                    await loadStms(
+                        siteFrom.value,
+                        fromStm,
+                        fromE1
+                    );
+                });
+
+                siteTo.addEventListener("change", async function () {
+                    if (
+                        siteTo.value !== "" &&
+                        siteTo.value === siteFrom.value
+                    ) {
+                        siteFrom.value = "";
+
+                        clearDropdown(
+                            fromStm,
+                            "-- Select Source STM --"
+                        );
+
+                        clearDropdown(
+                            fromE1,
+                            "-- Select Available Source E1 --"
+                        );
+                    }
+
+                    synchronizeSiteOptions();
+
+                    await loadStms(
+                        siteTo.value,
+                        toStm,
+                        toE1
+                    );
+                });
+
+                fromStm.addEventListener("change", async function () {
+                    await loadE1s(
+                        fromStm.value,
+                        fromE1
+                    );
+                });
+
+                toStm.addEventListener("change", async function () {
+                    await loadE1s(
+                        toStm.value,
+                        toE1
+                    );
+                });
+
+                synchronizeSiteOptions();
+            });
+        </script>
+    }

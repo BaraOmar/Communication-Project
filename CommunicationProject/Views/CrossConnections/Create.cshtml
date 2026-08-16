@@ -1,0 +1,894 @@
+﻿@model CommunicationProject.ViewModels.CreateCrossConnectionViewModel
+
+@using System.Text.Json
+
+@{
+    ViewData["Title"] = "Create Cross Connection";
+
+    string initialValuesJson = JsonSerializer.Serialize(new
+    {
+        siteId = Model.SiteId,
+        previousSiteId = Model.PreviousSiteId,
+        incomingStmId = Model.IncomingStmId?.ToString(),
+        incomingE1Id = Model.IncomingE1Id?.ToString(),
+        nextSiteId = Model.NextSiteId,
+        outgoingStmId = Model.OutgoingStmId?.ToString(),
+        outgoingE1Id = Model.OutgoingE1Id?.ToString(),
+        description = Model.Description
+    });
+}
+
+<h1>Create Cross Connection</h1>
+
+<p class="text-muted">
+    Select the central site, then select the incoming E1 from the
+    previous site and the outgoing E1 toward the next site.
+</p>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<div id="ajaxError"
+     class="alert alert-danger d-none">
+</div>
+
+<form asp-action="Create"
+      method="post"
+      id="crossConnectionForm">
+
+    @Html.AntiForgeryToken()
+
+    <div asp-validation-summary="ModelOnly"
+         class="text-danger mb-3">
+    </div>
+
+    <!-- Central Site -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <strong>Cross Connection Site</strong>
+        </div>
+
+        <div class="card-body">
+            <div class="mb-3">
+                <label asp-for="SiteId"
+                       class="form-label">
+                </label>
+
+                <select asp-for="SiteId"
+                        asp-items="Model.SiteOptions"
+                        id="siteSelect"
+                        class="form-select">
+                    <option value="">
+                        -- Select central site --
+                    </option>
+                </select>
+
+                <span asp-validation-for="SiteId"
+                      class="text-danger">
+                </span>
+
+                <div class="form-text">
+                    This is the site where the cross connection
+                    will be created.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Previous and Next sides -->
+    <div id="connectionSides"
+         class="row g-4 d-none">
+
+        <!-- Previous Side -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <strong>Previous Site / Incoming E1</strong>
+                </div>
+
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label asp-for="PreviousSiteId"
+                               class="form-label">
+                        </label>
+
+                        <select asp-for="PreviousSiteId"
+                                id="previousSiteSelect"
+                                class="form-select"
+                                disabled>
+                            <option value="">
+                                -- Select previous site --
+                            </option>
+                        </select>
+
+                        <span asp-validation-for="PreviousSiteId"
+                              class="text-danger">
+                        </span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="IncomingStmId"
+                               class="form-label">
+                        </label>
+
+                        <select asp-for="IncomingStmId"
+                                id="incomingStmSelect"
+                                class="form-select"
+                                disabled>
+                            <option value="">
+                                -- Select incoming STM --
+                            </option>
+                        </select>
+
+                        <span asp-validation-for="IncomingStmId"
+                              class="text-danger">
+                        </span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="IncomingE1Id"
+                               class="form-label">
+                        </label>
+
+                        <select asp-for="IncomingE1Id"
+                                id="incomingE1Select"
+                                class="form-select"
+                                disabled>
+                            <option value="">
+                                -- Select incoming E1 --
+                            </option>
+                        </select>
+
+                        <span asp-validation-for="IncomingE1Id"
+                              class="text-danger">
+                        </span>
+
+                        <div class="form-text">
+                            This E1 enters the selected central site
+                            from the previous site.
+                        </div>
+                    </div>
+                    <!-- Connection Description -->
+                    <div class="mb-3">
+                        <label asp-for="Description"
+                               class="form-label">
+                            Connection Description
+                        </label>
+
+                        <input asp-for="Description"
+                               id="descriptionInput"
+                               class="form-control"
+                               placeholder="Example: التربية" />
+
+                        <span asp-validation-for="Description"
+                              class="text-danger">
+                        </span>
+
+                        <div class="form-text">
+                            Enter a description when creating a new path.
+                            When extending a path, the existing description
+                            will be used automatically.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Next Side -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <strong>Next Site / Outgoing E1</strong>
+                </div>
+
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label asp-for="NextSiteId"
+                               class="form-label">
+                        </label>
+
+                        <select asp-for="NextSiteId"
+                                id="nextSiteSelect"
+                                class="form-select"
+                                disabled>
+                            <option value="">
+                                -- Select next site --
+                            </option>
+                        </select>
+
+                        <span asp-validation-for="NextSiteId"
+                              class="text-danger">
+                        </span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="OutgoingStmId"
+                               class="form-label">
+                        </label>
+
+                        <select asp-for="OutgoingStmId"
+                                id="outgoingStmSelect"
+                                class="form-select"
+                                disabled>
+                            <option value="">
+                                -- Select outgoing STM --
+                            </option>
+                        </select>
+
+                        <span asp-validation-for="OutgoingStmId"
+                              class="text-danger">
+                        </span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="OutgoingE1Id"
+                               class="form-label">
+                        </label>
+
+                        <select asp-for="OutgoingE1Id"
+                                id="outgoingE1Select"
+                                class="form-select"
+                                disabled>
+                            <option value="">
+                                -- Select outgoing E1 --
+                            </option>
+                        </select>
+
+                        <span asp-validation-for="OutgoingE1Id"
+                              class="text-danger">
+                        </span>
+
+                        <div class="form-text">
+                            This E1 leaves the selected central site
+                            toward the next site.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Diagram -->
+    <div id="connectionDiagram"
+         class="alert alert-secondary mt-4 d-none">
+
+        <strong>Connection:</strong>
+
+        <div class="mt-2">
+            Previous Site
+            ⇄
+            Incoming E1
+            →
+            Cross Connection
+            →
+            Outgoing E1
+            ⇄
+            Next Site
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <button type="submit"
+                id="saveButton"
+                class="btn btn-primary"
+                disabled>
+            Create Cross Connection
+        </button>
+
+        <a asp-controller="Home"
+               asp-action="Index"
+               class="btn btn-secondary">
+            Cancel
+        </a>
+    </div>
+</form>
+
+@section Scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async function () {
+            const initialValues =
+                @Html.Raw(initialValuesJson);
+
+            const urls = {
+                connectedSites:
+                    '@Url.Action("GetConnectedSites", "CrossConnections")',
+
+                stms:
+                    '@Url.Action("GetStms", "CrossConnections")',
+
+                e1s:
+                    '@Url.Action("GetAvailableE1s", "CrossConnections")'
+            };
+
+            const siteSelect =
+                document.getElementById("siteSelect");
+
+            const connectionSides =
+                document.getElementById("connectionSides");
+
+            const connectionDiagram =
+                document.getElementById("connectionDiagram");
+
+            const previousSiteSelect =
+                document.getElementById("previousSiteSelect");
+
+            const incomingStmSelect =
+                document.getElementById("incomingStmSelect");
+
+            const incomingE1Select =
+                document.getElementById("incomingE1Select");
+
+            const nextSiteSelect =
+                document.getElementById("nextSiteSelect");
+
+            const outgoingStmSelect =
+                document.getElementById("outgoingStmSelect");
+
+            const outgoingE1Select =
+                document.getElementById("outgoingE1Select");
+
+                    const descriptionInput =
+        document.getElementById("descriptionInput");
+
+            const saveButton =
+                document.getElementById("saveButton");
+
+            const ajaxError =
+                document.getElementById("ajaxError");
+
+            function showError(message) {
+                ajaxError.textContent = message;
+                ajaxError.classList.remove("d-none");
+            }
+
+            function clearError() {
+                ajaxError.textContent = "";
+                ajaxError.classList.add("d-none");
+            }
+
+            function resetSelect(
+                selectElement,
+                placeholder) {
+
+                selectElement.innerHTML = "";
+
+                const option =
+                    document.createElement("option");
+
+                option.value = "";
+                option.textContent = placeholder;
+
+                selectElement.appendChild(option);
+                selectElement.disabled = true;
+            }
+
+            function showLoading(
+                selectElement,
+                message) {
+
+                resetSelect(selectElement, message);
+            }
+
+            function populateSelect(
+                selectElement,
+                items,
+                placeholder,
+                selectedValue = null) {
+
+                resetSelect(
+                    selectElement,
+                    placeholder);
+
+                for (const item of items) {
+                    const option =
+                        document.createElement("option");
+
+        option.value = item.value;
+        option.textContent = item.text;
+
+        option.dataset.state =
+            item.state ?? "";
+
+        option.dataset.description =
+            item.description ?? "";
+
+        option.dataset.pathId =
+            item.pathId ?? "";
+
+        selectElement.appendChild(option);
+                }
+
+                selectElement.disabled =
+                    items.length === 0;
+
+                if (selectedValue) {
+                    const exists =
+                        Array.from(selectElement.options)
+                            .some(option =>
+                                option.value === selectedValue);
+
+                    if (exists) {
+                        selectElement.value =
+                            selectedValue;
+                    }
+                }
+            }
+
+            async function getJson(
+                url,
+                parameters) {
+
+                const query =
+                    new URLSearchParams(parameters);
+
+                const response = await fetch(
+                    `${url}?${query.toString()}`,
+                    {
+                        headers: {
+                            "X-Requested-With":
+                                "XMLHttpRequest"
+                        }
+                    });
+
+                if (!response.ok) {
+                    throw new Error(
+                        "The requested data could not be loaded.");
+                }
+
+                return await response.json();
+            }
+
+        function resetIncomingSide() {
+            resetSelect(
+                previousSiteSelect,
+                "-- Select previous site --");
+                        descriptionInput.value = "";
+        descriptionInput.readOnly = false;
+
+            resetSelect(
+                incomingStmSelect,
+                "-- Select incoming STM --");
+
+            resetSelect(
+                incomingE1Select,
+                "-- Select incoming E1 --");
+
+            descriptionInput.value = "";
+            descriptionInput.readOnly = false;
+        }
+
+            function resetOutgoingSide() {
+                resetSelect(
+                    nextSiteSelect,
+                    "-- Select next site --");
+
+                resetSelect(
+                    outgoingStmSelect,
+                    "-- Select outgoing STM --");
+
+                resetSelect(
+                    outgoingE1Select,
+                    "-- Select outgoing E1 --");
+            }
+
+            function updateSiteRestrictions() {
+                const previousValue =
+                    previousSiteSelect.value;
+
+                const nextValue =
+                    nextSiteSelect.value;
+
+                for (const option of
+                     previousSiteSelect.options) {
+
+                    option.disabled =
+                        option.value !== "" &&
+                        option.value === nextValue;
+                }
+
+                for (const option of
+                     nextSiteSelect.options) {
+
+                    option.disabled =
+                        option.value !== "" &&
+                        option.value === previousValue;
+                }
+            }
+                    function updateDescription() {
+            const selectedOption =
+                incomingE1Select.options[
+                    incomingE1Select.selectedIndex
+                ];
+
+            if (!selectedOption ||
+                !selectedOption.value) {
+
+                descriptionInput.value = "";
+                descriptionInput.readOnly = false;
+
+                updateSaveButton();
+                return;
+            }
+
+            const state =
+                selectedOption.dataset.state ?? "";
+
+            const existingDescription =
+                selectedOption.dataset.description ?? "";
+
+            if (state === "ExtendExistingPath") {
+                /*
+                 * Existing path:
+                 * display and reuse its description.
+                 */
+                descriptionInput.value =
+                    existingDescription;
+
+                descriptionInput.readOnly = true;
+            }
+            else {
+                /*
+                 * Available E1:
+                 * the user is creating a new path.
+                 */
+                descriptionInput.value = "";
+                descriptionInput.readOnly = false;
+            }
+
+            updateSaveButton();
+        }
+        function updateSaveButton() {
+            const isComplete =
+                siteSelect.value !== "" &&
+                previousSiteSelect.value !== "" &&
+                incomingStmSelect.value !== "" &&
+                incomingE1Select.value !== "" &&
+                nextSiteSelect.value !== "" &&
+                outgoingStmSelect.value !== "" &&
+                outgoingE1Select.value !== "" &&
+                descriptionInput.value.trim() !== "";
+
+            saveButton.disabled = !isComplete;
+
+            connectionDiagram.classList.toggle(
+                "d-none",
+                !isComplete);
+        }
+
+            async function loadConnectedSites(
+                selectedPreviousSiteId = null,
+                selectedNextSiteId = null) {
+
+                clearError();
+                resetIncomingSide();
+                resetOutgoingSide();
+                updateSaveButton();
+
+                const siteId =
+                    siteSelect.value;
+
+                if (!siteId) {
+                    connectionSides.classList.add(
+                        "d-none");
+
+                    return;
+                }
+
+                connectionSides.classList.remove(
+                    "d-none");
+
+                showLoading(
+                    previousSiteSelect,
+                    "Loading connected sites...");
+
+                showLoading(
+                    nextSiteSelect,
+                    "Loading connected sites...");
+
+                try {
+                    const items = await getJson(
+                        urls.connectedSites,
+                        {
+                            siteId: siteId
+                        });
+
+                    populateSelect(
+                        previousSiteSelect,
+                        items,
+                        "-- Select previous site --",
+                        selectedPreviousSiteId);
+
+                    populateSelect(
+                        nextSiteSelect,
+                        items,
+                        "-- Select next site --",
+                        selectedNextSiteId);
+
+                    updateSiteRestrictions();
+                }
+                catch (error) {
+                    resetIncomingSide();
+                    resetOutgoingSide();
+
+                    showError(error.message);
+                }
+            }
+
+        async function loadStms(
+            connectedSiteId,
+            stmSelect,
+            e1Select,
+            isIncoming = false,
+            selectedStmId = null,
+            selectedE1Id = null) {
+
+                resetSelect(
+                    stmSelect,
+                    "-- Select STM --");
+
+                resetSelect(
+                    e1Select,
+                    "-- Select E1 --");
+
+                updateSaveButton();
+
+                if (!siteSelect.value ||
+                    !connectedSiteId) {
+                    return;
+                }
+
+                showLoading(
+                    stmSelect,
+                    "Loading STMs...");
+
+                try {
+                    const items = await getJson(
+                        urls.stms,
+                        {
+                            siteId: siteSelect.value,
+                            connectedSiteId:
+                                connectedSiteId
+                        });
+
+                    populateSelect(
+                        stmSelect,
+                        items,
+                        "-- Select STM --",
+                        selectedStmId);
+
+                    if (selectedStmId &&
+                        stmSelect.value) {
+
+        await loadE1s(
+            stmSelect.value,
+            e1Select,
+            isIncoming,
+            selectedE1Id);
+                    }
+                }
+                catch (error) {
+                    resetSelect(
+                        stmSelect,
+                        "-- Select STM --");
+
+                    showError(error.message);
+                }
+            }
+
+        async function loadE1s(
+            stmId,
+            e1Select,
+            isIncoming = false,
+            selectedE1Id = null) {
+
+            resetSelect(
+                e1Select,
+                "-- Select E1 --");
+
+            updateSaveButton();
+
+            if (!stmId) {
+                return;
+            }
+
+            showLoading(
+                e1Select,
+                "Loading E1 channels...");
+
+            try {
+        const items = await getJson(
+            urls.e1s,
+            {
+                stmId: stmId,
+                isIncoming: isIncoming
+            });
+
+                populateSelect(
+                    e1Select,
+                    items,
+                    "-- Select E1 --",
+                    selectedE1Id);
+
+        if (isIncoming) {
+            updateDescription();
+        }
+        else {
+            updateSaveButton();
+        }
+            }
+            catch (error) {
+                resetSelect(
+                    e1Select,
+                    "-- Select E1 --");
+
+                showError(error.message);
+            }
+        }
+
+            siteSelect.addEventListener(
+                "change",
+                async function () {
+
+                    await loadConnectedSites();
+                });
+
+            previousSiteSelect.addEventListener(
+                "change",
+                async function () {
+
+                    if (previousSiteSelect.value ===
+                        nextSiteSelect.value) {
+
+                        nextSiteSelect.value = "";
+
+                        resetSelect(
+                            outgoingStmSelect,
+                            "-- Select outgoing STM --");
+
+                        resetSelect(
+                            outgoingE1Select,
+                            "-- Select outgoing E1 --");
+                    }
+
+                    updateSiteRestrictions();
+
+        await loadStms(
+            previousSiteSelect.value,
+            incomingStmSelect,
+            incomingE1Select,
+            true);
+                });
+
+            nextSiteSelect.addEventListener(
+                "change",
+                async function () {
+
+                    if (nextSiteSelect.value ===
+                        previousSiteSelect.value) {
+
+                        previousSiteSelect.value = "";
+
+                        resetSelect(
+                            incomingStmSelect,
+                            "-- Select incoming STM --");
+
+                        resetSelect(
+                            incomingE1Select,
+                            "-- Select incoming E1 --");
+                    }
+
+                    updateSiteRestrictions();
+        await loadStms(
+            nextSiteSelect.value,
+            outgoingStmSelect,
+            outgoingE1Select,
+            false);
+                });
+
+        incomingStmSelect.addEventListener(
+            "change",
+            async function () {
+
+                await loadE1s(
+                    incomingStmSelect.value,
+                    incomingE1Select,
+                    true);
+            });
+
+        outgoingStmSelect.addEventListener(
+            "change",
+            async function () {
+
+                await loadE1s(
+                    outgoingStmSelect.value,
+                    outgoingE1Select,
+                    false);
+            });
+                descriptionInput.addEventListener(
+        "input",
+        updateSaveButton);
+        incomingE1Select.addEventListener(
+            "change",
+            updateDescription);
+
+
+            outgoingE1Select.addEventListener(
+                "change",
+                updateSaveButton);
+
+            /*
+             * Restore the submitted selections when server-side
+             * validation returns the same page.
+             */
+            if (initialValues.siteId) {
+                siteSelect.value =
+                    initialValues.siteId;
+
+                await loadConnectedSites(
+                    initialValues.previousSiteId,
+                    initialValues.nextSiteId);
+
+        if (initialValues.previousSiteId) {
+            await loadStms(
+                initialValues.previousSiteId,
+                incomingStmSelect,
+                incomingE1Select,
+                true,
+                initialValues.incomingStmId,
+                initialValues.incomingE1Id);
+        } 
+
+        if (initialValues.nextSiteId) {
+            await loadStms(
+                initialValues.nextSiteId,
+                outgoingStmSelect,
+                outgoingE1Select,
+                false,
+                initialValues.outgoingStmId,
+                initialValues.outgoingE1Id);
+        }
+
+        updateDescription();
+
+        /*
+         * Preserve the submitted description when server-side
+         * validation returns the page.
+         *
+         * For ExtendExistingPath, updateDescription already
+         * loads the database description and makes it readonly.
+         */
+        const selectedIncomingOption =
+            incomingE1Select.options[
+                incomingE1Select.selectedIndex
+            ];
+
+        const selectedState =
+            selectedIncomingOption?.dataset.state ?? "";
+
+        if (selectedState !== "ExtendExistingPath" &&
+            initialValues.description) {
+
+            descriptionInput.value =
+                initialValues.description;
+        }
+
+        updateSiteRestrictions();
+        updateSaveButton();
+            }
+        });
+    </script>
+}

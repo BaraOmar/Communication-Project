@@ -1,0 +1,53 @@
+﻿@model CommunicationProject.Models.Stm
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+
+<h4>Stm</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger mb-3"></div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Number" class="control-label"></label>
+                <input asp-for="Number" class="form-control" />
+                <span asp-validation-for="Number" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="LinkId" class="control-label"></label>
+                <select asp-for="LinkId"
+                        class="form-select"
+                        asp-items="ViewBag.LinkId">
+                    <option value="">-- Select Communication Link --</option>
+                </select>
+                <span asp-validation-for="LinkId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="ConnectedStmId" class="control-label"></label>
+                <select asp-for="ConnectedStmId"
+                        class="form-select"
+                        asp-items="ViewBag.ConnectedStmId">
+                    <option value="">-- No Connected STM --</option>
+                </select>
+                <span asp-validation-for="ConnectedStmId"
+                      class="text-danger"></span>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

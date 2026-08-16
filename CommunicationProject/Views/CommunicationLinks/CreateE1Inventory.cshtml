@@ -1,0 +1,204 @@
+﻿@model CommunicationProject.ViewModels.CreateE1InventoryViewModel
+
+@{
+    ViewData["Title"] = "Create E1 Inventory";
+}
+
+<h1>Create E1 Inventory</h1>
+
+<p class="text-muted">
+    Select a site and one of its STMs to generate the STM's 63 E1 channels.
+</p>
+
+<hr />
+
+<div class="row">
+    <div class="col-lg-7">
+        <div class="card mb-4">
+            <div class="card-header">
+                <strong>Communication Link</strong>
+            </div>
+
+            <div class="card-body">
+                @Model.LinkName
+            </div>
+        </div>
+
+        <form asp-action="CreateE1Inventory" method="post">
+            <input asp-for="LinkId" type="hidden" />
+
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger mb-3">
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="SiteId"
+                       class="form-label">
+                </label>
+
+                <select asp-for="SiteId"
+                        asp-items="Model.SiteOptions"
+                        class="form-select">
+                    <option value="">
+                        -- Select Site --
+                    </option>
+                </select>
+
+                <span asp-validation-for="SiteId"
+                      class="text-danger">
+                </span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="StmId"
+                       class="form-label">
+                </label>
+
+                <select asp-for="StmId"
+                        asp-items="Model.StmOptions"
+                        class="form-select">
+                    <option value="">
+                        -- Select STM --
+                    </option>
+                </select>
+
+                <span asp-validation-for="StmId"
+                      class="text-danger">
+                </span>
+
+                <div class="form-text">
+                    Only STMs without an existing E1 inventory are displayed.
+                </div>
+            </div>
+
+            <div class="alert alert-info">
+                This action will create 63 available E1 channels:
+
+                <div class="mt-2">
+                    <strong>1.1.1</strong> through
+                    <strong>3.7.3</strong>
+                </div>
+
+                <div class="mt-2">
+                    All generated E1 channels will initially be available
+                    and will not be connected automatically.
+                </div>
+            </div>
+
+            <button type="submit"
+                    class="btn btn-primary">
+                Create 63 E1 Channels
+            </button>
+
+            <a asp-action="Details"
+                   asp-route-id="@Model.LinkId"
+                   class="btn btn-secondary">
+                Back to Link
+            </a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const siteSelect =
+                document.getElementById("SiteId");
+
+            const stmSelect =
+                document.getElementById("StmId");
+
+            const linkId =
+                document.getElementById("LinkId").value;
+
+            const getStmsUrl =
+                '@Url.Action(
+                                            "GetStmsForE1Inventory",
+                                            "CommunicationLinks")';
+
+            function resetStmDropdown(message) {
+                stmSelect.innerHTML = "";
+
+                const option =
+                    document.createElement("option");
+
+                option.value = "";
+                option.textContent = message;
+
+                stmSelect.appendChild(option);
+            }
+
+            function addStmOptions(records) {
+                for (const record of records) {
+                    const option =
+                        document.createElement("option");
+
+                    option.value = record.value;
+                    option.textContent = record.text;
+
+                    stmSelect.appendChild(option);
+                }
+            }
+
+            async function loadAvailableStms(siteId) {
+                resetStmDropdown("-- Select STM --");
+
+                if (!siteId) {
+                    return;
+                }
+
+                stmSelect.disabled = true;
+
+                try {
+                    const url =
+                        `${getStmsUrl}` +
+                        `?linkId=${encodeURIComponent(linkId)}` +
+                        `&siteId=${encodeURIComponent(siteId)}`;
+
+                    const response = await fetch(url);
+
+                    if (!response.ok) {
+                        throw new Error(
+                            "Unable to load the available STMs.");
+                    }
+
+                    const records =
+                        await response.json();
+
+                    if (records.length === 0) {
+                        resetStmDropdown(
+                            "-- No STMs Available --");
+
+                        return;
+                    }
+
+                    resetStmDropdown("-- Select STM --");
+                    addStmOptions(records);
+                }
+                catch (error) {
+                    console.error(error);
+
+                    resetStmDropdown(
+                        "-- Unable to Load STMs --");
+
+                    alert(
+                        "The available STMs could not be loaded.");
+                }
+                finally {
+                    stmSelect.disabled = false;
+                }
+            }
+
+            siteSelect.addEventListener(
+                "change",
+                async function () {
+                    await loadAvailableStms(
+                        siteSelect.value);
+                });
+        });
+    </script>
+}

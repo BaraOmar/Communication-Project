@@ -1,0 +1,126 @@
+﻿@model CommunicationProject.ViewModels.ConfigureStmsViewModel
+
+@{
+    ViewData["Title"] = "Configure STMs";
+}
+
+<h1>Configure STMs</h1>
+
+<p class="text-muted">
+    Enter the number of STM units available at each site.
+</p>
+
+<hr />
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <strong>Communication Link</strong>
+            </div>
+
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Link</dt>
+                    <dd class="col-sm-8">
+                        @Model.LinkName
+                    </dd>
+
+                    <dt class="col-sm-4">Site From</dt>
+                    <dd class="col-sm-8">
+                        @Model.SiteFromName
+                    </dd>
+
+                    <dt class="col-sm-4">Site To</dt>
+                    <dd class="col-sm-8">
+                        @Model.SiteToName
+                    </dd>
+                </dl>
+            </div>
+        </div>
+
+        <form asp-action="ConfigureStms" method="post">
+            <input asp-for="LinkId" type="hidden" />
+
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger mb-3">
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <strong>@Model.SiteFromName</strong>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label asp-for="SiteFromStmCount"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="SiteFromStmCount"
+                                       class="form-control"
+                                       type="number"
+                                       min="1"
+                                       max="100" />
+
+                                <span asp-validation-for="SiteFromStmCount"
+                                      class="text-danger">
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <strong>@Model.SiteToName</strong>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label asp-for="SiteToStmCount"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="SiteToStmCount"
+                                       class="form-control"
+                                       type="number"
+                                       min="1"
+                                       max="100" />
+
+                                <span asp-validation-for="SiteToStmCount"
+                                      class="text-danger">
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-info">
+                This step creates only STM records.
+                E1 channels will be generated separately for each selected STM.
+            </div>
+
+            <button type="submit"
+                    class="btn btn-primary">
+                Create STMs
+            </button>
+
+            <a asp-action="Details"
+                   asp-route-id="@Model.LinkId"
+                   class="btn btn-secondary">
+                Back to Link
+            </a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

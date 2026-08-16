@@ -1,0 +1,248 @@
+﻿@model IEnumerable<CommunicationProject.Models.E1>
+
+@{
+    ViewData["Title"] = "E1 Channels";
+
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 0;
+    int pageSize = ViewBag.PageSize ?? 20;
+    int totalItems = ViewBag.TotalItems ?? 0;
+
+    int firstItem = totalItems == 0
+        ? 0
+        : ((currentPage - 1) * pageSize) + 1;
+
+    int lastItem = Math.Min(
+        currentPage * pageSize,
+        totalItems);
+
+    int startPage = Math.Max(1, currentPage - 2);
+    int endPage = Math.Min(totalPages, currentPage + 2);
+}
+
+<h1>E1 Channels</h1>
+
+<p class="text-muted">
+    E1 channels are created and connected automatically with their
+    corresponding channels on the reverse communication link.
+</p>
+
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>E1 ID</th>
+            <th>E1 Number</th>
+            <th>STM Number</th>
+            <th>Site From</th>
+            <th>Site To</th>
+            <th>Connected E1</th>
+            <th>Description</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var item in Model)
+        {
+            /*
+             * Every STM belongs to a directional link.
+             *
+             * The STM's local site is Link.SiteFrom.
+             * The opposite site is Link.SiteTo.
+             */
+            var link = item.Stm?.Link;
+            var displayedSiteFrom = link?.SiteFrom;
+            var displayedSiteTo = link?.SiteTo;
+
+            <tr>
+                <td>
+                    @item.Id
+                </td>
+
+                <td>
+                    @item.E1Number
+                </td>
+
+                <td>
+                    @if (item.Stm != null)
+                    {
+                        <span>STM @item.Stm.Number</span>
+                    }
+                    else
+                    {
+                        <span>Not available</span>
+                    }
+                </td>
+
+                <td>
+                    @if (displayedSiteFrom != null)
+                    {
+                        <span>
+                            @displayedSiteFrom.Id -
+                            @displayedSiteFrom.Name
+                        </span>
+                    }
+                    else
+                    {
+                        <span>Not available</span>
+                    }
+                </td>
+
+                <td>
+                    @if (displayedSiteTo != null)
+                    {
+                        <span>
+                            @displayedSiteTo.Id -
+                            @displayedSiteTo.Name
+                        </span>
+                    }
+                    else
+                    {
+                        <span>Not available</span>
+                    }
+                </td>
+
+                <td>
+                    @if (item.ConnectedE1 != null)
+                    {
+                        <div>
+                            <strong>
+                                @item.ConnectedE1.E1Number
+                            </strong>
+                        </div>
+
+                        <div>
+                            STM:
+                            @(item.ConnectedE1.Stm?.Number
+                                ?? "Not available")
+                        </div>
+
+                        @if (item.ConnectedE1.Stm?.Link?.SiteFrom != null)
+                        {
+                            <div class="text-muted">
+                                Site:
+                                @item.ConnectedE1.Stm.Link.SiteFrom.Id -
+                                @item.ConnectedE1.Stm.Link.SiteFrom.Name
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <span>Not connected</span>
+                    }
+                </td>
+
+                <td>
+                    @(item.Description ?? "No description")
+                </td>
+
+                <td>
+                    <a asp-action="Details"
+                           asp-route-id="@item.Id"
+                           class="btn btn-sm btn-info">
+                        Details
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="d-flex justify-content-between align-items-center mt-3">
+    <div class="text-muted">
+        Showing @firstItem to @lastItem of @totalItems E1 records
+    </div>
+
+    @if (totalPages > 1)
+    {
+        <nav aria-label="E1 pagination">
+            <ul class="pagination mb-0">
+
+                <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                    @if (currentPage == 1)
+                    {
+                        <span class="page-link">Previous</span>
+                    }
+                    else
+                    {
+                        <a class="page-link"
+                               asp-action="Index"
+                               asp-route-page="@(currentPage - 1)">
+                            Previous
+                        </a>
+                    }
+                </li>
+
+                @if (startPage > 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link"
+                               asp-action="Index"
+                               asp-route-page="1">
+                            1
+                        </a>
+                    </li>
+
+                    @if (startPage > 2)
+                    {
+                        <li class="page-item disabled">
+                            <span class="page-link">…</span>
+                        </li>
+                    }
+                }
+
+                @for (int pageNumber = startPage;
+                     pageNumber <= endPage;
+                     pageNumber++)
+                {
+                    <li class="page-item @(pageNumber == currentPage
+                                                                        ? "active"
+                                                                        : "")">
+
+                <a class="page-link"
+                       asp-action="Index"
+                       asp-route-page="@pageNumber">
+                    @pageNumber
+                </a>
+            </li>
+        }
+
+        @if (endPage < totalPages)
+        {
+            @if (endPage < totalPages - 1)
+            {
+                <li class="page-item disabled">
+                    <span class="page-link">…</span>
+                </li>
+            }
+
+            <li class="page-item">
+                <a class="page-link"
+                       asp-action="Index"
+                       asp-route-page="@totalPages">
+                    @totalPages
+                </a>
+            </li>
+        }
+
+        <li class="page-item @(currentPage == totalPages
+                                                    ? "disabled"
+                                                    : "")">
+
+            @if (currentPage == totalPages)
+            {
+                <span class="page-link">Next</span>
+            }
+            else
+            {
+                <a class="page-link"
+                       asp-action="Index"
+                       asp-route-page="@(currentPage + 1)">
+                    Next
+                </a>
+            }
+        </li>
+    </ul>
+</nav>
+    }
+</div>
