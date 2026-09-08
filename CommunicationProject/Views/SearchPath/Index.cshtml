@@ -1,183 +1,643 @@
 ﻿@model CommunicationProject.ViewModels.SearchPathViewModel
 
 @{
-    ViewData["Title"] = "Search Path";
+    ViewData["Title"] = "Search Paths";
 }
 
-<h1>Search Path</h1>
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/searchpath.css"
+          asp-append-version="true" />
+}
 
-<p class="text-muted">
-    Search saved communication paths by description,
-    link, or source site.
-</p>
+<div class="path-page">
 
-<div class="card mb-4">
-    <div class="card-header">
-        <strong>Search Filters</strong>
+    <!-- Header -->
+    <div class="path-header">
+
+        <h1 class="path-title">
+            Search Paths
+        </h1>
+
+        <p class="path-subtitle">
+            Find saved communication paths and visualize how
+            E1 channels move between sites.
+        </p>
+
     </div>
 
-    <div class="card-body">
+
+    <!-- Filters -->
+    <div class="path-card path-filter-card">
+
         <form asp-controller="SearchPath"
               asp-action="Index"
               method="get">
 
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label asp-for="Description"
-                           class="form-label">
+            <div class="path-filter-grid">
+
+                <!-- Description -->
+                <div class="path-field">
+
+                    <label asp-for="Description">
+                        Description
                     </label>
 
                     <input asp-for="Description"
-                           class="form-control"
-                           placeholder="Example: التربية" />
+                           class="path-input"
+                           placeholder="Search description..." />
+
                 </div>
 
-                <div class="col-md-4">
-                    <label asp-for="LinkName"
-                           class="form-label">
+
+                <!-- Link -->
+                <div class="path-field">
+
+                    <label asp-for="LinkName">
+                        Communication link
                     </label>
 
                     <select asp-for="LinkName"
                             asp-items="Model.LinkOptions"
-                            class="form-select">
+                            class="path-select">
+
                         <option value="">
-                            -- Any link --
+                            All links
                         </option>
+
                     </select>
+
                 </div>
 
-                <div class="col-md-4">
-                    <label asp-for="SourceSiteId"
-                           class="form-label">
+
+                <!-- Source -->
+                <div class="path-field">
+
+                    <label asp-for="SourceSiteId">
+                        Source site
                     </label>
 
                     <select asp-for="SourceSiteId"
                             asp-items="Model.SiteOptions"
-                            class="form-select">
+                            class="path-select">
+
                         <option value="">
-                            -- Any source site --
+                            All source sites
                         </option>
+
                     </select>
+
                 </div>
+
+
+                <div class="path-filter-actions">
+
+                    <button type="submit"
+                            class="path-search-btn">
+                        Search
+                    </button>
+
+                    <a asp-action="Index"
+                           class="path-clear-btn">
+                        Clear
+                    </a>
+
+                </div>
+
             </div>
 
-            <div class="mt-3">
-                <button type="submit"
-                        class="btn btn-primary">
-                    Search
-                </button>
-
-                <a asp-controller="SearchPath"
-                       asp-action="Index"
-                       class="btn btn-secondary">
-                    Clear
-                </a>
-            </div>
         </form>
-    </div>
-</div>
 
-@if (Model.Results.Count == 0)
-{
-    <div class="alert alert-info">
-        No paths matched the selected search criteria.
     </div>
-}
-else
-{
-    <div class="card">
-        <div class="card-header">
-            <strong>
-                Search Results (@Model.Results.Count)
-            </strong>
+
+
+    <!-- Results Header -->
+    <div class="path-results-header">
+
+        <h2 class="path-results-title">
+            Saved paths
+        </h2>
+
+        <span class="path-results-count">
+            @Model.TotalItems
+            result@(Model.TotalItems == 1 ? "" : "s")
+        </span>
+
+    </div>
+
+
+    @if (!Model.Results.Any())
+    {
+        <div class="path-card path-empty">
+
+            <div class="path-empty-title">
+                No paths found
+            </div>
+
+            <p class="path-empty-text">
+                Try changing or clearing your search filters.
+            </p>
+
         </div>
+    }
+    else
+    {
+        foreach (var path in Model.Results)
+        {
+            string[] links =
+                path.LinkPath.Split(
+                    new[] { " → " },
+                    StringSplitOptions.RemoveEmptyEntries);
 
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-bordered
-                    table-striped
-                    table-hover
-                    mb-0">
-                    <thead>
-                        <tr>
-                            <th>Path #</th>
-                            <th>Description</th>
-                            <th>Start Site</th>
-                            <th>End Site</th>
-                            <th>Site Path</th>
-                            <th>Link Path</th>
-                            <th>Link Count</th>
-                        </tr>
-                    </thead>
 
-                    <tbody>
-                        @foreach (var path in Model.Results)
+            string[] siteSteps =
+                path.SitePath.Split(
+                    new[] { " → " },
+                    StringSplitOptions.RemoveEmptyEntries);
+
+
+            var parsedSites =
+                siteSteps
+                    .Select(step =>
+                    {
+                        int detailsStart =
+                            step.IndexOf(" (");
+
+                        if (detailsStart < 0)
                         {
-                            <tr>
-                                <td>
-                                    @path.PathNumber
-                                </td>
+                            return new
+                            {
+                                Site = step.Trim(),
+                                Details = ""
+                            };
+                        }
 
-                                <td>
-                                    @if (string.IsNullOrWhiteSpace(
-                                            path.Description))
+                        return new
+                        {
+                            Site =
+                                step[..detailsStart]
+                                    .Trim(),
+
+                            Details =
+                                step
+                                    .Substring(
+                                        detailsStart + 2)
+                                    .TrimEnd(')')
+                                    .Trim()
+                        };
+                    })
+                    .ToList();
+
+
+            <article class="path-card path-result">
+
+                <!-- Path Header -->
+                <div class="path-result-header">
+
+                    <div class="path-result-identity">
+
+                        <span class="path-number">
+                            Path @path.PathNumber
+                        </span>
+
+
+                        @if (string.IsNullOrWhiteSpace(
+                            path.Description))
+                        {
+                            <h3 class="
+                                path-result-description
+                                path-result-no-description">
+
+                                No description
+
+                            </h3>
+                        }
+                        else
+                        {
+                            <h3 class="path-result-description">
+                                @path.Description
+                            </h3>
+                        }
+
+                    </div>
+
+
+                    <span class="path-link-count">
+
+                        @path.LinkCount
+                        link@(path.LinkCount == 1 ? "" : "s")
+
+                    </span>
+
+                </div>
+
+
+                <!-- Network Visualization -->
+                <div class="path-result-body">
+
+                    <div class="path-topology">
+
+                        @for (int i = 0;
+                              i < parsedSites.Count;
+                              i++)
+                        {
+                            bool isFirst =
+                                i == 0;
+
+                            bool isLast =
+                                i == parsedSites.Count - 1;
+
+
+                            string nodeClass =
+                                isFirst
+                                    ? "start"
+                                    : isLast
+                                        ? "end"
+                                        : "transit";
+
+
+                            <!-- Site Node -->
+                            <div class="path-node @nodeClass">
+
+                                <div class="path-node-marker">
+
+                                    @if (isFirst)
                                     {
-                                        <span class="text-muted">
-                                            No description
-                                        </span>
+                                        <span>START</span>
+                                    }
+                                    else if (isLast)
+                                    {
+                                        <span>END</span>
                                     }
                                     else
                                     {
-                                        @path.Description
-                                    }
-                                </td>
-
-                                <td>
-                                    @path.StartSiteId
-                                </td>
-
-                                <td>
-                                    @path.EndSiteId
-                                </td>
-
-                                <td>
-                                    @{
-                                        string[] siteSteps = path.SitePath.Split(
-                                            new[] { " → " },
-                                            StringSplitOptions.RemoveEmptyEntries);
+                                        <span>SITE</span>
                                     }
 
-                                    @for (int index = 0; index < siteSteps.Length; index++)
-                                    {
-                                        <div class="mb-1">
-                                            @siteSteps[index]
+                                </div>
+
+
+                                <div class="path-node-content">
+
+                                    <div class="path-node-top">
+
+                                        <div>
+
+                                            <div class="path-node-label">
+                                                Site
+                                            </div>
+
+                                            <div class="path-node-site">
+                                                @parsedSites[i].Site
+                                            </div>
+
                                         </div>
 
-                                        @if (index < siteSteps.Length - 1)
+
+                                        @if (isFirst)
                                         {
-                                            <div class="text-center text-muted">
-                                                ↓
-                                            </div>
+                                            <span class="
+                                                path-node-status
+                                                path-node-status-start">
+                                                Origin
+                                            </span>
                                         }
+                                        else if (isLast)
+                                        {
+                                            <span class="
+                                                path-node-status
+                                                path-node-status-end">
+                                                Destination
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="
+                                                path-node-status
+                                                path-node-status-transit">
+                                                Cross connection
+                                            </span>
+                                        }
+
+                                    </div>
+
+
+                                    @if (!string.IsNullOrWhiteSpace(
+                                        parsedSites[i].Details))
+                                    {
+                                        <div class="path-node-channels">
+
+                                            @foreach (
+                                                var part
+                                                in parsedSites[i]
+                                                    .Details
+                                                    .Split('|'))
+                                            {
+                                                string channel =
+                                                    part.Trim();
+
+                                                bool incoming =
+                                                    channel.StartsWith(
+                                                        "IN:",
+                                                        StringComparison
+                                                            .OrdinalIgnoreCase);
+
+                                                bool outgoing =
+                                                    channel.StartsWith(
+                                                        "OUT:",
+                                                        StringComparison
+                                                            .OrdinalIgnoreCase);
+
+
+                                                <div class="
+                                                    path-channel
+                                                    @(incoming
+                                                                                                             ? "path-channel-in"
+                                                                                                             : outgoing
+                                                                                                                 ? "path-channel-out"
+                                                                                                                 : "")">
+
+                                                    @if (incoming)
+                                                    {
+                                                        <span class="
+                                                            path-channel-direction">
+                                                            IN
+                                                        </span>
+
+                                                        <span>
+                                                            @channel
+                                                            .Substring(3)
+                                                            .Trim()
+                                                        </span>
+                                                    }
+                                                    else if (outgoing)
+                                                    {
+                                                        <span class="
+                                                            path-channel-direction">
+                                                            OUT
+                                                        </span>
+
+                                                        <span>
+                                                            @channel
+                                                            .Substring(4)
+                                                            .Trim()
+                                                        </span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>
+                                                            @channel
+                                                        </span>
+                                                    }
+
+                                                </div>
+                                            }
+
+                                        </div>
                                     }
-                                </td>
 
-                                <td class="text-nowrap">
-                                    @path.LinkPath
-                                </td>
+                                </div>
 
+                            </div>
 
 
-                                <td>
-                                    @path.LinkCount
-                                </td>
+                            <!-- Connection -->
+                            @if (i < parsedSites.Count - 1)
+                            {
+                                <div class="path-connection">
+
+                                    <div class="path-connection-rail">
+
+                                        <div class="
+                                            path-connection-line">
+                                        </div>
+
+                                        <div class="
+                                            path-connection-arrow">
+                                            ↓
+                                        </div>
+
+                                    </div>
 
 
-                            </tr>
+                                    <div class="
+                                        path-connection-card">
+
+                                        <div class="
+                                            path-connection-label">
+                                            Communication link
+                                        </div>
+
+
+                                        <div class="
+                                            path-connection-name">
+
+                                            @if (i < links.Length)
+                                            {
+                                                @links[i]
+                                            }
+                                            else
+                                            {
+                                                <span>—</span>
+                                            }
+
+                                        </div>
+
+
+                                        <div class="
+                                            path-connection-direction">
+
+                                            @parsedSites[i].Site
+                                            <span>→</span>
+                                            @parsedSites[i + 1].Site
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                            }
                         }
-                    </tbody>
-                </table>
+
+                    </div>
+
+                </div>
+
+            </article>
+        }
+
+
+        <!-- Pagination -->
+        @if (Model.TotalPages > 1)
+        {
+            <div class="path-pagination-area">
+
+                <div class="path-page-info">
+
+                    Showing
+                    @Model.FirstItem–@Model.LastItem
+                    of
+                    @Model.TotalItems
+
+                </div>
+
+
+                <ul class="path-pagination">
+
+                    <!-- Previous -->
+                    <li>
+
+                        @if (Model.HasPreviousPage)
+                        {
+                            <a asp-action="Index"
+                                   asp-route-description="@Model.Description"
+                                   asp-route-linkName="@Model.LinkName"
+                                   asp-route-sourceSiteId="@Model.SourceSiteId"
+                                   asp-route-pageNumber="@(Model.PageNumber - 1)"
+                                   class="path-page-link">
+                                ‹
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="
+                                path-page-link
+                                disabled">
+                                ‹
+                            </span>
+                        }
+
+                    </li>
+
+
+                    @{
+                        int currentPage =
+                            Model.PageNumber;
+
+                        int totalPages =
+                            Model.TotalPages;
+
+                        int startPage =
+                            Math.Max(
+                                2,
+                                currentPage - 2);
+
+                        int endPage =
+                            Math.Min(
+                                totalPages - 1,
+                                currentPage + 2);
+                    }
+
+
+                    <!-- First -->
+                    <li>
+
+                        <a asp-action="Index"
+                               asp-route-description="@Model.Description"
+                               asp-route-linkName="@Model.LinkName"
+                               asp-route-sourceSiteId="@Model.SourceSiteId"
+                               asp-route-pageNumber="1"
+                               class="path-page-link
+                            @(currentPage == 1
+                                                           ? "active"
+                                                           : "")">
+                            1
+                        </a>
+
+                    </li>
+
+
+                    @if (startPage > 2)
+                    {
+                        <li>
+                            <span class="path-page-ellipsis">
+                                …
+                            </span>
+                        </li>
+                    }
+
+
+                    @for (int i = startPage;
+                          i <= endPage;
+                          i++)
+                    {
+                        <li>
+
+                            <a asp-action="Index"
+                                   asp-route-description="@Model.Description"
+                                   asp-route-linkName="@Model.LinkName"
+                                   asp-route-sourceSiteId="@Model.SourceSiteId"
+                                   asp-route-pageNumber="@i"
+                                   class="path-page-link
+                                @(currentPage == i
+                                                                   ? "active"
+                                                                   : "")">
+                                @i
+                            </a>
+
+                        </li>
+                    }
+
+
+                    @if (endPage < totalPages - 1)
+                    {
+                        <li>
+                            <span class="path-page-ellipsis">
+                                …
+                            </span>
+                        </li>
+                    }
+
+
+                    @if (totalPages > 1)
+                    {
+                        <li>
+
+                            <a asp-action="Index"
+                                   asp-route-description="@Model.Description"
+                                   asp-route-linkName="@Model.LinkName"
+                                   asp-route-sourceSiteId="@Model.SourceSiteId"
+                                   asp-route-pageNumber="@totalPages"
+                                   class="path-page-link
+                                @(currentPage == totalPages
+                                                                   ? "active"
+                                                                   : "")">
+                                @totalPages
+                            </a>
+
+                        </li>
+                    }
+
+
+                    <!-- Next -->
+                    <li>
+
+                        @if (Model.HasNextPage)
+                        {
+                            <a asp-action="Index"
+                                   asp-route-description="@Model.Description"
+                                   asp-route-linkName="@Model.LinkName"
+                                   asp-route-sourceSiteId="@Model.SourceSiteId"
+                                   asp-route-pageNumber="@(Model.PageNumber + 1)"
+                                   class="path-page-link">
+                                ›
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="
+                                path-page-link
+                                disabled">
+                                ›
+                            </span>
+                        }
+
+                    </li>
+
+                </ul>
+
             </div>
-        </div>
-    </div>
-}
+        }
+    }
+
+</div>

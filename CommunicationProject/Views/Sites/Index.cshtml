@@ -1,48 +1,374 @@
-﻿@model IEnumerable<CommunicationProject.Models.Site>
+﻿@model CommunicationProject.ViewModels.SiteIndexViewModel
 
 @{
     ViewData["Title"] = "Sites";
 }
 
-<h1>Sites</h1>
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/sites.css"
+          asp-append-version="true" />
+}
 
-<p>
-    <a asp-action="Create" class="btn btn-primary">Create New Site</a>
-</p>
+<div class="sites-page">
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Site ID</th>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Location)
-            </th>
-            <th>Actions</th>
-        </tr>
-    </thead>
+    <div class="sites-header">
 
-    <tbody>
-        @foreach (var item in Model)
+        <div>
+            <h1 class="sites-title">Sites</h1>
+
+            <p class="sites-subtitle">
+                Manage communication sites and locations.
+            </p>
+        </div>
+
+        <a asp-action="Create"
+               class="sites-primary-btn">
+            <span>＋</span>
+            Add Site
+        </a>
+
+    </div>
+
+
+    <!-- Filters -->
+    <div class="sites-card sites-filter-card">
+
+        <form asp-action="Index"
+              method="get">
+
+            <div class="sites-filter-grid">
+
+                <div class="sites-field">
+
+                    <label for="search">
+                        Search
+                    </label>
+
+                    <input id="search"
+                           type="text"
+                           name="search"
+                           value="@Model.Search"
+                           class="sites-input"
+                           placeholder="Site ID, name or location" />
+
+                </div>
+
+
+                <div class="sites-field">
+
+                    <label for="location">
+                        Location
+                    </label>
+
+                    <select id="location"
+                            name="location"
+                            class="sites-select">
+
+                        <option value="">
+                            All locations
+                        </option>
+
+                        @foreach (var location in Model.Locations)
+                        {
+                            if (Model.Location == location)
+                            {
+                                <option value="@location"
+                                        selected>
+                                    @location
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="@location">
+                                    @location
+                                </option>
+                            }
+                        }
+
+                    </select>
+
+                </div>
+
+
+                <div class="sites-filter-actions">
+
+                    <button type="submit"
+                            class="sites-filter-btn">
+                        Apply
+                    </button>
+
+                    <a asp-action="Index"
+                           class="sites-reset-btn">
+                        Clear
+                    </a>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <!-- Table -->
+    <div class="sites-card sites-table-card">
+
+        <div class="sites-table-header">
+
+            <h2 class="sites-table-title">
+                All Sites
+            </h2>
+
+            <span class="sites-count">
+                @Model.TotalItems total
+            </span>
+
+        </div>
+
+
+        <div class="table-responsive">
+
+            <table class="sites-table">
+
+                <thead>
+                    <tr>
+
+                        <th>
+                            Site ID
+                        </th>
+
+                        <th>
+                            Site Name
+                        </th>
+
+                        <th>
+                            Location
+                        </th>
+
+                        <th class="text-end">
+                            Actions
+                        </th>
+
+                    </tr>
+                </thead>
+
+
+                <tbody>
+
+                    @if (Model.Sites.Any())
+                    {
+                        foreach (var site in Model.Sites)
+                        {
+                            <tr>
+
+                                <td>
+                                    <span class="site-id">
+                                        @site.Id
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="site-name">
+                                        @site.Name
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="site-location">
+                                        @(string.IsNullOrWhiteSpace(site.Location)
+                                            ? "—"
+                                            : site.Location)
+                                    </span>
+                                </td>
+
+                                <td>
+
+                                    <div class="site-actions">
+
+                                        <a asp-action="Details"
+                                               asp-route-id="@site.Id"
+                                               class="site-action site-action-view">
+                                            View
+                                        </a>
+
+                                        <a asp-action="Edit"
+                                               asp-route-id="@site.Id"
+                                               class="site-action site-action-edit">
+                                            Edit
+                                        </a>
+
+                                        <a asp-action="Delete"
+                                               asp-route-id="@site.Id"
+                                               class="site-action site-action-delete">
+                                            Delete
+                                        </a>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4"
+                                class="sites-empty">
+
+                                <div class="sites-empty-title">
+                                    No sites found
+                                </div>
+
+                                <p class="sites-empty-text">
+                                    Try changing your search or filters.
+                                </p>
+
+                            </td>
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        @if (Model.TotalPages > 1)
         {
-            <tr>
-                <td>
-                    @item.Id
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Name)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Location)
-                </td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                </td>
-            </tr>
+            <div class="sites-pagination-area">
+
+                <div class="sites-page-info">
+                    Page @Model.PageNumber of @Model.TotalPages
+                </div>
+
+                <ul class="sites-pagination">
+
+                    <!-- Previous -->
+                    <li>
+                        @if (Model.HasPreviousPage)
+                        {
+                            <a asp-action="Index"
+                                   asp-route-search="@Model.Search"
+                                   asp-route-location="@Model.Location"
+                                   asp-route-pageNumber="@(Model.PageNumber - 1)"
+                                   class="sites-page-link">
+                                ‹
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="sites-page-link disabled">
+                                ‹
+                            </span>
+                        }
+                    </li>
+
+
+                    @{
+                        int currentPage = Model.PageNumber;
+                        int totalPages = Model.TotalPages;
+
+                        int startPage = Math.Max(2, currentPage - 2);
+                        int endPage = Math.Min(totalPages - 1, currentPage + 2);
+                    }
+
+
+                    <!-- First Page -->
+                    <li>
+                        <a asp-action="Index"
+                               asp-route-search="@Model.Search"
+                               asp-route-location="@Model.Location"
+                               asp-route-pageNumber="1"
+                               class="sites-page-link
+                            @(currentPage == 1 ? "active" : "")">
+                            1
+                        </a>
+                    </li>
+
+
+                    <!-- Left Ellipsis -->
+                    @if (startPage > 2)
+                    {
+                        <li>
+                            <span class="sites-page-ellipsis">
+                                …
+                            </span>
+                        </li>
+                    }
+
+
+                    <!-- Nearby Pages -->
+                    @for (int i = startPage; i <= endPage; i++)
+                    {
+                        <li>
+                            <a asp-action="Index"
+                                   asp-route-search="@Model.Search"
+                                   asp-route-location="@Model.Location"
+                                   asp-route-pageNumber="@i"
+                                   class="sites-page-link
+                                @(currentPage == i ? "active" : "")">
+                                @i
+                            </a>
+                        </li>
+                    }
+
+
+                    <!-- Right Ellipsis -->
+                    @if (endPage < totalPages - 1)
+                    {
+                        <li>
+                            <span class="sites-page-ellipsis">
+                                …
+                            </span>
+                        </li>
+                    }
+
+
+                    <!-- Last Page -->
+                    @if (totalPages > 1)
+                    {
+                        <li>
+                            <a asp-action="Index"
+                                   asp-route-search="@Model.Search"
+                                   asp-route-location="@Model.Location"
+                                   asp-route-pageNumber="@totalPages"
+                                   class="sites-page-link
+                                @(currentPage == totalPages ? "active" : "")">
+                                @totalPages
+                            </a>
+                        </li>
+                    }
+
+
+                    <!-- Next -->
+                    <li>
+                        @if (Model.HasNextPage)
+                        {
+                            <a asp-action="Index"
+                                   asp-route-search="@Model.Search"
+                                   asp-route-location="@Model.Location"
+                                   asp-route-pageNumber="@(Model.PageNumber + 1)"
+                                   class="sites-page-link">
+                                ›
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="sites-page-link disabled">
+                                ›
+                            </span>
+                        }
+                    </li>
+
+                </ul>
+
+            </div>
         }
-    </tbody>
-</table>
+
+    </div>
+
+</div>

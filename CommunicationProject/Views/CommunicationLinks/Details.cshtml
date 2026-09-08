@@ -1,53 +1,313 @@
 ﻿@model CommunicationProject.Models.CommunicationLink
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Communication Link Details";
+
+    int primaryStmCount = Model.Stms?.Count ?? 0;
+
+    int reverseStmCount =
+        Model.ConnectedLink?.Stms?.Count ?? 0;
+
+    int totalStmCount =
+        primaryStmCount + reverseStmCount;
 }
 
-<h1>Details</h1>
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/links.css"
+          asp-append-version="true" />
+}
 
-<div>
-    <h4>CommunicationLink</h4>
-    <hr />
-    <a asp-action="CreateE1Inventory"
-           asp-route-id="@Model.Id"
-           class="btn btn-info">
-        Create E1 Inventory
-    </a>
 
-    <a asp-action="CreateE1Connection"
-           asp-route-id="@Model.Id"
-           class="btn btn-primary">
-        Create E1 Connection
-    </a>
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.LinkType)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.LinkType.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.SiteFrom)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.SiteFrom.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.SiteTo)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.SiteTo.Id)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+<div class="link-details-page">
+
+    <!-- Top -->
+    <div class="link-details-top">
+
+        <div class="link-details-heading">
+
+            <a asp-action="Index"
+                   class="links-back-link">
+                ← Communication Links
+            </a>
+
+            <h1 class="link-details-title">
+                Link details
+            </h1>
+
+            <p class="link-details-subtitle">
+                View route and generated network inventory.
+            </p>
+
+        </div>
+
+
+        <div class="link-details-header-actions">
+
+            <a asp-action="Edit"
+                   asp-route-id="@Model.Id"
+                   class="links-secondary-btn">
+                Edit
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <div class="links-card link-details-card">
+
+        <!-- Identity -->
+        <div class="link-details-identity">
+
+            <div>
+
+                <h2 class="link-details-name">
+                    @Model.Name
+                </h2>
+
+                <div class="link-details-type">
+                    Communication link
+                </div>
+
+            </div>
+
+
+            <span class="link-details-type-badge">
+                @Model.LinkType.Name
+            </span>
+
+        </div>
+
+
+        <!-- Route -->
+        <section class="link-details-section">
+
+            <h3 class="link-details-section-title">
+                Route
+            </h3>
+
+
+            <div class="link-details-route">
+
+                <div class="link-details-route-site">
+
+                    <div class="link-details-route-label">
+                        Source
+                    </div>
+
+                    <div class="link-details-route-name">
+                        @Model.SiteFrom.Name
+                    </div>
+
+                    <div class="link-details-route-id">
+                        @Model.SiteFrom.Id
+                    </div>
+
+                </div>
+
+
+                <div class="link-details-route-arrow">
+                    →
+                </div>
+
+
+                <div class="link-details-route-site">
+
+                    <div class="link-details-route-label">
+                        Destination
+                    </div>
+
+                    <div class="link-details-route-name">
+                        @Model.SiteTo.Name
+                    </div>
+
+                    <div class="link-details-route-id">
+                        @Model.SiteTo.Id
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- Information -->
+        <section class="link-details-section">
+
+            <h3 class="link-details-section-title">
+                Link information
+            </h3>
+
+
+            <div class="link-details-grid">
+
+                <div>
+
+                    <div class="link-detail-label">
+                        Name
+                    </div>
+
+                    <div class="link-detail-value">
+                        @Model.Name
+                    </div>
+
+                </div>
+
+
+                <div>
+
+                    <div class="link-detail-label">
+                        Link type
+                    </div>
+
+                    <div class="link-detail-value">
+                        @Model.LinkType.Name
+                    </div>
+
+                </div>
+
+
+                <div>
+
+                    <div class="link-detail-label">
+                        Capacity
+                    </div>
+
+                    <div class="link-detail-value">
+
+                        @if (string.IsNullOrWhiteSpace(Model.Capacity))
+                        {
+                            <span class="link-detail-muted">
+                                Not specified
+                            </span>
+                        }
+                        else
+                        {
+                            @Model.Capacity
+                        }
+
+                    </div>
+
+                </div>
+
+
+                <div>
+
+                    <div class="link-detail-label">
+                        Reciprocal link
+                    </div>
+
+                    <div class="link-detail-value">
+
+                        @if (Model.ConnectedLink != null)
+                        {
+                            <span>
+                                Configured
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="link-detail-muted">
+                                Missing
+                            </span>
+                        }
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- Inventory -->
+        <section class="link-details-section">
+
+            <h3 class="link-details-section-title">
+                STM inventory
+            </h3>
+
+
+            <div class="link-details-inventory">
+
+                <div class="link-inventory-card">
+
+                    <div class="link-inventory-direction">
+                        @Model.SiteFrom.Name
+                        →
+                        @Model.SiteTo.Name
+                    </div>
+
+                    <div class="link-inventory-count">
+                        @primaryStmCount
+                    </div>
+
+                    <div class="link-inventory-caption">
+                        STM records
+                    </div>
+
+                </div>
+
+
+                <div class="link-inventory-card">
+
+                    <div class="link-inventory-direction">
+                        @Model.SiteTo.Name
+                        →
+                        @Model.SiteFrom.Name
+                    </div>
+
+                    <div class="link-inventory-count">
+                        @reverseStmCount
+                    </div>
+
+                    <div class="link-inventory-caption">
+                        STM records
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="link-inventory-total">
+                @totalStmCount STM records exist across both
+                directional link records.
+            </div>
+
+        </section>
+
+
+        <!-- Footer -->
+        <div class="link-details-footer">
+
+            <a asp-action="Index"
+                   class="links-secondary-btn">
+                Back to links
+            </a>
+
+
+            <div class="link-details-footer-actions">
+
+                <a asp-action="Edit"
+                       asp-route-id="@Model.Id"
+                       class="link-action link-action-edit">
+                    Edit link
+                </a>
+
+                <a asp-action="Delete"
+                       asp-route-id="@Model.Id"
+                       class="link-action link-action-delete">
+                    Delete link
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </div>

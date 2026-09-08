@@ -18,282 +18,473 @@
     });
 }
 
-<h1>Create Cross Connection</h1>
-
-<p class="text-muted">
-    Select the central site, then select the incoming E1 from the
-    previous site and the outgoing E1 toward the next site.
-</p>
-
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success">
-        @TempData["SuccessMessage"]
-    </div>
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/crossconnections.css"
+          asp-append-version="true" />
 }
 
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger">
-        @TempData["ErrorMessage"]
-    </div>
-}
 
-<div id="ajaxError"
-     class="alert alert-danger d-none">
-</div>
+<div class="cross-page">
 
-<form asp-action="Create"
-      method="post"
-      id="crossConnectionForm">
+    <!-- Header -->
+    <div class="cross-header">
 
-    @Html.AntiForgeryToken()
+        <h1 class="cross-title">
+            Create cross connection
+        </h1>
 
-    <div asp-validation-summary="ModelOnly"
-         class="text-danger mb-3">
+        <p class="cross-subtitle">
+            Connect an incoming E1 to an outgoing E1 at a central
+            site to create or extend a communication path.
+        </p>
+
     </div>
 
-    <!-- Central Site -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <strong>Cross Connection Site</strong>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="cross-message cross-message-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="cross-message cross-message-error">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+
+    <div id="ajaxError"
+         class="cross-message cross-message-error d-none">
+    </div>
+
+
+    <form asp-action="Create"
+          method="post"
+          id="crossConnectionForm">
+
+        @Html.AntiForgeryToken()
+
+
+        <div asp-validation-summary="ModelOnly"
+             class="cross-validation-summary">
         </div>
 
-        <div class="card-body">
-            <div class="mb-3">
+
+        <!-- =================================================
+             STEP 1 - CENTRAL SITE
+             ================================================= -->
+
+        <div class="cross-card cross-central-card">
+
+            <div class="cross-section-heading">
+
+                <span class="cross-step">
+                    1
+                </span>
+
+                <div>
+
+                    <h2 class="cross-section-title">
+                        Cross-connection site
+                    </h2>
+
+                    <div class="cross-section-caption">
+                        Select where the incoming and outgoing
+                        channels will be joined.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="cross-field">
+
                 <label asp-for="SiteId"
-                       class="form-label">
+                       class="cross-label">
+                    Cross-connection site
                 </label>
 
                 <select asp-for="SiteId"
                         asp-items="Model.SiteOptions"
                         id="siteSelect"
-                        class="form-select">
+                        class="cross-control">
+
                     <option value="">
-                        -- Select central site --
+                        Select central site
                     </option>
+
                 </select>
 
+
                 <span asp-validation-for="SiteId"
-                      class="text-danger">
+                      class="cross-validation">
                 </span>
 
-                <div class="form-text">
-                    This is the site where the cross connection
-                    will be created.
-                </div>
             </div>
+
         </div>
-    </div>
 
-    <!-- Previous and Next sides -->
-    <div id="connectionSides"
-         class="row g-4 d-none">
 
-        <!-- Previous Side -->
-        <div class="col-lg-6">
-            <div class="card h-100">
-                <div class="card-header">
-                    <strong>Previous Site / Incoming E1</strong>
+        <!-- =================================================
+             STEP 2 + 3
+             ================================================= -->
+
+        <div id="connectionSides"
+             class="cross-sides d-none">
+
+
+            <!-- Incoming -->
+            <div class="cross-card
+                cross-side-card
+                cross-incoming-card">
+
+                <div class="cross-side-header">
+
+                    <div class="cross-side-label">
+                        Step 2 · Incoming
+                    </div>
+
+                    <h2 class="cross-side-title">
+                        Previous site
+                    </h2>
+
                 </div>
 
-                <div class="card-body">
-                    <div class="mb-3">
+
+                <div class="cross-side-body">
+
+
+                    <div class="cross-field">
+
                         <label asp-for="PreviousSiteId"
-                               class="form-label">
+                               class="cross-label">
+                            Previous site
                         </label>
 
                         <select asp-for="PreviousSiteId"
                                 id="previousSiteSelect"
-                                class="form-select"
+                                class="cross-control"
                                 disabled>
+
                             <option value="">
-                                -- Select previous site --
+                                Select previous site
                             </option>
+
                         </select>
 
                         <span asp-validation-for="PreviousSiteId"
-                              class="text-danger">
+                              class="cross-validation">
                         </span>
+
                     </div>
 
-                    <div class="mb-3">
+
+                    <div class="cross-field">
+
                         <label asp-for="IncomingStmId"
-                               class="form-label">
+                               class="cross-label">
+                            Incoming STM
                         </label>
 
                         <select asp-for="IncomingStmId"
                                 id="incomingStmSelect"
-                                class="form-select"
+                                class="cross-control"
                                 disabled>
+
                             <option value="">
-                                -- Select incoming STM --
+                                Select incoming STM
                             </option>
+
                         </select>
 
                         <span asp-validation-for="IncomingStmId"
-                              class="text-danger">
+                              class="cross-validation">
                         </span>
+
                     </div>
 
-                    <div class="mb-3">
+
+                    <div class="cross-field">
+
                         <label asp-for="IncomingE1Id"
-                               class="form-label">
+                               class="cross-label">
+                            Incoming E1
                         </label>
 
                         <select asp-for="IncomingE1Id"
                                 id="incomingE1Select"
-                                class="form-select"
+                                class="cross-control"
                                 disabled>
+
                             <option value="">
-                                -- Select incoming E1 --
+                                Select incoming E1
                             </option>
+
                         </select>
 
                         <span asp-validation-for="IncomingE1Id"
-                              class="text-danger">
+                              class="cross-validation">
                         </span>
 
-                        <div class="form-text">
-                            This E1 enters the selected central site
+
+                        <div class="cross-hint">
+                            The E1 entering the central site
                             from the previous site.
                         </div>
+
                     </div>
-                    <!-- Connection Description -->
-                    <div class="mb-3">
-                        <label asp-for="Description"
-                               class="form-label">
-                            Connection Description
-                        </label>
 
-                        <input asp-for="Description"
-                               id="descriptionInput"
-                               class="form-control"
-                               placeholder="Example: التربية" />
 
-                        <span asp-validation-for="Description"
-                              class="text-danger">
-                        </span>
+                    <!-- Description -->
+                    <div class="cross-description-box">
 
-                        <div class="form-text">
-                            Enter a description when creating a new path.
-                            When extending a path, the existing description
-                            will be used automatically.
+                        <div class="cross-field">
+
+                            <label asp-for="Description"
+                                   class="cross-label">
+                                Connection description
+                            </label>
+
+                            <input asp-for="Description"
+                                   id="descriptionInput"
+                                   class="cross-control"
+                                   placeholder="Enter path description" />
+
+                            <span asp-validation-for="Description"
+                                  class="cross-validation">
+                            </span>
+
+
+                            <div class="cross-hint">
+                                For a new path, enter its description.
+                                When extending an existing path, its
+                                existing description is reused automatically.
+                            </div>
+
                         </div>
+
                     </div>
+
                 </div>
+
             </div>
-        </div>
 
-        <!-- Next Side -->
-        <div class="col-lg-6">
-            <div class="card h-100">
-                <div class="card-header">
-                    <strong>Next Site / Outgoing E1</strong>
+
+            <!-- Outgoing -->
+            <div class="cross-card
+                cross-side-card
+                cross-outgoing-card">
+
+                <div class="cross-side-header">
+
+                    <div class="cross-side-label">
+                        Step 3 · Outgoing
+                    </div>
+
+                    <h2 class="cross-side-title">
+                        Next site
+                    </h2>
+
                 </div>
 
-                <div class="card-body">
-                    <div class="mb-3">
+
+                <div class="cross-side-body">
+
+
+                    <div class="cross-field">
+
                         <label asp-for="NextSiteId"
-                               class="form-label">
+                               class="cross-label">
+                            Next site
                         </label>
 
                         <select asp-for="NextSiteId"
                                 id="nextSiteSelect"
-                                class="form-select"
+                                class="cross-control"
                                 disabled>
+
                             <option value="">
-                                -- Select next site --
+                                Select next site
                             </option>
+
                         </select>
 
                         <span asp-validation-for="NextSiteId"
-                              class="text-danger">
+                              class="cross-validation">
                         </span>
+
                     </div>
 
-                    <div class="mb-3">
+
+                    <div class="cross-field">
+
                         <label asp-for="OutgoingStmId"
-                               class="form-label">
+                               class="cross-label">
+                            Outgoing STM
                         </label>
 
                         <select asp-for="OutgoingStmId"
                                 id="outgoingStmSelect"
-                                class="form-select"
+                                class="cross-control"
                                 disabled>
+
                             <option value="">
-                                -- Select outgoing STM --
+                                Select outgoing STM
                             </option>
+
                         </select>
 
                         <span asp-validation-for="OutgoingStmId"
-                              class="text-danger">
+                              class="cross-validation">
                         </span>
+
                     </div>
 
-                    <div class="mb-3">
+
+                    <div class="cross-field">
+
                         <label asp-for="OutgoingE1Id"
-                               class="form-label">
+                               class="cross-label">
+                            Outgoing E1
                         </label>
 
                         <select asp-for="OutgoingE1Id"
                                 id="outgoingE1Select"
-                                class="form-select"
+                                class="cross-control"
                                 disabled>
+
                             <option value="">
-                                -- Select outgoing E1 --
+                                Select outgoing E1
                             </option>
+
                         </select>
 
                         <span asp-validation-for="OutgoingE1Id"
-                              class="text-danger">
+                              class="cross-validation">
                         </span>
 
-                        <div class="form-text">
-                            This E1 leaves the selected central site
+
+                        <div class="cross-hint">
+                            The E1 leaving the central site
                             toward the next site.
                         </div>
+
                     </div>
+
                 </div>
+
             </div>
+
         </div>
-    </div>
 
-    <!-- Diagram -->
-    <div id="connectionDiagram"
-         class="alert alert-secondary mt-4 d-none">
 
-        <strong>Connection:</strong>
+        <!-- =================================================
+             PATH PREVIEW
+             ================================================= -->
 
-        <div class="mt-2">
-            Previous Site
-            ⇄
-            Incoming E1
-            →
-            Cross Connection
-            →
-            Outgoing E1
-            ⇄
-            Next Site
+        <div id="connectionDiagram"
+             class="cross-diagram d-none">
+
+            <div class="cross-diagram-label">
+                Connection preview
+            </div>
+
+
+            <div class="cross-diagram-flow">
+
+                <span class="cross-diagram-node">
+                    Previous site
+                </span>
+
+                <span class="cross-diagram-arrow">
+                    →
+                </span>
+
+                <span class="cross-diagram-node">
+                    Incoming E1
+                </span>
+
+                <span class="cross-diagram-arrow">
+                    →
+                </span>
+
+                <span class="
+                    cross-diagram-node
+                    cross-diagram-center">
+                    Cross connection
+                </span>
+
+                <span class="cross-diagram-arrow">
+                    →
+                </span>
+
+                <span class="cross-diagram-node">
+                    Outgoing E1
+                </span>
+
+                <span class="cross-diagram-arrow">
+                    →
+                </span>
+
+                <span class="cross-diagram-node">
+                    Next site
+                </span>
+
+            </div>
+
         </div>
-    </div>
 
-    <div class="mt-4">
-        <button type="submit"
-                id="saveButton"
-                class="btn btn-primary"
-                disabled>
-            Create Cross Connection
-        </button>
 
-        <a asp-controller="Home"
-               asp-action="Index"
-               class="btn btn-secondary">
-            Cancel
-        </a>
-    </div>
-</form>
+        <div class="cross-note">
 
+            <div class="cross-note-icon">
+                i
+            </div>
+
+            <div>
+
+                <div class="cross-note-title">
+                    Available channels only
+                </div>
+
+                <p class="cross-note-text">
+                    The E1 lists are loaded dynamically and only
+                    show channels that can validly participate in
+                    the selected cross connection.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- Actions -->
+        <div class="cross-actions">
+
+            <a asp-controller="Home"
+                   asp-action="Index"
+                   class="cross-cancel-btn">
+                Cancel
+            </a>
+
+            <button type="submit"
+                    id="saveButton"
+                    class="cross-submit-btn"
+                    disabled>
+                Create cross connection
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
 @section Scripts
 {
     <partial name="_ValidationScriptsPartial" />

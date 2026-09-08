@@ -1,5 +1,6 @@
 ﻿using CommunicationProject.Data;
 using CommunicationProject.Models;
+using CommunicationProject.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -20,14 +21,103 @@ public class LinkTypesController : Controller
     }
 
     // GET: LinkTypes
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(
+        string? search,
+        string? usageStatus,
+        int pageNumber = 1)
     {
-        var linkTypes = await _context.LinkTypes
+        const int pageSize = 10;
+
+        if (pageNumber < 1)
+        {
+            pageNumber = 1;
+        }
+
+        var query = _context.LinkTypes
             .AsNoTracking()
+            .AsQueryable();
+
+
+        // Search
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            search = search.Trim();
+
+            query = query.Where(type =>
+                type.Name.Contains(search));
+        }
+
+
+        // Usage filter
+        if (usageStatus == "used")
+        {
+            query = query.Where(type =>
+                type.Links.Any());
+        }
+        else if (usageStatus == "unused")
+        {
+            query = query.Where(type =>
+                !type.Links.Any());
+        }
+
+
+        int totalItems =
+            await query.CountAsync();
+
+        int totalPages =
+            (int)Math.Ceiling(
+                totalItems / (double)pageSize);
+
+
+        if (totalPages > 0 &&
+            pageNumber > totalPages)
+        {
+            pageNumber = totalPages;
+        }
+
+
+        var linkTypes = await query
             .OrderBy(type => type.Name)
+
+            .Skip(
+                (pageNumber - 1) *
+                pageSize)
+
+            .Take(pageSize)
+
+            .Select(type =>
+                new LinkTypeListItemViewModel
+                {
+                    Id = type.Id,
+
+                    Name = type.Name,
+
+                    LinkCount =
+                        type.Links.Count
+                })
+
             .ToListAsync();
 
-        return View(linkTypes);
+
+        var model = new LinkTypeIndexViewModel
+        {
+            LinkTypes = linkTypes,
+
+            Search = search,
+
+            UsageStatus = usageStatus,
+
+            PageNumber = pageNumber,
+
+            PageSize = pageSize,
+
+            TotalPages = totalPages,
+
+            TotalItems = totalItems
+        };
+
+
+        return View(model);
     }
 
     // GET: LinkTypes/Details/{id}

@@ -1,0 +1,428 @@
+﻿@model CommunicationProject.ViewModels.UserListViewModel
+
+@{
+    ViewData["Title"] = "Users";
+}
+
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/users.css"
+          asp-append-version="true" />
+}
+
+
+<div class="users-page">
+
+    <!-- Header -->
+    <div class="users-header">
+
+        <div>
+
+            <h1 class="users-title">
+                Users
+            </h1>
+
+            <p class="users-subtitle">
+                Manage system accounts and access roles.
+            </p>
+
+        </div>
+
+
+        <a asp-action="Create"
+               class="users-primary-btn">
+
+            <span>＋</span>
+            Create user
+
+        </a>
+
+    </div>
+
+
+    <!-- Filters -->
+    <div class="users-card users-filter-card">
+
+        <form asp-action="Index"
+              method="get">
+
+            <div class="users-filter-grid">
+
+                <div class="users-field">
+
+                    <label for="search">
+                        Search
+                    </label>
+
+                    <input id="search"
+                           name="search"
+                           value="@Model.Search"
+                           class="users-input"
+                           placeholder="Name or email..." />
+
+                </div>
+
+
+                <div class="users-field">
+
+                    <label for="role">
+                        Role
+                    </label>
+
+                    <select id="role"
+                            name="role"
+                            class="users-select">
+
+                        <option value="">
+                            All roles
+                        </option>
+
+                        @foreach (string role in ViewBag.Roles)
+                        {
+                            if (Model.Role == role)
+                            {
+                                <option value="@role"
+                                        selected>
+                                    @role
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="@role">
+                                    @role
+                                </option>
+                            }
+                        }
+
+                    </select>
+
+                </div>
+
+
+                <div class="users-filter-actions">
+
+                    <button type="submit"
+                            class="users-filter-btn">
+                        Apply
+                    </button>
+
+                    <a asp-action="Index"
+                           class="users-clear-btn">
+                        Clear
+                    </a>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <!-- User Table -->
+    <div class="users-card users-table-card">
+
+        <div class="users-table-header">
+
+            <h2 class="users-table-title">
+                System users
+            </h2>
+
+            <span class="users-count">
+                @Model.Users.Count
+                shown
+            </span>
+
+        </div>
+
+
+        <div class="table-responsive">
+
+            <table class="users-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            User
+                        </th>
+
+                        <th>
+                            Email
+                        </th>
+
+                        <th>
+                            Role
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    @if (Model.Users.Any())
+                    {
+                        foreach (var user in Model.Users)
+                        {
+                            string initial =
+                                string.IsNullOrWhiteSpace(user.FullName)
+                                    ? "?"
+                                    : user.FullName
+                                        .Substring(0, 1)
+                                        .ToUpper();
+
+
+                            string roleClass =
+                                user.Role switch
+                                {
+                                    "Admin" =>
+                                        "user-role-admin",
+
+                                    "Operator" =>
+                                        "user-role-operator",
+
+                                    "Viewer" =>
+                                        "user-role-viewer",
+
+                                    _ =>
+                                        "user-role-default"
+                                };
+
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="user-identity">
+
+                                        <span class="user-avatar">
+                                            @initial
+                                        </span>
+
+                                        <span class="user-name">
+                                            @user.FullName
+                                        </span>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    <span class="user-email">
+                                        @user.Email
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <span class="
+                                        user-role
+                                        @roleClass">
+
+                                        @user.Role
+
+                                    </span>
+
+                                </td>
+
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+
+                            <td colspan="3"
+                                class="users-empty">
+
+                                <div class="users-empty-title">
+                                    No users found
+                                </div>
+
+                                <p class="users-empty-text">
+                                    Try changing your search or role filter.
+                                </p>
+
+                            </td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- Pagination -->
+        @if (Model.TotalPages > 1)
+        {
+            <div class="users-pagination-area">
+
+                <div class="users-page-info">
+                    Page @Model.PageNumber
+                    of @Model.TotalPages
+                </div>
+
+
+                <ul class="users-pagination">
+
+                    <li>
+
+                        @if (Model.HasPreviousPage)
+                        {
+                            <a asp-action="Index"
+                                   asp-route-search="@Model.Search"
+                                   asp-route-role="@Model.Role"
+                                   asp-route-pageNumber="@(Model.PageNumber - 1)"
+                                   class="users-page-link">
+                                ‹
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="
+                                users-page-link
+                                disabled">
+                                ‹
+                            </span>
+                        }
+
+                    </li>
+
+
+                    @{
+                        int currentPage =
+                            Model.PageNumber;
+
+                        int totalPages =
+                            Model.TotalPages;
+
+                        int startPage =
+                            Math.Max(
+                                2,
+                                currentPage - 2);
+
+                        int endPage =
+                            Math.Min(
+                                totalPages - 1,
+                                currentPage + 2);
+                    }
+
+
+                    <li>
+
+                        <a asp-action="Index"
+                               asp-route-search="@Model.Search"
+                               asp-route-role="@Model.Role"
+                               asp-route-pageNumber="1"
+                               class="users-page-link
+                            @(currentPage == 1
+                                                           ? "active"
+                                                           : "")">
+                            1
+                        </a>
+
+                    </li>
+
+
+                    @if (startPage > 2)
+                    {
+                        <li>
+                            <span class="users-page-ellipsis">
+                                …
+                            </span>
+                        </li>
+                    }
+
+
+                    @for (int i = startPage;
+                          i <= endPage;
+                          i++)
+                    {
+                        <li>
+
+                            <a asp-action="Index"
+                                   asp-route-search="@Model.Search"
+                                   asp-route-role="@Model.Role"
+                                   asp-route-pageNumber="@i"
+                                   class="users-page-link
+                                @(currentPage == i
+                                                                   ? "active"
+                                                                   : "")">
+                                @i
+                            </a>
+
+                        </li>
+                    }
+
+
+                    @if (endPage < totalPages - 1)
+                    {
+                        <li>
+                            <span class="users-page-ellipsis">
+                                …
+                            </span>
+                        </li>
+                    }
+
+
+                    @if (totalPages > 1)
+                    {
+                        <li>
+
+                            <a asp-action="Index"
+                                   asp-route-search="@Model.Search"
+                                   asp-route-role="@Model.Role"
+                                   asp-route-pageNumber="@totalPages"
+                                   class="users-page-link
+                                @(currentPage == totalPages
+                                                                   ? "active"
+                                                                   : "")">
+                                @totalPages
+                            </a>
+
+                        </li>
+                    }
+
+
+                    <li>
+
+                        @if (Model.HasNextPage)
+                        {
+                            <a asp-action="Index"
+                                   asp-route-search="@Model.Search"
+                                   asp-route-role="@Model.Role"
+                                   asp-route-pageNumber="@(Model.PageNumber + 1)"
+                                   class="users-page-link">
+                                ›
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="
+                                users-page-link
+                                disabled">
+                                ›
+                            </span>
+                        }
+
+                    </li>
+
+                </ul>
+
+            </div>
+        }
+
+    </div>
+
+</div>

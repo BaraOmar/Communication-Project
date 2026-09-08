@@ -1,5 +1,6 @@
 ﻿using CommunicationProject.Data;
 using CommunicationProject.Models;
+using CommunicationProject.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,64 +22,102 @@ public class StmsController : Controller
     // GET: Stms
     // GET: Stms
     public async Task<IActionResult> Index(
-        int page = 1)
+        string? search,
+        string? siteId,
+        string? connectionStatus,
+        int pageNumber = 1)
     {
-        const int pageSize = 50;
+        const int pageSize = 25;
 
-        if (page < 1)
+        if (pageNumber < 1)
         {
-            page = 1;
+            pageNumber = 1;
         }
 
-        int totalItems = await _context.Stms
+        var query = _context.Stms
             .AsNoTracking()
-            .CountAsync();
+            .Include(stm => stm.Link)
+                .ThenInclude(link => link.SiteFrom)
+            .Include(stm => stm.Link)
+                .ThenInclude(link => link.SiteTo)
+            .Include(stm => stm.ConnectedStm)
+                .ThenInclude(stm => stm!.Link)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            search = search.Trim();
+
+            query = query.Where(stm =>
+                stm.Number.Contains(search) ||
+                stm.Link.Name.Contains(search) ||
+                stm.Link.SiteFromId.Contains(search) ||
+                stm.Link.SiteToId.Contains(search) ||
+                stm.Link.SiteFrom.Name.Contains(search) ||
+                stm.Link.SiteTo.Name.Contains(search) ||
+                (stm.ConnectedStm != null &&
+                 stm.ConnectedStm.Number.Contains(search)));
+        }
+
+        if (!string.IsNullOrWhiteSpace(siteId))
+        {
+            query = query.Where(stm =>
+                stm.Link.SiteFromId == siteId);
+        }
+
+        if (connectionStatus == "connected")
+        {
+            query = query.Where(stm =>
+                stm.ConnectedStmId != null);
+        }
+        else if (connectionStatus == "not-connected")
+        {
+            query = query.Where(stm =>
+                stm.ConnectedStmId == null);
+        }
+
+        int totalItems = await query.CountAsync();
 
         int totalPages = (int)Math.Ceiling(
             totalItems / (double)pageSize);
 
         if (totalPages > 0 &&
-            page > totalPages)
+            pageNumber > totalPages)
         {
-            page = totalPages;
+            pageNumber = totalPages;
         }
 
-        var stms = await _context.Stms
-            .AsNoTracking()
-
-            .Include(stm => stm.Link)
-                .ThenInclude(link => link.SiteFrom)
-
-            .Include(stm => stm.Link)
-                .ThenInclude(link => link.SiteTo)
-
-            /*
-             * The Index page usually needs only the connected
-             * STM record—not all of its Link/Site relationships.
-             */
-            .Include(stm => stm.ConnectedStm)
-
-            /*
-             * Ordering must be fully unique before Skip/Take.
-             */
-            .OrderBy(stm => stm.Link.Name)
-            .ThenBy(stm => stm.Link.SiteFromId)
+        var stms = await query
+            .OrderBy(stm => stm.Link.SiteFrom.Name)
+            .ThenBy(stm => stm.Link.Name)
             .ThenBy(stm => stm.Number)
             .ThenBy(stm => stm.Id)
-
-            .Skip((page - 1) * pageSize)
+            .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
-
             .ToListAsync();
 
-        ViewBag.CurrentPage = page;
-        ViewBag.TotalPages = totalPages;
-        ViewBag.PageSize = pageSize;
-        ViewBag.TotalItems = totalItems;
+        var sites = await _context.Sites
+            .AsNoTracking()
+            .OrderBy(site => site.Name)
+            .ToListAsync();
 
-        return View(stms);
+        var model = new StmIndexViewModel
+        {
+            Stms = stms,
+
+            Search = search,
+            SiteId = siteId,
+            ConnectionStatus = connectionStatus,
+
+            Sites = sites,
+
+            PageNumber = pageNumber,
+            TotalPages = totalPages,
+            TotalItems = totalItems
+        };
+
+        return View(model);
     }
-
     // GET: Stms/Details/{id}
     public async Task<IActionResult> Details(Guid? id)
     {

@@ -1,0 +1,454 @@
+﻿/* =========================================================
+   Cross Connections
+   ========================================================= */
+
+.cross-page {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 3rem;
+}
+
+
+/* ---------------------------------------------------------
+   Header
+   --------------------------------------------------------- */
+
+.cross-header {
+    margin-bottom: 1.75rem;
+}
+
+.cross-title {
+    margin: 0;
+    color: #172033;
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -.02em;
+}
+
+.cross-subtitle {
+    max-width: 720px;
+    margin: .4rem 0 0;
+    color: #7f899a;
+    font-size: .9rem;
+    line-height: 1.55;
+}
+
+
+/* ---------------------------------------------------------
+   Shared card
+   --------------------------------------------------------- */
+
+.cross-card {
+    background: #fff;
+    border: 1px solid #e9edf3;
+    border-radius: 14px;
+    box-shadow: 0 3px 14px rgba(20, 32, 56, .04);
+}
+
+
+/* ---------------------------------------------------------
+   Messages
+   --------------------------------------------------------- */
+
+.cross-message {
+    margin-bottom: 1.2rem;
+    padding: .9rem 1rem;
+    border-radius: 10px;
+    font-size: .81rem;
+    line-height: 1.5;
+}
+
+.cross-message-success {
+    background: #f2f8f4;
+    border: 1px solid #dcebe1;
+    color: #587363;
+}
+
+.cross-message-error {
+    background: #fff7f7;
+    border: 1px solid #f1dddd;
+    color: #a0545a;
+}
+
+.cross-validation-summary:empty {
+    display: none;
+}
+
+.cross-validation-summary {
+    margin-bottom: 1.25rem;
+    padding: .85rem 1rem;
+    background: #fff7f7;
+    border: 1px solid #f1dddd;
+    border-radius: 10px;
+    color: #a0545a;
+    font-size: .79rem;
+}
+
+    .cross-validation-summary ul {
+        margin: 0;
+        padding-left: 1.1rem;
+    }
+
+
+/* ---------------------------------------------------------
+   Central site
+   --------------------------------------------------------- */
+
+.cross-central-card {
+    padding: 1.4rem;
+    margin-bottom: 1rem;
+}
+
+.cross-section-heading {
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    margin-bottom: 1.15rem;
+}
+
+.cross-step {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 30px;
+    height: 30px;
+    background: #eef2ff;
+    border-radius: 8px;
+    color: #4263eb;
+    font-size: .75rem;
+    font-weight: 700;
+}
+
+.cross-section-title {
+    margin: 0;
+    color: #344054;
+    font-size: .93rem;
+    font-weight: 650;
+}
+
+.cross-section-caption {
+    margin-top: .15rem;
+    color: #98a1b0;
+    font-size: .74rem;
+}
+
+
+/* ---------------------------------------------------------
+   Fields
+   --------------------------------------------------------- */
+
+.cross-field {
+    margin-bottom: 1rem;
+}
+
+    .cross-field:last-child {
+        margin-bottom: 0;
+    }
+
+.cross-label {
+    display: block;
+    margin-bottom: .45rem;
+    color: #465064;
+    font-size: .8rem;
+    font-weight: 600;
+}
+
+.cross-control {
+    width: 100%;
+    min-height: 44px;
+    padding: .65rem .85rem;
+    background: #fbfcfe;
+    border: 1px solid #dfe4eb;
+    border-radius: 9px;
+    color: #293346;
+    font-size: .87rem;
+    outline: none;
+    transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+}
+
+    .cross-control:focus {
+        background: #fff;
+        border-color: #9caef7;
+        box-shadow: 0 0 0 3px rgba(66, 99, 235, .08);
+    }
+
+    .cross-control:disabled {
+        background: #f4f6f8;
+        color: #9ca3af;
+        cursor: not-allowed;
+    }
+
+    .cross-control[readonly] {
+        background: #f5f6f8;
+        color: #6f7888;
+    }
+
+.cross-hint {
+    margin-top: .4rem;
+    color: #9aa2b1;
+    font-size: .74rem;
+    line-height: 1.45;
+}
+
+.cross-validation {
+    display: block;
+    margin-top: .35rem;
+    color: #c85f67;
+    font-size: .74rem;
+}
+
+
+/* ---------------------------------------------------------
+   Two connection sides
+   --------------------------------------------------------- */
+
+.cross-sides {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.cross-side-card {
+    overflow: hidden;
+}
+
+.cross-side-header {
+    padding: 1rem 1.2rem;
+    background: #fafbfc;
+    border-bottom: 1px solid #edf0f4;
+}
+
+.cross-side-label {
+    margin-bottom: .15rem;
+    color: #9aa2b1;
+    font-size: .67rem;
+    font-weight: 700;
+    letter-spacing: .045em;
+    text-transform: uppercase;
+}
+
+.cross-side-title {
+    margin: 0;
+    color: #3a4456;
+    font-size: .9rem;
+    font-weight: 650;
+}
+
+.cross-side-body {
+    padding: 1.25rem;
+}
+
+
+/* Differentiate direction very subtly */
+
+.cross-incoming-card {
+    border-top: 2px solid #a9b8f6;
+}
+
+.cross-outgoing-card {
+    border-top: 2px solid #b4c8bd;
+}
+
+
+/* ---------------------------------------------------------
+   Description
+   --------------------------------------------------------- */
+
+.cross-description-box {
+    margin-top: 1.1rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid #edf0f4;
+}
+
+
+/* ---------------------------------------------------------
+   Path preview
+   --------------------------------------------------------- */
+
+.cross-diagram {
+    margin-top: 1rem;
+    padding: 1.2rem;
+    background: #fafbff;
+    border: 1px solid #e7eafb;
+    border-radius: 12px;
+}
+
+.cross-diagram-label {
+    margin-bottom: .8rem;
+    color: #7f899a;
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .045em;
+    text-transform: uppercase;
+}
+
+.cross-diagram-flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .55rem;
+    color: #556073;
+    font-size: .8rem;
+    font-weight: 550;
+    text-align: center;
+}
+
+.cross-diagram-node {
+    padding: .48rem .7rem;
+    background: #fff;
+    border: 1px solid #e4e8ef;
+    border-radius: 8px;
+    white-space: nowrap;
+}
+
+.cross-diagram-center {
+    background: #eef2ff;
+    border-color: #dfe5ff;
+    color: #5367d7;
+}
+
+.cross-diagram-arrow {
+    color: #a5adba;
+}
+
+
+/* ---------------------------------------------------------
+   Information note
+   --------------------------------------------------------- */
+
+.cross-note {
+    display: flex;
+    gap: .85rem;
+    margin-top: 1rem;
+    padding: 1rem 1.1rem;
+    background: #f8f9fc;
+    border: 1px solid #e9ecf2;
+    border-radius: 10px;
+}
+
+.cross-note-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 30px;
+    height: 30px;
+    background: #eef2ff;
+    border-radius: 8px;
+    color: #5367d7;
+    font-size: .75rem;
+    font-weight: 700;
+}
+
+.cross-note-title {
+    margin-bottom: .2rem;
+    color: #4b5567;
+    font-size: .8rem;
+    font-weight: 650;
+}
+
+.cross-note-text {
+    margin: 0;
+    color: #828c9d;
+    font-size: .74rem;
+    line-height: 1.5;
+}
+
+
+/* ---------------------------------------------------------
+   Actions
+   --------------------------------------------------------- */
+
+.cross-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: .6rem;
+    margin-top: 1.3rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #edf0f4;
+}
+
+.cross-cancel-btn,
+.cross-submit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0 1rem;
+    border-radius: 9px;
+    font-size: .83rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.cross-cancel-btn {
+    background: #fff;
+    border: 1px solid #dfe4eb;
+    color: #667085;
+}
+
+    .cross-cancel-btn:hover {
+        background: #f7f8fa;
+        color: #344054;
+    }
+
+.cross-submit-btn {
+    background: #4263eb;
+    border: 1px solid #4263eb;
+    color: #fff;
+}
+
+    .cross-submit-btn:hover:not(:disabled) {
+        background: #3657da;
+        border-color: #3657da;
+    }
+
+    .cross-submit-btn:disabled {
+        background: #d9deea;
+        border-color: #d9deea;
+        color: #929bad;
+        cursor: not-allowed;
+    }
+
+
+/* ---------------------------------------------------------
+   Responsive
+   --------------------------------------------------------- */
+
+@media (max-width: 800px) {
+
+    .cross-sides {
+        grid-template-columns: 1fr;
+    }
+
+    .cross-diagram-flow {
+        flex-direction: column;
+    }
+
+    .cross-diagram-arrow {
+        transform: rotate(90deg);
+    }
+}
+
+
+@media (max-width: 650px) {
+
+    .cross-page {
+        padding: 1.25rem .8rem 2rem;
+    }
+
+    .cross-central-card,
+    .cross-side-body {
+        padding: 1.1rem;
+    }
+
+    .cross-actions {
+        flex-direction: column-reverse;
+    }
+
+    .cross-cancel-btn,
+    .cross-submit-btn {
+        width: 100%;
+    }
+}

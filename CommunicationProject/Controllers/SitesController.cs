@@ -1,15 +1,16 @@
-﻿using System;
+﻿using CommunicationProject.Data;
+using CommunicationProject.Models;
+using CommunicationProject.Security;
+using CommunicationProject.ViewModels;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using CommunicationProject.Data;
-using CommunicationProject.Models;
-using CommunicationProject.Security;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.Data.SqlClient;
 
 namespace CommunicationProject.Controllers
 {
@@ -28,9 +29,74 @@ namespace CommunicationProject.Controllers
         }
 
         // GET: Sites
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(
+            string? search,
+            string? location,
+            int pageNumber = 1)
         {
-            return View(await _context.Sites.ToListAsync());
+            const int pageSize = 10;
+
+            if (pageNumber < 1)
+            {
+                pageNumber = 1;
+            }
+
+            var query = _context.Sites
+                .AsNoTracking()
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.Trim();
+
+                query = query.Where(s =>
+                    s.Id.Contains(search) ||
+                    s.Name.Contains(search) ||
+                    s.Location.Contains(search));
+            }
+
+            if (!string.IsNullOrWhiteSpace(location))
+            {
+                query = query.Where(s =>
+                    s.Location == location);
+            }
+
+            var totalItems = await query.CountAsync();
+
+            var totalPages = (int)Math.Ceiling(
+                totalItems / (double)pageSize);
+
+            if (totalPages > 0 &&
+                pageNumber > totalPages)
+            {
+                pageNumber = totalPages;
+            }
+
+            var sites = await query
+                .OrderBy(s => s.Name)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var locations = await _context.Sites
+                .AsNoTracking()
+                .Select(s => s.Location)
+                .Distinct()
+                .OrderBy(locationName => locationName)
+                .ToListAsync();
+
+            var model = new SiteIndexViewModel
+            {
+                Sites = sites,
+                Search = search,
+                Location = location,
+                Locations = locations,
+                PageNumber = pageNumber,
+                TotalPages = totalPages,
+                TotalItems = totalItems
+            };
+
+            return View(model);
         }
 
         // GET: Sites/Details/5

@@ -1,31 +1,570 @@
-html {
-  font-size: 14px;
+/* =========================================================
+   Communication Project
+   Global UI
+   ========================================================= */
+
+
+/* ---------------------------------------------------------
+   Base
+   --------------------------------------------------------- */
+input,
+select,
+textarea,
+button {
+    font-size: 0.95rem;
+}
+:root {
+    --app-bg: #f7f9fc;
+    --app-surface: #ffffff;
+    --app-border: #e7ebf1;
+    --app-text: #263044;
+    --app-muted: #7d8798;
+    --app-primary: #4263eb;
+    --app-primary-soft: #eef2ff;
 }
 
-@media (min-width: 768px) {
-  html {
+html {
+    position: relative;
+    min-height: 100%;
     font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
 }
 
 body {
-  margin-bottom: 60px;
+    min-height: 100vh;
+    margin: 0;
+    background: var(--app-bg);
+    color: var(--app-text);
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+
+a {
+    transition: color .15s ease, background-color .15s ease, border-color .15s ease;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+
+/* ---------------------------------------------------------
+   Header
+   --------------------------------------------------------- */
+
+.app-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(255, 255, 255, .96);
+    border-bottom: 1px solid var(--app-border);
+    backdrop-filter: blur(12px);
+}
+
+
+.app-navbar {
+    min-height: 66px;
+    padding: 0;
+}
+
+
+.app-navbar-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 1500px;
+    min-height: 66px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+
+/* ---------------------------------------------------------
+   Brand
+   --------------------------------------------------------- */
+
+.app-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: .7rem;
+    flex-shrink: 0;
+    margin-right: 2rem;
+    color: #253047;
+    text-decoration: none;
+}
+
+
+    .app-brand:hover {
+        color: #253047;
+    }
+
+
+.app-brand-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 35px;
+    height: 35px;
+    background: #4263eb;
+    border-radius: 10px;
+    color: #fff;
+    font-size: .9rem;
+    font-weight: 750;
+    box-shadow: 0 5px 12px rgba(66, 99, 235, .16);
+}
+
+
+.app-brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+
+
+.app-brand-name {
+    color: #263044;
+    font-size: .1rem;
+    font-weight: 700;
+    letter-spacing: -.01em;
+}
+
+
+.app-brand-subtitle {
+    margin-top: .2rem;
+    color: #9aa2b1;
+    font-size: .7rem;
+    font-weight: 600;
+    letter-spacing: .025em;
+}
+
+
+/* ---------------------------------------------------------
+   Navigation
+   --------------------------------------------------------- */
+
+#mainNavigation {
+    align-items: center;
+}
+
+
+.app-nav {
+    display: flex;
+    align-items: center;
+    gap: .18rem;
+    flex: 1;
+}
+
+
+.app-nav-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 .72rem;
+    border-radius: 8px;
+    color: #657085;
+    font-size: .88rem;
+    font-weight: 550;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+
+    .app-nav-link:hover {
+        background: #f5f7fa;
+        color: #344054;
+    }
+
+
+    .app-nav-link.active {
+        background: #eef2ff;
+        color: #4263eb;
+        font-weight: 650;
+    }
+
+
+/* ---------------------------------------------------------
+   Account Area
+   --------------------------------------------------------- */
+
+.app-account {
+    flex-shrink: 0;
+    margin-left: 1rem;
+}
+
+
+.app-user-button {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    padding: .35rem .45rem;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: transparent;
+    color: #344054;
+    text-align: left;
+    transition: background-color .15s ease, border-color .15s ease;
+}
+
+
+    .app-user-button:hover,
+    .app-user-button[aria-expanded="true"] {
+        background: #f7f8fa;
+        border-color: #ebedf1;
+    }
+
+
+.app-user-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    background: #eef2ff;
+    border-radius: 9px;
+    color: #4263eb;
+    font-size: .86rem;
+    font-weight: 700;
+}
+
+
+.app-user-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+
+.app-user-name {
+    max-width: 150px;
+    overflow: hidden;
+    color: #344054;
+    font-size: .84rem;
+    font-weight: 650;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+.app-user-role {
+    margin-top: .08rem;
+    color: #98a1b0;
+    font-size: .72rem;
+}
+
+
+.app-user-chevron {
+    margin: 0 .2rem;
+    color: #a4acb9;
+    font-size: .68rem;
+}
+
+
+/* ---------------------------------------------------------
+   User Dropdown
+   --------------------------------------------------------- */
+
+.app-user-menu {
+    min-width: 230px;
+    margin-top: .55rem !important;
+    padding: .45rem;
+    border: 1px solid #e6eaf0;
+    border-radius: 11px;
+    background: #fff;
+    box-shadow: 0 12px 32px rgba(30, 42, 68, .10);
+}
+
+
+.app-user-menu-header {
+    padding: .7rem .75rem .8rem;
+}
+
+
+.app-user-menu-name {
+    color: #344054;
+    font-size: .88rem;
+    font-weight: 650;
+}
+
+
+.app-user-menu-email {
+    margin-top: .15rem;
+    color: #98a1b0;
+    font-size: .76rem;
+    overflow-wrap: anywhere;
+}
+
+
+.app-user-menu-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 38px;
+    padding: 0 .75rem;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: #5f697b;
+    font-size: .86rem;
+    font-weight: 550;
+    text-align: left;
+    text-decoration: none;
+}
+
+
+    .app-user-menu-item:hover {
+        background: #f5f7f9;
+        color: #344054;
+    }
+
+
+.app-user-menu-divider {
+    height: 1px;
+    margin: .35rem .4rem;
+    background: #eceff3;
+}
+
+
+.app-user-logout {
+    color: #bd5b63;
+}
+
+
+    .app-user-logout:hover {
+        background: #fff2f3;
+        color: #ad4e56;
+    }
+
+
+.app-login-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 0 .9rem;
+    background: #4263eb;
+    border-radius: 8px;
+    color: #fff;
+    font-size: .78rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+
+    .app-login-button:hover {
+        background: #3657da;
+        color: #fff;
+    }
+
+
+/* ---------------------------------------------------------
+   Main
+   --------------------------------------------------------- */
+
+.app-main {
+    min-height: calc(100vh - 130px);
+}
+
+
+/* ---------------------------------------------------------
+   Messages
+   --------------------------------------------------------- */
+
+.app-message-area {
+    position: fixed;
+    top: 78px;
+    right: 1.4rem;
+    z-index: 1100;
+    width: min(390px, calc(100vw - 2rem));
+}
+
+
+.app-alert {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    padding: .8rem .9rem;
+    margin-bottom: .6rem;
+    border-radius: 10px;
+    background: #fff;
+    font-size: .78rem;
+    box-shadow: 0 10px 30px rgba(20, 32, 56, .11);
+}
+
+
+.app-alert-success {
+    border: 1px solid #d9eadf;
+    color: #587363;
+}
+
+
+.app-alert-error {
+    border: 1px solid #f0dadd;
+    color: #a0545a;
+}
+
+
+.app-alert-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 25px;
+    height: 25px;
+    border-radius: 7px;
+    background: #f4f6f8;
+    font-size: .72rem;
+    font-weight: 700;
+}
+
+
+.app-alert-success .app-alert-icon {
+    background: #eef7f1;
+}
+
+
+.app-alert-error .app-alert-icon {
+    background: #fff0f1;
+}
+
+
+.app-alert-close {
+    margin-left: auto;
+    padding: .1rem .25rem;
+    border: 0;
+    background: transparent;
+    color: #a4acb9;
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+
+/* ---------------------------------------------------------
+   Footer
+   --------------------------------------------------------- */
+
+.app-footer {
+    border-top: 1px solid #e8ebf0;
+    background: #fff;
+}
+
+
+.app-footer-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 1rem 1.5rem;
+    color: #99a2b1;
+    font-size: .7rem;
+}
+
+
+/* ---------------------------------------------------------
+   Bootstrap Focus Cleanup
+   --------------------------------------------------------- */
+
+button:focus,
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+}
+
+
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-select:focus {
+    box-shadow: none;
+}
+
+
+/* ---------------------------------------------------------
+   Navbar Mobile
+   --------------------------------------------------------- */
+
+.app-navbar-toggler {
+    margin-left: auto;
+    padding: .35rem .45rem;
+    border-color: #e2e6ec;
+}
+
+
+@media (max-width: 1199px) {
+
+    .app-navbar-container {
+        flex-wrap: wrap;
+        padding: .75rem 1rem;
+    }
+
+
+    .app-brand {
+        margin-right: auto;
+    }
+
+
+    #mainNavigation {
+        width: 100%;
+        margin-top: .8rem;
+        padding-top: .8rem;
+        border-top: 1px solid #edf0f4;
+    }
+
+
+    .app-nav {
+        align-items: stretch;
+        flex-direction: column;
+        gap: .2rem;
+    }
+
+
+    .app-nav-link {
+        width: 100%;
+        padding: .65rem .75rem;
+    }
+
+
+    .app-account {
+        width: 100%;
+        margin: .75rem 0 0;
+        padding-top: .75rem;
+        border-top: 1px solid #edf0f4;
+    }
+
+
+    .app-user-button {
+        width: 100%;
+    }
+
+
+    .app-user-menu {
+        width: 100%;
+    }
+}
+
+
+@media (max-width: 650px) {
+
+    .app-navbar-container {
+        padding: .65rem .8rem;
+    }
+
+
+    .app-brand-subtitle {
+        display: none;
+    }
+
+
+    .app-message-area {
+        top: 72px;
+        right: 1rem;
+        left: 1rem;
+        width: auto;
+    }
+
+
+    .app-footer-inner {
+        padding: .9rem 1rem;
+    }
 }

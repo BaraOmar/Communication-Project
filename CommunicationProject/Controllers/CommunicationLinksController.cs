@@ -35,22 +35,190 @@ public class CommunicationLinksController : Controller
         _communicationLinkImportService = communicationLinkImportService;
     }
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(
+        string? search,
+        Guid? linkTypeId,
+        string? siteId,
+        string? inventoryStatus,
+        int pageNumber = 1)
     {
-        var links = await _context.CommunicationLinks
+        const int pageSize = 15;
+
+        if (pageNumber < 1)
+        {
+            pageNumber = 1;
+        }
+
+
+        var query = _context.CommunicationLinks
             .AsNoTracking()
             .Where(link => link.IsPrimary)
-            .Include(link => link.LinkType)
-            .Include(link => link.SiteFrom)
-            .Include(link => link.SiteTo)
-            .Include(link => link.Stms)
-            .Include(link => link.ConnectedLink)
-                .ThenInclude(reverse => reverse!.Stms)
+            .AsQueryable();
+
+
+        // Search
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            search = search.Trim();
+
+            query = query.Where(link =>
+                link.Name.Contains(search) ||
+
+                link.LinkType.Name.Contains(search) ||
+
+                link.SiteFromId.Contains(search) ||
+                link.SiteFrom.Name.Contains(search) ||
+
+                link.SiteToId.Contains(search) ||
+                link.SiteTo.Name.Contains(search) ||
+
+                (link.Capacity != null &&
+                 link.Capacity.Contains(search)));
+        }
+
+
+        // Link type
+        if (linkTypeId.HasValue &&
+            linkTypeId.Value != Guid.Empty)
+        {
+            query = query.Where(link =>
+                link.LinkTypeId == linkTypeId.Value);
+        }
+
+
+        // Site
+        if (!string.IsNullOrWhiteSpace(siteId))
+        {
+            query = query.Where(link =>
+                link.SiteFromId == siteId ||
+                link.SiteToId == siteId);
+        }
+
+
+        // STM inventory
+        if (inventoryStatus == "generated")
+        {
+            query = query.Where(link =>
+                link.Stms.Any());
+        }
+        else if (inventoryStatus == "not-generated")
+        {
+            query = query.Where(link =>
+                !link.Stms.Any());
+        }
+
+
+        int totalItems =
+            await query.CountAsync();
+
+
+        int totalPages =
+            (int)Math.Ceiling(
+                totalItems / (double)pageSize);
+
+
+        if (totalPages > 0 &&
+            pageNumber > totalPages)
+        {
+            pageNumber = totalPages;
+        }
+
+
+        /*
+         * Project directly into the list VM.
+         *
+         * This avoids loading complete entity graphs for
+         * records that are only being displayed in a table.
+         */
+        var links = await query
             .OrderBy(link => link.Name)
-            .ThenBy(link => link.SiteFromId)
+            .ThenBy(link => link.SiteFrom.Name)
+            .ThenBy(link => link.SiteTo.Name)
+
+            .Skip(
+                (pageNumber - 1) *
+                pageSize)
+
+            .Take(pageSize)
+
+            .Select(link =>
+                new CommunicationLinkListItemViewModel
+                {
+                    Id = link.Id,
+
+                    Name = link.Name,
+
+                    LinkTypeName =
+                        link.LinkType.Name,
+
+                    SiteFromId =
+                        link.SiteFromId,
+
+                    SiteFromName =
+                        link.SiteFrom.Name,
+
+                    SiteToId =
+                        link.SiteToId,
+
+                    SiteToName =
+                        link.SiteTo.Name,
+
+                    Capacity =
+                        link.Capacity,
+
+                    StmCount =
+                        link.Stms.Count,
+
+                    ReverseStmCount =
+                        link.ConnectedLink != null
+                            ? link.ConnectedLink.Stms.Count
+                            : 0
+                })
+
             .ToListAsync();
 
-        return View(links);
+
+        var linkTypes = await _context.LinkTypes
+            .AsNoTracking()
+            .OrderBy(type => type.Name)
+            .ToListAsync();
+
+
+        var sites = await _context.Sites
+            .AsNoTracking()
+            .OrderBy(site => site.Name)
+            .ToListAsync();
+
+
+        var model =
+            new CommunicationLinkIndexViewModel
+            {
+                Links = links,
+
+                Search = search,
+
+                LinkTypeId = linkTypeId,
+
+                SiteId = siteId,
+
+                InventoryStatus =
+                    inventoryStatus,
+
+                LinkTypes = linkTypes,
+
+                Sites = sites,
+
+                PageNumber = pageNumber,
+
+                PageSize = pageSize,
+
+                TotalPages = totalPages,
+
+                TotalItems = totalItems
+            };
+
+
+        return View(model);
     }
     [HttpGet]
     public async Task<IActionResult> GetLinksWithStmCapacity()

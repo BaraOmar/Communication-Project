@@ -1,30 +1,125 @@
 ﻿@model CommunicationProject.Models.Site
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Site Details";
 }
 
-<h1>Details</h1>
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/sites.css"
+          asp-append-version="true" />
+}
 
-<div>
-    <h4>Site</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Location)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Location)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+<div class="sites-details-page">
+
+    <div class="sites-page-top">
+
+        <a asp-action="Index"
+               class="sites-back-link">
+            ← Sites
+        </a>
+
+        <h1 class="sites-form-title">
+            Site details
+        </h1>
+
+        <p class="sites-form-subtitle">
+            View site information.
+        </p>
+
+    </div>
+
+
+    <div class="sites-card sites-details-card">
+
+        <div class="sites-details-header">
+
+            <div>
+
+                <h2 class="sites-details-name">
+                    @Model.Name
+                </h2>
+
+                <div class="sites-details-id">
+                    Site @Model.Id
+                </div>
+
+            </div>
+
+
+            <a asp-action="Edit"
+                   asp-route-id="@Model.Id"
+                   class="sites-secondary-btn">
+                Edit
+            </a>
+
+        </div>
+
+
+        <div class="sites-details-body">
+
+            <div class="sites-details-grid">
+
+                <div>
+
+                    <div class="sites-detail-label">
+                        Site ID
+                    </div>
+
+                    <div class="sites-detail-value">
+                        @Model.Id
+                    </div>
+
+                </div>
+
+
+                <div>
+
+                    <div class="sites-detail-label">
+                        Name
+                    </div>
+
+                    <div class="sites-detail-value">
+                        @Model.Name
+                    </div>
+
+                </div>
+
+
+                <div>
+
+                    <div class="sites-detail-label">
+                        Location
+                    </div>
+
+                    <div class="sites-detail-value">
+                        @(string.IsNullOrWhiteSpace(Model.Location)
+                            ? "—"
+                            : Model.Location)
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="sites-details-footer">
+
+            <a asp-action="Index"
+                   class="sites-secondary-btn">
+                Back
+            </a>
+
+            <a asp-action="Delete"
+                   asp-route-id="@Model.Id"
+                   class="site-action site-action-delete">
+                Delete site
+            </a>
+
+        </div>
+
+    </div>
+
 </div>

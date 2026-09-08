@@ -1,35 +1,448 @@
-﻿@model IEnumerable<CommunicationProject.Models.LinkType>
+﻿@model CommunicationProject.ViewModels.LinkTypeIndexViewModel
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Link Types";
 }
 
-<h1>Index</h1>
-
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/linktypes.css"
+          asp-append-version="true" />
 }
-    </tbody>
-</table>
+
+
+<div class="linktypes-page">
+
+    <!-- Header -->
+    <div class="linktypes-header">
+
+        <div>
+
+            <h1 class="linktypes-title">
+                Link Types
+            </h1>
+
+            <p class="linktypes-subtitle">
+                Manage the connection technologies used by
+                communication links.
+            </p>
+
+        </div>
+
+
+        <a asp-action="Create"
+               class="linktypes-primary-btn">
+
+            <span>＋</span>
+            New type
+
+        </a>
+
+    </div>
+
+
+    <!-- Filters -->
+    <div class="linktypes-card linktypes-filter-card">
+
+        <form asp-action="Index"
+              method="get">
+
+            <div class="linktypes-filter-grid">
+
+                <!-- Search -->
+                <div class="linktypes-field">
+
+                    <label for="search">
+                        Search
+                    </label>
+
+                    <input id="search"
+                           name="search"
+                           value="@Model.Search"
+                           class="linktypes-input"
+                           placeholder="Search link types..." />
+
+                </div>
+
+
+                <!-- Usage -->
+                <div class="linktypes-field">
+
+                    <label for="usageStatus">
+                        Usage
+                    </label>
+
+                    <select id="usageStatus"
+                            name="usageStatus"
+                            class="linktypes-select">
+
+                        <option value="">
+                            All types
+                        </option>
+
+                        @if (Model.UsageStatus == "used")
+                        {
+                            <option value="used"
+                                    selected>
+                                In use
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="used">
+                                In use
+                            </option>
+                        }
+
+                        @if (Model.UsageStatus == "unused")
+                        {
+                            <option value="unused"
+                                    selected>
+                                Not in use
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="unused">
+                                Not in use
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+
+                <div class="linktypes-filter-actions">
+
+                    <button type="submit"
+                            class="linktypes-filter-btn">
+                        Apply
+                    </button>
+
+                    <a asp-action="Index"
+                           class="linktypes-clear-btn">
+                        Clear
+                    </a>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <!-- Table -->
+    <div class="linktypes-card linktypes-table-card">
+
+        <div class="linktypes-table-header">
+
+            <h2 class="linktypes-table-title">
+                All link types
+            </h2>
+
+            <span class="linktypes-count">
+                @Model.TotalItems total
+            </span>
+
+        </div>
+
+
+        <div class="table-responsive">
+
+            <table class="linktypes-table">
+
+                <thead>
+
+                    <tr>
+                        <th>Type</th>
+                        <th>Usage</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    @if (Model.LinkTypes.Any())
+                    {
+                        foreach (var type in Model.LinkTypes)
+                        {
+                            <tr>
+
+                                <td>
+
+                                    <span class="linktype-name">
+                                        @type.Name
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    @if (type.LinkCount > 0)
+                                    {
+                                        <span class="
+                                            linktype-usage
+                                            linktype-used">
+
+                                            @type.LinkCount
+                                            link@(type.LinkCount == 1 ? "" : "s")
+
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="
+                                            linktype-usage
+                                            linktype-unused">
+
+                                            Not in use
+
+                                        </span>
+                                    }
+
+                                </td>
+
+
+                                <td>
+
+                                    <div class="linktype-actions">
+
+                                        <a asp-action="Details"
+                                               asp-route-id="@type.Id"
+                                               class="
+                                            linktype-action
+                                            linktype-view">
+                                            View
+                                        </a>
+
+                                        <a asp-action="Edit"
+                                               asp-route-id="@type.Id"
+                                               class="
+                                            linktype-action
+                                            linktype-edit">
+                                            Edit
+                                        </a>
+
+                                        <a asp-action="Delete"
+                                               asp-route-id="@type.Id"
+                                               class="
+                                            linktype-action
+                                            linktype-delete">
+                                            Delete
+                                        </a>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+
+                            <td colspan="3"
+                                class="linktypes-empty">
+
+                                <div class="linktypes-empty-title">
+                                    No link types found
+                                </div>
+
+                                <p class="linktypes-empty-text">
+                                    Try changing your search or filter.
+                                </p>
+
+                            </td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        @if (Model.TotalPages > 1)
+        {
+            <div class="linktypes-pagination-area">
+
+                <div class="linktypes-page-info">
+
+                    Showing
+                    @Model.FirstItem–@Model.LastItem
+                    of
+                    @Model.TotalItems
+
+                </div>
+
+
+                <ul class="linktypes-pagination">
+
+                    <!-- Previous -->
+                    <li>
+
+                        @if (Model.HasPreviousPage)
+                        {
+                            <a asp-action="Index"
+                                   asp-route-search="@Model.Search"
+                                   asp-route-usageStatus="@Model.UsageStatus"
+                                   asp-route-pageNumber="@(Model.PageNumber - 1)"
+                                   class="linktypes-page-link">
+                                ‹
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="
+                                linktypes-page-link
+                                disabled">
+                                ‹
+                            </span>
+                        }
+
+                    </li>
+
+
+                    @{
+                        int currentPage =
+                            Model.PageNumber;
+
+                        int totalPages =
+                            Model.TotalPages;
+
+                        int startPage =
+                            Math.Max(
+                                2,
+                                currentPage - 2);
+
+                        int endPage =
+                            Math.Min(
+                                totalPages - 1,
+                                currentPage + 2);
+                    }
+
+
+                    <!-- First -->
+                    <li>
+
+                        <a asp-action="Index"
+                               asp-route-search="@Model.Search"
+                               asp-route-usageStatus="@Model.UsageStatus"
+                               asp-route-pageNumber="1"
+                               class="linktypes-page-link
+                            @(currentPage == 1
+                                                           ? "active"
+                                                           : "")">
+
+                            1
+
+                        </a>
+
+                    </li>
+
+
+                    @if (startPage > 2)
+                    {
+                        <li>
+                            <span class="linktypes-page-ellipsis">
+                                …
+                            </span>
+                        </li>
+                    }
+
+
+                    @for (int i = startPage;
+                          i <= endPage;
+                          i++)
+                    {
+                        <li>
+
+                            <a asp-action="Index"
+                                   asp-route-search="@Model.Search"
+                                   asp-route-usageStatus="@Model.UsageStatus"
+                                   asp-route-pageNumber="@i"
+                                   class="linktypes-page-link
+                                @(currentPage == i
+                                                                   ? "active"
+                                                                   : "")">
+
+                                @i
+
+                            </a>
+
+                        </li>
+                    }
+
+
+                    @if (endPage < totalPages - 1)
+                    {
+                        <li>
+                            <span class="linktypes-page-ellipsis">
+                                …
+                            </span>
+                        </li>
+                    }
+
+
+                    @if (totalPages > 1)
+                    {
+                        <li>
+
+                            <a asp-action="Index"
+                                   asp-route-search="@Model.Search"
+                                   asp-route-usageStatus="@Model.UsageStatus"
+                                   asp-route-pageNumber="@totalPages"
+                                   class="linktypes-page-link
+                                @(currentPage == totalPages
+                                                                   ? "active"
+                                                                   : "")">
+
+                                @totalPages
+
+                            </a>
+
+                        </li>
+                    }
+
+
+                    <!-- Next -->
+                    <li>
+
+                        @if (Model.HasNextPage)
+                        {
+                            <a asp-action="Index"
+                                   asp-route-search="@Model.Search"
+                                   asp-route-usageStatus="@Model.UsageStatus"
+                                   asp-route-pageNumber="@(Model.PageNumber + 1)"
+                                   class="linktypes-page-link">
+                                ›
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="
+                                linktypes-page-link
+                                disabled">
+                                ›
+                            </span>
+                        }
+
+                    </li>
+
+                </ul>
+
+            </div>
+        }
+
+    </div>
+
+</div>

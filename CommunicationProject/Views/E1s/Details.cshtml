@@ -1,42 +1,353 @@
 ﻿@model CommunicationProject.Models.E1
+@using CommunicationProject.Models
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "E1 Details";
+
+    string stateText =
+        Model.CrossConnectionState switch
+        {
+            E1CrossConnectionState.CrossConnected =>
+                "Cross connected",
+
+            E1CrossConnectionState.ExtendExistingPath =>
+                "Extended path",
+
+            _ =>
+                "Available"
+        };
+
+    string stateClass =
+        Model.CrossConnectionState switch
+        {
+            E1CrossConnectionState.CrossConnected =>
+                "cross-connected",
+
+            E1CrossConnectionState.ExtendExistingPath =>
+                "extended",
+
+            _ =>
+                "available"
+        };
 }
 
-<h1>Details</h1>
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/e1channels.css"
+          asp-append-version="true" />
+}
 
-<div>
-    <h4>E1</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.E1Number)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.E1Number)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Stm)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Stm.Number)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ConnectedE1)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ConnectedE1.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+
+<div class="e1-details-page">
+
+    <!-- Page Header -->
+    <div class="e1-details-top">
+
+        <a asp-action="Index"
+               class="e1-back-link">
+            ← E1 Channels
+        </a>
+
+        <h1 class="e1-details-title">
+            E1 details
+        </h1>
+
+        <p class="e1-details-subtitle">
+            View channel, route and connection information.
+        </p>
+
+    </div>
+
+
+    <div class="e1-card e1-details-card">
+
+        <!-- Header -->
+        <div class="e1-details-header">
+
+            <div class="e1-details-identity">
+
+                <span class="e1-details-number">
+                    E1 @Model.E1Number
+                </span>
+
+
+                <div>
+
+                    <h2 class="e1-details-main-title">
+                        STM @Model.Stm.Number
+                    </h2>
+
+                    <div class="e1-details-caption">
+                        @Model.Stm.Link.Name
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <span class="e1-details-state @stateClass">
+                @stateText
+            </span>
+
+        </div>
+
+
+        <!-- Route -->
+        <div class="e1-details-section">
+
+            <h3 class="e1-section-title">
+                Route
+            </h3>
+
+
+            <div class="e1-details-route">
+
+                <div class="e1-details-route-site">
+
+                    <div class="e1-details-route-name">
+                        @Model.Stm.Link.SiteFrom.Name
+                    </div>
+
+                    <div class="e1-details-route-id">
+                        @Model.Stm.Link.SiteFrom.Id
+                    </div>
+
+                </div>
+
+
+                <div class="e1-details-route-arrow">
+                    →
+                </div>
+
+
+                <div class="e1-details-route-site">
+
+                    <div class="e1-details-route-name">
+                        @Model.Stm.Link.SiteTo.Name
+                    </div>
+
+                    <div class="e1-details-route-id">
+                        @Model.Stm.Link.SiteTo.Id
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Channel information -->
+        <div class="e1-details-section">
+
+            <h3 class="e1-section-title">
+                Channel information
+            </h3>
+
+
+            <div class="e1-details-grid">
+
+                <div>
+
+                    <div class="e1-detail-label">
+                        E1 Number
+                    </div>
+
+                    <div class="e1-detail-value">
+                        @Model.E1Number
+                    </div>
+
+                </div>
+
+
+                <div>
+
+                    <div class="e1-detail-label">
+                        STM
+                    </div>
+
+                    <div class="e1-detail-value">
+                        STM @Model.Stm.Number
+                    </div>
+
+                </div>
+
+
+                <div>
+
+                    <div class="e1-detail-label">
+                        Communication Link
+                    </div>
+
+                    <div class="e1-detail-value">
+                        @Model.Stm.Link.Name
+                    </div>
+
+                </div>
+
+
+                <div>
+
+                    <div class="e1-detail-label">
+                        State
+                    </div>
+
+                    <div class="e1-detail-value">
+                        @stateText
+                    </div>
+
+                </div>
+
+
+                @if (Model.PathOrder.HasValue)
+                {
+                    <div>
+
+                        <div class="e1-detail-label">
+                            Path Order
+                        </div>
+
+                        <div class="e1-detail-value">
+                            @Model.PathOrder
+                        </div>
+
+                    </div>
+                }
+
+
+                @if (Model.PathId.HasValue)
+                {
+                    <div>
+
+                        <div class="e1-detail-label">
+                            Path
+                        </div>
+
+                        <div class="e1-detail-value">
+                            Assigned
+                        </div>
+
+                        <div class="e1-detail-muted">
+                            This channel belongs to a path.
+                        </div>
+
+                    </div>
+                }
+
+            </div>
+
+        </div>
+
+
+        <!-- Connected E1 -->
+        <div class="e1-details-section">
+
+            <h3 class="e1-section-title">
+                Connected E1
+            </h3>
+
+
+            @if (Model.ConnectedE1 != null)
+            {
+                <div class="e1-details-connected">
+
+                    <div class="e1-details-connected-main">
+
+                        <div class="e1-details-connected-title">
+                            E1 @Model.ConnectedE1.E1Number
+                            · STM @Model.ConnectedE1.Stm.Number
+                        </div>
+
+
+                        @if (Model.ConnectedE1.Stm.Link != null)
+                        {
+                            <div class="e1-details-connected-route">
+
+                                @Model.ConnectedE1.Stm.Link.SiteFrom.Name
+                                →
+                                @Model.ConnectedE1.Stm.Link.SiteTo.Name
+
+                            </div>
+                        }
+
+                    </div>
+
+
+                    <a asp-action="Details"
+                           asp-route-id="@Model.ConnectedE1.Id"
+                           class="e1-details-view-link">
+
+                        View E1
+
+                    </a>
+
+                </div>
+            }
+            else
+            {
+                <div class="e1-details-connected">
+
+                    <div class="e1-details-connected-main">
+
+                        <div class="e1-details-connected-title">
+                            No connected E1
+                        </div>
+
+                        <div class="e1-details-connected-route">
+                            This channel currently has no reverse connection.
+                        </div>
+
+                    </div>
+
+                </div>
+            }
+
+        </div>
+
+
+        <!-- Description -->
+        <div class="e1-details-section">
+
+            <h3 class="e1-section-title">
+                Description
+            </h3>
+
+
+            <div class="e1-description-box">
+
+                @if (string.IsNullOrWhiteSpace(Model.Description))
+                {
+                    <span>No description has been added.</span>
+                }
+                else
+                {
+                    @Model.Description
+                }
+
+            </div>
+
+        </div>
+
+
+        <!-- Footer -->
+        <div class="e1-details-footer">
+
+            <a asp-action="Index"
+                   class="e1-details-secondary">
+                Back to E1 Channels
+            </a>
+
+
+            <a asp-controller="Stms"
+                   asp-action="Details"
+                   asp-route-id="@Model.StmId"
+                   class="e1-details-primary">
+                View STM
+            </a>
+
+        </div>
+
+    </div>
+
 </div>

@@ -1,48 +1,205 @@
 ﻿@model CommunicationProject.Models.CommunicationLink
 
 @{
-    ViewData["Title"] = "Delete";
+    ViewData["Title"] = "Delete Communication Link";
+
+    int primaryStmCount =
+        Model.Stms?.Count ?? 0;
+
+    int reverseStmCount =
+        Model.ConnectedLink?.Stms?.Count ?? 0;
+
+    int totalStmCount =
+        primaryStmCount + reverseStmCount;
 }
 
-<h1>Delete</h1>
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/links.css"
+          asp-append-version="true" />
+}
 
-<h3>Are you sure you want to delete this?</h3>
-<div>
-    <h4>CommunicationLink</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.LinkType)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.LinkType.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.SiteFrom)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.SiteFrom.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.SiteTo)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.SiteTo.Id)
-        </dd>
-    </dl>
-    
-    <form asp-action="Delete">
+
+<div class="link-delete-page">
+
+    <!-- Header -->
+    <div class="links-form-top">
+
+        <a asp-action="Details"
+               asp-route-id="@Model.Id"
+               class="links-back-link">
+            ← Link details
+        </a>
+
+        <h1 class="links-form-title">
+            Delete communication link
+        </h1>
+
+        <p class="links-form-subtitle">
+            Review what will be removed before continuing.
+        </p>
+
+    </div>
+
+
+    <div class="links-card link-delete-card">
+
+        <!-- Warning -->
+        <div class="link-delete-warning">
+
+            <div class="link-delete-warning-icon">
+                !
+            </div>
+
+
+            <div>
+
+                <div class="link-delete-warning-title">
+                    This action cannot be undone
+                </div>
+
+                <p class="link-delete-warning-text">
+                    Deleting this communication link removes
+                    both directional link records together with
+                    their related STM and E1 inventory.
+                </p>
+
+            </div>
+
+        </div>
+
+
         <div asp-validation-summary="ModelOnly"
-             class="text-danger mb-3"></div>
+             class="links-validation-summary">
+        </div>
 
-        <input type="hidden" asp-for="Id" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
-    </form>
+
+        <!-- Summary -->
+        <div class="link-delete-summary">
+
+            <div class="link-delete-summary-header">
+
+                <div class="link-delete-name">
+                    @Model.Name
+                </div>
+
+                <span class="link-details-type-badge">
+                    @Model.LinkType.Name
+                </span>
+
+            </div>
+
+
+            <div class="link-delete-grid">
+
+                <div>
+
+                    <div class="link-detail-label">
+                        Source
+                    </div>
+
+                    <div class="link-detail-value">
+                        @Model.SiteFrom.Name
+                    </div>
+
+                    <div class="link-details-route-id">
+                        @Model.SiteFrom.Id
+                    </div>
+
+                </div>
+
+
+                <div>
+
+                    <div class="link-detail-label">
+                        Destination
+                    </div>
+
+                    <div class="link-detail-value">
+                        @Model.SiteTo.Name
+                    </div>
+
+                    <div class="link-details-route-id">
+                        @Model.SiteTo.Id
+                    </div>
+
+                </div>
+
+
+                <div>
+
+                    <div class="link-detail-label">
+                        Capacity
+                    </div>
+
+                    <div class="link-detail-value">
+
+                        @(string.IsNullOrWhiteSpace(Model.Capacity)
+                            ? "—"
+                            : Model.Capacity)
+
+                    </div>
+
+                </div>
+
+
+                <div>
+
+                    <div class="link-detail-label">
+                        STM inventory
+                    </div>
+
+                    <div class="link-detail-value">
+                        @totalStmCount records
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="link-delete-inventory">
+
+                <strong>@primaryStmCount</strong>
+                STM records exist in the
+                @Model.SiteFrom.Name →
+                @Model.SiteTo.Name direction,
+
+                and
+
+                <strong>@reverseStmCount</strong>
+                exist in the reverse direction.
+
+            </div>
+
+        </div>
+
+
+        <!-- Form -->
+        <form asp-action="Delete"
+              method="post">
+
+            <input type="hidden"
+                   asp-for="Id" />
+
+
+            <div class="link-delete-actions">
+
+                <a asp-action="Details"
+                       asp-route-id="@Model.Id"
+                       class="links-form-cancel">
+                    Cancel
+                </a>
+
+                <button type="submit"
+                        class="link-delete-btn">
+                    Delete link
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
 </div>

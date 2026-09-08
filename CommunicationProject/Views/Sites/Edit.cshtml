@@ -1,39 +1,119 @@
 ﻿@model CommunicationProject.Models.Site
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Edit Site";
 }
 
-<h1>Edit</h1>
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/sites.css"
+          asp-append-version="true" />
+}
 
-<h4>Site</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Location" class="control-label"></label>
-                <input asp-for="Location" class="form-control" />
-                <span asp-validation-for="Location" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+<div class="sites-form-page">
+
+    <div class="sites-page-top">
+
+        <a asp-action="Index"
+               class="sites-back-link">
+            ← Sites
+        </a>
+
+        <h1 class="sites-form-title">
+            Edit site
+        </h1>
+
+        <p class="sites-form-subtitle">
+            Update the information for @Model.Name.
+        </p>
+
     </div>
-</div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
+
+    <div class="sites-card sites-form-card">
+
+        <form asp-action="Edit"
+              method="post">
+
+            <input type="hidden"
+                   asp-for="Id" />
+
+            <div asp-validation-summary="ModelOnly"
+                 class="sites-validation">
+            </div>
+
+
+            <div class="sites-form-group">
+
+                <label class="sites-form-label">
+                    Site ID
+                </label>
+
+                <input value="@Model.Id"
+                       class="sites-form-control"
+                       readonly />
+
+                <div class="sites-form-hint">
+                    Site ID cannot be changed.
+                </div>
+
+            </div>
+
+
+            <div class="sites-form-group">
+
+                <label asp-for="Name"
+                       class="sites-form-label">
+                    Site name
+                </label>
+
+                <input asp-for="Name"
+                       class="sites-form-control" />
+
+                <span asp-validation-for="Name"
+                      class="sites-validation">
+                </span>
+
+            </div>
+
+
+            <div class="sites-form-group">
+
+                <label asp-for="Location"
+                       class="sites-form-label">
+                    Location
+                </label>
+
+                <input asp-for="Location"
+                       class="sites-form-control" />
+
+                <span asp-validation-for="Location"
+                      class="sites-validation">
+                </span>
+
+            </div>
+
+
+            <div class="sites-form-actions">
+
+                <a asp-action="Index"
+                       class="sites-secondary-btn">
+                    Cancel
+                </a>
+
+                <button type="submit"
+                        class="sites-save-btn">
+                    Save changes
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <partial name="_ValidationScriptsPartial" />
 }

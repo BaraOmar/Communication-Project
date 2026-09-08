@@ -1,127 +1,285 @@
 ﻿@using CommunicationProject.Security
+
+@{
+    string currentController =
+        ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+
+    string NavClass(string controller)
+    {
+        return currentController.Equals(
+            controller,
+            StringComparison.OrdinalIgnoreCase)
+                ? "app-nav-link active"
+                : "app-nav-link";
+    }
+}
+
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
+
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - CommunicationProject</title>
-    <script type="importmap"></script>
-    <link rel="stylesheet" href="~/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
+    <title>
+        @ViewData["Title"] - Communication Project
+    </title>
+
+    <link rel="stylesheet"
+          href="~/css/bootstrap.min.css" />
+
+    <link rel="stylesheet"
+          href="~/css/site.css"
+          asp-append-version="true" />
+
+    @await RenderSectionAsync(
+        "Styles",
+        required: false)
+
 </head>
+
+
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">CommunicationProject</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+
+    <!-- =====================================================
+         TOP NAVIGATION
+         ===================================================== -->
+         @if (User.Identity?.IsAuthenticated == true)
+{
+    <header class="app-header">
+
+        <nav class="navbar navbar-expand-xl app-navbar">
+
+            <div class="app-navbar-container">
+
+
+                <!-- Brand -->
+                <a asp-controller="Home"
+                       asp-action="Index"
+                       class="app-brand">
+
+                    <span class="app-brand-mark">
+                        C
+                    </span>
+
+                    <span class="app-brand-text">
+
+                        <span class="app-brand-name">
+                            Communication
+                        </span>
+
+                        <span class="app-brand-subtitle">
+                            Network Management
+                        </span>
+
+                    </span>
+
+                </a>
+
+
+                <!-- Mobile Toggle -->
+                <button class="navbar-toggler app-navbar-toggler"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#mainNavigation"
+                        aria-controls="mainNavigation"
+                        aria-expanded="false"
+                        aria-label="Toggle navigation">
+
                     <span class="navbar-toggler-icon"></span>
+
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
+
+
+                <!-- Navigation -->
+                <div id="mainNavigation"
+                     class="collapse navbar-collapse">
+
+                    <div class="app-nav">
+
+
                         @if (User.IsInRole(AppRoles.Admin))
                         {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark"
-                                       asp-controller="Sites"
-                                       asp-action="Index">
-                                    Sites
-                                </a>
-                            </li>
+                            <a asp-controller="Users"
+                                   asp-action="Index"
+                                   class="@NavClass("Users")">
+                                Users
+                            </a>
 
-                            <li class="nav-item">
-                                <a class="nav-link text-dark"
-                                       asp-controller="CommunicationLinks"
-                                       asp-action="Index">
-                                    Links
-                                </a>
-                            </li>
+
+                            <a asp-controller="Sites"
+                                   asp-action="Index"
+                                   class="@NavClass("Sites")">
+                                Sites
+                            </a>
+
+
+                            <a asp-controller="CommunicationLinks"
+                                   asp-action="Index"
+                                   class="@NavClass("CommunicationLinks")">
+                                Links
+                            </a>
                         }
 
-                        <li class="nav-item">
-                            <a class="nav-link text-dark"
-                                   asp-controller="LinkTypes"
-                                   asp-action="Index">
-                                Link Types
-                            </a>
-                        </li>
+
+                        <a asp-controller="LinkTypes"
+                               asp-action="Index"
+                               class="@NavClass("LinkTypes")">
+                            Link Types
+                        </a>
 
 
-                        <li class="nav-item">
-                            <a class="nav-link text-dark"
-                                   asp-controller="Stms"
-                                   asp-action="Index">
-                                STMs
-                            </a>
-                        </li>
+                        <a asp-controller="Stms"
+                               asp-action="Index"
+                               class="@NavClass("Stms")">
+                            STMs
+                        </a>
 
-                        <li class="nav-item">
-                            <a class="nav-link text-dark"
-                                   asp-controller="E1s"
-                                   asp-action="Index">
-                                E1 Channels
-                            </a>
-                        </li>
+
+                        <a asp-controller="E1s"
+                               asp-action="Index"
+                               class="@NavClass("E1s")">
+                            E1 Channels
+                        </a>
+
+
                         @if (User.IsInRole(AppRoles.Admin) ||
                              User.IsInRole(AppRoles.Operator))
                         {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark"
-                                       asp-controller="CrossConnections"
-                                       asp-action="Create">
-                                    Cross Connection
-                                </a>
-                            </li>
+                            <a asp-controller="CrossConnections"
+                                   asp-action="Create"
+                                   class="@NavClass("CrossConnections")">
+                                Cross Connection
+                            </a>
                         }
+
+
                         @if (User.Identity?.IsAuthenticated == true)
                         {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark"
-                                       asp-controller="SearchPath"
-                                       asp-action="Index">
-                                    Search Path
-                                </a>
-                            </li>
+                            <a asp-controller="SearchPath"
+                                   asp-action="Index"
+                                   class="@NavClass("SearchPath")">
+                                Search Paths
+                            </a>
                         }
-                    </ul>
-                    <partial name="_LoginPartial" />
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-            @if (TempData["SuccessMessage"] != null)
-            {
-                <div class="alert alert-success alert-dismissible fade show"
-                     role="alert">
-                    @TempData["SuccessMessage"]
 
-                    <button type="button"
-                            class="btn-close"
-                            data-bs-dismiss="alert"
-                            aria-label="Close">
-                    </button>
+                    </div>
+
+
+                    <!-- Account -->
+                    <div class="app-account">
+
+                        <partial name="_LoginPartial" />
+
+                    </div>
+
                 </div>
-            }
-        </main>
+
+            </div>
+
+        </nav>
+
+    </header>
+    }
+
+    <!-- =====================================================
+         MESSAGES
+         ===================================================== -->
+
+    <div class="app-message-area">
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="app-alert app-alert-success">
+
+                <span class="app-alert-icon">
+                    ✓
+                </span>
+
+                <span>
+                    @TempData["SuccessMessage"]
+                </span>
+
+                <button type="button"
+                        class="app-alert-close"
+                        onclick="this.parentElement.remove()">
+                    ×
+                </button>
+
+            </div>
+        }
+
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="app-alert app-alert-error">
+
+                <span class="app-alert-icon">
+                    !
+                </span>
+
+                <span>
+                    @TempData["ErrorMessage"]
+                </span>
+
+                <button type="button"
+                        class="app-alert-close"
+                        onclick="this.parentElement.remove()">
+                    ×
+                </button>
+
+            </div>
+        }
+
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - CommunicationProject - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+
+    <!-- =====================================================
+         CONTENT
+         ===================================================== -->
+
+    <main class="app-main">
+
+        @RenderBody()
+
+    </main>
+
+
+    <!-- =====================================================
+         FOOTER
+         ===================================================== -->
+         @if (User.Identity?.IsAuthenticated == true)
+{
+    <footer class="app-footer">
+
+        <div class="app-footer-inner">
+
+            <span>
+                Communication Network Management
+            </span>
+
+            <span class="app-footer-year">
+                © 2026
+            </span>
+
         </div>
+
     </footer>
+
+}
     <script src="~/js/bootstrap.bundle.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+
+    <script src="~/js/site.js"
+            asp-append-version="true"></script>
+
+    @await RenderSectionAsync(
+        "Scripts",
+        required: false)
+
 </body>
+
 </html>

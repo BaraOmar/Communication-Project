@@ -1,34 +1,91 @@
 ﻿@model CommunicationProject.Models.LinkType
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Edit Link Type";
 }
 
-<h1>Edit</h1>
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/linktypes.css"
+          asp-append-version="true" />
+}
 
-<h4>LinkType</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+
+<div class="linktypes-form-page">
+
+    <div class="linktypes-page-top">
+
+        <a asp-action="Details"
+               asp-route-id="@Model.Id"
+               class="linktypes-back-link">
+            ← Link type details
+        </a>
+
+        <h1 class="linktypes-form-title">
+            Edit link type
+        </h1>
+
+        <p class="linktypes-form-subtitle">
+            Update the name used by communication links.
+        </p>
+
     </div>
+
+
+    <div class="linktypes-card linktypes-form-card">
+
+        <form asp-action="Edit"
+              asp-route-id="@Model.Id"
+              method="post">
+
+            <input type="hidden"
+                   asp-for="Id" />
+
+
+            <div asp-validation-summary="ModelOnly"
+                 class="linktypes-validation-summary">
+            </div>
+
+
+            <div class="linktypes-form-group">
+
+                <label asp-for="Name"
+                       class="linktypes-form-label">
+                    Type name
+                </label>
+
+                <input asp-for="Name"
+                       class="linktypes-form-control" />
+
+                <span asp-validation-for="Name"
+                      class="linktypes-validation">
+                </span>
+
+            </div>
+
+
+            <div class="linktypes-form-actions">
+
+                <a asp-action="Details"
+                       asp-route-id="@Model.Id"
+                       class="linktypes-secondary-btn">
+                    Cancel
+                </a>
+
+                <button type="submit"
+                        class="linktypes-submit-btn">
+                    Save changes
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <partial name="_ValidationScriptsPartial" />
 }

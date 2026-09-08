@@ -1,0 +1,123 @@
+﻿@page
+@model LoginModel
+
+@{
+    ViewData["Title"] = "Sign in";
+}
+
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/auth.css"
+          asp-append-version="true" />
+}
+
+
+<div class="auth-page">
+
+    <div class="auth-container">
+
+        <div class="auth-heading">
+
+            <h1 class="auth-title">
+                Welcome back
+            </h1>
+
+            <p class="auth-subtitle">
+                Sign in to access the Communication
+                Network Management system.
+            </p>
+
+        </div>
+
+
+        <div class="auth-card">
+
+            <form id="account"
+                  method="post">
+
+                <div asp-validation-summary="ModelOnly"
+                     class="auth-validation-summary">
+                </div>
+
+
+                <!-- Email -->
+                <div class="auth-group">
+
+                    <label asp-for="Input.Email"
+                           class="auth-label">
+                        Email address
+                    </label>
+
+                    <input asp-for="Input.Email"
+                           class="auth-control"
+                           autocomplete="username"
+                           placeholder="name@example.com" />
+
+                    <span asp-validation-for="Input.Email"
+                          class="auth-validation">
+                    </span>
+
+                </div>
+
+
+                <!-- Password -->
+                <div class="auth-group">
+
+                    <label asp-for="Input.Password"
+                           class="auth-label">
+                        Password
+                    </label>
+
+                    <input asp-for="Input.Password"
+                           class="auth-control"
+                           autocomplete="current-password"
+                           placeholder="Enter your password" />
+
+                    <span asp-validation-for="Input.Password"
+                          class="auth-validation">
+                    </span>
+
+                </div>
+
+
+                <!-- Remember Me -->
+                <div class="auth-options">
+
+                    <label class="auth-check">
+
+                        <input asp-for="Input.RememberMe" />
+
+                        <span>
+                            Remember me
+                        </span>
+
+                    </label>
+
+                </div>
+
+
+                <button id="login-submit"
+                        type="submit"
+                        class="auth-submit">
+
+                    Sign in
+
+                </button>
+
+
+                <div class="auth-note">
+                    Accounts are managed by the system administrator.
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

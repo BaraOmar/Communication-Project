@@ -4,26 +4,69 @@
     ViewData["Title"] = "Import Communication Links";
 }
 
-<h1>Import Communication Links</h1>
-
-<p class="text-muted">
-    Upload the delivered Access database and import
-    its LINKS table into CommunicationLinks.
-</p>
-
-@if (TempData["ImportMessage"] != null)
-{
-    <div class="alert alert-success">
-        @TempData["ImportMessage"]
-    </div>
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/links.css"
+          asp-append-version="true" />
 }
 
-<div class="card">
-    <div class="card-header">
-        <strong>Access Database Import</strong>
+
+<div class="links-import-page">
+
+    <!-- Header -->
+    <div class="links-form-top">
+
+        <a asp-action="Index"
+               class="links-back-link">
+            ← Communication Links
+        </a>
+
+        <h1 class="links-form-title">
+            Import communication links
+        </h1>
+
+        <p class="links-form-subtitle">
+            Import link records from an existing Access database.
+        </p>
+
     </div>
 
-    <div class="card-body">
+
+    @if (TempData["ImportMessage"] != null)
+    {
+        <div class="links-import-success">
+            @TempData["ImportMessage"]
+        </div>
+    }
+
+
+    <div class="links-card links-import-card">
+
+        <!-- Explanation -->
+        <div class="links-import-intro">
+
+            <div class="links-import-intro-icon">
+                i
+            </div>
+
+
+            <div>
+
+                <div class="links-import-intro-title">
+                    Access database import
+                </div>
+
+                <p class="links-import-intro-text">
+                    The importer reads communication-link data
+                    from the LINKS table in the uploaded Access database.
+                    Imported records will use the link type selected below.
+                </p>
+
+            </div>
+
+        </div>
+
+
         <form asp-controller="CommunicationLinks"
               asp-action="Import"
               method="post"
@@ -31,62 +74,158 @@
 
             @Html.AntiForgeryToken()
 
+
             <div asp-validation-summary="ModelOnly"
-                 class="text-danger mb-3">
+                 class="links-validation-summary">
             </div>
 
-            <div class="mb-3">
-                <label asp-for="AccessFile"
-                       class="form-label">
+
+            <!-- File -->
+            <section class="links-form-section">
+
+                <h2 class="links-form-section-title">
+                    Database file
+                </h2>
+
+
+                <label class="links-upload-zone">
+
+                    <div class="links-upload-icon">
+                        ↑
+                    </div>
+
+                    <div class="links-upload-title">
+                        Select Access database
+                    </div>
+
+                    <p class="links-upload-hint">
+                        Choose the .accdb file containing the LINKS table.
+                    </p>
+
+
+                    <input asp-for="AccessFile"
+                           type="file"
+                           accept=".accdb"
+                           class="links-upload-input" />
+
                 </label>
 
-                <input asp-for="AccessFile"
-                       type="file"
-                       accept=".accdb"
-                       class="form-control" />
 
                 <span asp-validation-for="AccessFile"
-                      class="text-danger">
+                      class="links-validation">
                 </span>
 
-                <div class="form-text">
-                    Select the delivered 666.accdb file.
-                    Maximum size: 20 MB.
+
+                <div class="links-import-requirements">
+
+                    <div class="links-import-requirement">
+
+                        <div class="links-import-requirement-label">
+                            Format
+                        </div>
+
+                        <div class="links-import-requirement-value">
+                            .accdb
+                        </div>
+
+                    </div>
+
+
+                    <div class="links-import-requirement">
+
+                        <div class="links-import-requirement-label">
+                            Maximum size
+                        </div>
+
+                        <div class="links-import-requirement-value">
+                            20 MB
+                        </div>
+
+                    </div>
+
+
+                    <div class="links-import-requirement">
+
+                        <div class="links-import-requirement-label">
+                            Required table
+                        </div>
+
+                        <div class="links-import-requirement-value">
+                            LINKS
+                        </div>
+
+                    </div>
+
                 </div>
+
+            </section>
+
+
+            <!-- Link Type -->
+            <section class="links-form-section">
+
+                <h2 class="links-form-section-title">
+                    Import settings
+                </h2>
+
+
+                <div class="links-form-group">
+
+                    <label asp-for="LinkTypeId"
+                           class="links-form-label">
+                        Link type
+                    </label>
+
+
+                    <select asp-for="LinkTypeId"
+                            asp-items="Model.LinkTypeOptions"
+                            class="links-form-select">
+
+                        <option value="">
+                            Select link type
+                        </option>
+
+                    </select>
+
+
+                    <div class="links-form-hint">
+                        This type will be assigned to the
+                        communication links created during the import.
+                    </div>
+
+
+                    <span asp-validation-for="LinkTypeId"
+                          class="links-validation">
+                    </span>
+
+                </div>
+
+            </section>
+
+
+            <!-- Actions -->
+            <div class="links-form-actions">
+
+                <a asp-action="Index"
+                       class="links-form-cancel">
+                    Cancel
+                </a>
+
+
+                <button type="submit"
+                        class="links-form-submit links-import-submit">
+                    Import links
+                </button>
+
             </div>
 
-            <div class="mb-3">
-                <label asp-for="LinkTypeId"
-                       class="form-label">
-                </label>
-
-                <select asp-for="LinkTypeId"
-                        asp-items="Model.LinkTypeOptions"
-                        class="form-select">
-                    <option value="">
-                        -- Select link type --
-                    </option>
-                </select>
-
-                <span asp-validation-for="LinkTypeId"
-                      class="text-danger">
-                </span>
-            </div>
-
-            <button type="submit"
-                    class="btn btn-primary">
-                Upload and Import
-            </button>
-
-            <a asp-action="Index"
-                   class="btn btn-secondary">
-                Back to Links
-            </a>
         </form>
+
     </div>
+
 </div>
 
-@section Scripts
-{
+
+@section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }

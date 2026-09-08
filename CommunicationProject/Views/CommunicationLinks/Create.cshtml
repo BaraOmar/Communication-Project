@@ -4,165 +4,305 @@
     ViewData["Title"] = "Create Communication Link";
 }
 
-<h1>Create Communication Link</h1>
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/links.css"
+          asp-append-version="true" />
+}
 
-<hr />
 
-<div class="row">
-    <div class="col-md-6">
-        <form asp-action="Create" method="post">
+<div class="links-form-page">
+
+    <div class="links-form-top">
+
+        <a asp-action="Index"
+               class="links-back-link">
+            ← Communication Links
+        </a>
+
+        <h1 class="links-form-title">
+            Create communication link
+        </h1>
+
+        <p class="links-form-subtitle">
+            Define the route and initial STM inventory for a new link.
+        </p>
+
+    </div>
+
+
+    <div class="links-card links-form-card">
+
+        <form asp-action="Create"
+              method="post">
+
             <div asp-validation-summary="ModelOnly"
-                 class="text-danger mb-3">
+                 class="links-validation-summary">
             </div>
 
-            <div class="form-group mb-3">
-                <label asp-for="Name"
-                       class="control-label">
-                </label>
 
-                <input asp-for="Name"
-                       class="form-control" />
+            <!-- Basic information -->
+            <section class="links-form-section">
 
-                <span asp-validation-for="Name"
-                      class="text-danger">
-                </span>
-            </div>
+                <h2 class="links-form-section-title">
+                    Link information
+                </h2>
 
-            <div class="form-group mb-3">
-                <label asp-for="LinkTypeId"
-                       class="control-label">
-                </label>
 
-                <select asp-for="LinkTypeId"
-                        asp-items="Model.LinkTypeOptions"
-                        class="form-select">
-                    <option value="">
-                        -- Select Link Type --
-                    </option>
-                </select>
+                <div class="links-form-grid">
 
-                <span asp-validation-for="LinkTypeId"
-                      class="text-danger">
-                </span>
-            </div>
+                    <div>
 
-            <div class="form-group mb-3">
-                <label asp-for="SiteFromId"
-                       class="control-label">
-                </label>
+                        <label asp-for="Name"
+                               class="links-form-label">
+                            Link name
+                        </label>
 
-                <select asp-for="SiteFromId"
-                        asp-items="Model.SiteOptions"
-                        class="form-select">
-                    <option value="">
-                        -- Select Source Site --
-                    </option>
-                </select>
+                        <input asp-for="Name"
+                               class="links-form-control"
+                               placeholder="Enter link name" />
 
-                <span asp-validation-for="SiteFromId"
-                      class="text-danger">
-                </span>
-            </div>
+                        <span asp-validation-for="Name"
+                              class="links-validation">
+                        </span>
 
-            <div class="form-group mb-3">
-                <label asp-for="SiteToId"
-                       class="control-label">
-                </label>
+                    </div>
 
-                <select asp-for="SiteToId"
-                        asp-items="Model.SiteOptions"
-                        class="form-select">
-                    <option value="">
-                        -- Select Destination Site --
-                    </option>
-                </select>
 
-                <span asp-validation-for="SiteToId"
-                      class="text-danger">
-                </span>
-            </div>
+                    <div>
 
-            <div class="form-group mb-3">
-                <label asp-for="StmCount"
-                       class="control-label">
-                </label>
+                        <label asp-for="LinkTypeId"
+                               class="links-form-label">
+                            Link type
+                        </label>
 
-                <input asp-for="StmCount"
-                       type="number"
-                       min="1"
-                       max="100"
-                       class="form-control" />
+                        <select asp-for="LinkTypeId"
+                                asp-items="Model.LinkTypeOptions"
+                                class="links-form-select">
 
-                <span asp-validation-for="StmCount"
-                      class="text-danger">
-                </span>
+                            <option value="">
+                                Select link type
+                            </option>
 
-                <div class="form-text">
-                    The system creates 63 E1 channels for every STM.
+                        </select>
+
+                        <span asp-validation-for="LinkTypeId"
+                              class="links-validation">
+                        </span>
+
+                    </div>
+
                 </div>
-            </div>
 
-            <div class="form-group">
-                <button type="submit"
-                        class="btn btn-primary">
-                    Create Link and Channels
-                </button>
+            </section>
+
+
+            <!-- Route -->
+            <section class="links-form-section">
+
+                <h2 class="links-form-section-title">
+                    Route
+                </h2>
+
+
+                <div class="links-route-form">
+
+                    <div class="links-route-form-grid">
+
+                        <div>
+
+                            <label asp-for="SiteFromId"
+                                   class="links-form-label">
+                                Source site
+                            </label>
+
+                            <select asp-for="SiteFromId"
+                                    asp-items="Model.SiteOptions"
+                                    class="links-form-select">
+
+                                <option value="">
+                                    Select source
+                                </option>
+
+                            </select>
+
+                            <span asp-validation-for="SiteFromId"
+                                  class="links-validation">
+                            </span>
+
+                        </div>
+
+
+                        <div class="links-route-divider">
+                            →
+                        </div>
+
+
+                        <div>
+
+                            <label asp-for="SiteToId"
+                                   class="links-form-label">
+                                Destination site
+                            </label>
+
+                            <select asp-for="SiteToId"
+                                    asp-items="Model.SiteOptions"
+                                    class="links-form-select">
+
+                                <option value="">
+                                    Select destination
+                                </option>
+
+                            </select>
+
+                            <span asp-validation-for="SiteToId"
+                                  class="links-validation">
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- Inventory -->
+            <section class="links-form-section">
+
+                <h2 class="links-form-section-title">
+                    Initial inventory
+                </h2>
+
+
+                <div class="links-form-group">
+
+                    <label asp-for="StmCount"
+                           class="links-form-label">
+                        Number of STM pairs
+                    </label>
+
+                    <input asp-for="StmCount"
+                           type="number"
+                           min="1"
+                           max="100"
+                           class="links-form-control" />
+
+                    <span asp-validation-for="StmCount"
+                          class="links-validation">
+                    </span>
+
+                </div>
+
+
+                <div class="links-inventory-note">
+
+                    <div class="links-inventory-note-icon">
+                        i
+                    </div>
+
+                    <div>
+
+                        <div class="links-inventory-note-title">
+                            Inventory is created automatically
+                        </div>
+
+                        <p class="links-inventory-note-text">
+                            Each STM pair creates one STM in each
+                            direction, with 63 matching E1 channels
+                            generated for every STM.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <div class="links-form-actions">
 
                 <a asp-action="Index"
-                       class="btn btn-secondary">
-                    Back to List
+                       class="links-form-cancel">
+                    Cancel
                 </a>
+
+                <button type="submit"
+                        class="links-form-submit">
+                    Create link
+                </button>
+
             </div>
+
         </form>
+
     </div>
+
 </div>
 
+
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync(
-            "_ValidationScriptsPartial");
-    }
+
+    <partial name="_ValidationScriptsPartial" />
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const siteFrom = document.getElementById("SiteFromId");
-            const siteTo = document.getElementById("SiteToId");
 
-            function updateSiteOptions() {
-                const selectedFrom = siteFrom.value;
-                const selectedTo = siteTo.value;
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
 
-                for (const option of siteTo.options) {
-                    option.disabled =
-                        option.value !== "" &&
-                        option.value === selectedFrom;
+                const siteFrom =
+                    document.getElementById("SiteFromId");
+
+                const siteTo =
+                    document.getElementById("SiteToId");
+
+
+                function updateSiteOptions() {
+
+                    const selectedFrom =
+                        siteFrom.value;
+
+                    const selectedTo =
+                        siteTo.value;
+
+
+                    for (const option of siteTo.options) {
+
+                        option.disabled =
+                            option.value !== "" &&
+                            option.value === selectedFrom;
+                    }
+
+
+                    for (const option of siteFrom.options) {
+
+                        option.disabled =
+                            option.value !== "" &&
+                            option.value === selectedTo;
+                    }
+
+
+                    if (
+                        selectedFrom !== "" &&
+                        selectedFrom === siteTo.value
+                    ) {
+                        siteTo.value = "";
+                    }
                 }
 
-                for (const option of siteFrom.options) {
-                    option.disabled =
-                        option.value !== "" &&
-                        option.value === selectedTo;
-                }
 
-                if (
-                    selectedFrom !== "" &&
-                    selectedFrom === siteTo.value
-                ) {
-                    siteTo.value = "";
-                }
-            }
+                siteFrom.addEventListener(
+                    "change",
+                    updateSiteOptions);
 
-            siteFrom.addEventListener(
-                "change",
-                updateSiteOptions
-            );
+                siteTo.addEventListener(
+                    "change",
+                    updateSiteOptions);
 
-            siteTo.addEventListener(
-                "change",
-                updateSiteOptions
-            );
+                updateSiteOptions();
+            });
 
-            updateSiteOptions();
-        });
     </script>
 }

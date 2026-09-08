@@ -1,0 +1,811 @@
+﻿/* =========================================================
+   STMs Module
+   ========================================================= */
+
+.stms-page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 3rem;
+}
+
+
+/* Header */
+
+.stms-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+}
+
+.stms-title {
+    margin: 0;
+    color: #172033;
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.stms-subtitle {
+    max-width: 720px;
+    margin: 0.35rem 0 0;
+    color: #7f899a;
+    font-size: 0.9rem;
+    line-height: 1.55;
+}
+
+
+/* Status */
+
+.stms-readonly {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.7rem;
+    background: #f5f7fa;
+    border: 1px solid #e8ebf0;
+    border-radius: 8px;
+    color: #788395;
+    font-size: 0.76rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+
+/* Shared Card */
+
+.stms-card {
+    background: #fff;
+    border: 1px solid #e9edf3;
+    border-radius: 14px;
+    box-shadow: 0 3px 14px rgba(20, 32, 56, 0.04);
+}
+
+
+/* Filters */
+
+.stms-filter-card {
+    padding: 1.2rem;
+    margin-bottom: 1.25rem;
+}
+
+.stms-filter-grid {
+    display: grid;
+    grid-template-columns: minmax(260px, 1fr) 220px 190px auto;
+    gap: 0.85rem;
+    align-items: end;
+}
+
+.stms-field label {
+    display: block;
+    margin-bottom: 0.45rem;
+    color: #4b5567;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.stms-input,
+.stms-select {
+    width: 100%;
+    height: 42px;
+    padding: 0 0.85rem;
+    border: 1px solid #dfe4eb;
+    border-radius: 9px;
+    background: #fbfcfe;
+    color: #263044;
+    font-size: 0.88rem;
+    outline: none;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+}
+
+    .stms-input::placeholder {
+        color: #a1a9b7;
+    }
+
+    .stms-input:focus,
+    .stms-select:focus {
+        background: #fff;
+        border-color: #9caef7;
+        box-shadow: 0 0 0 3px rgba(66, 99, 235, 0.08);
+    }
+
+.stms-filter-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.stms-filter-btn,
+.stms-reset-btn {
+    min-height: 42px;
+    padding: 0 1rem;
+    border-radius: 9px;
+    font-size: 0.84rem;
+    font-weight: 600;
+}
+
+.stms-filter-btn {
+    border: 1px solid #4263eb;
+    background: #4263eb;
+    color: #fff;
+}
+
+    .stms-filter-btn:hover {
+        background: #3657da;
+    }
+
+.stms-reset-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #dfe4eb;
+    background: #fff;
+    color: #687386;
+    text-decoration: none;
+}
+
+    .stms-reset-btn:hover {
+        background: #f7f8fa;
+        color: #374151;
+    }
+
+
+/* Table Header */
+
+.stms-table-card {
+    overflow: hidden;
+}
+
+.stms-table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.1rem 1.4rem;
+    border-bottom: 1px solid #edf0f4;
+}
+
+.stms-table-title {
+    margin: 0;
+    color: #263044;
+    font-size: 1rem;
+    font-weight: 650;
+}
+
+.stms-count {
+    padding: 0.3rem 0.65rem;
+    background: #f4f6f9;
+    border-radius: 999px;
+    color: #778196;
+    font-size: 0.76rem;
+    font-weight: 600;
+}
+
+
+/* Table */
+
+.stms-table {
+    width: 100%;
+    margin: 0;
+    border-collapse: collapse;
+}
+
+    .stms-table thead th {
+        padding: 0.8rem 1.2rem;
+        background: #fafbfc;
+        border-bottom: 1px solid #e9edf3;
+        color: #8a94a6;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .stms-table tbody td {
+        padding: 0.9rem 1.2rem;
+        border-bottom: 1px solid #f0f2f5;
+        color: #4d576a;
+        font-size: 0.86rem;
+        vertical-align: middle;
+    }
+
+    .stms-table tbody tr {
+        transition: background-color 0.15s ease;
+    }
+
+        .stms-table tbody tr:hover {
+            background: #fafbfe;
+        }
+
+        .stms-table tbody tr:last-child td {
+            border-bottom: 0;
+        }
+
+
+/* STM Number */
+
+.stm-number {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.3rem 0.55rem;
+    background: #f2f4ff;
+    border-radius: 7px;
+    color: #4b5fd1;
+    font-size: 0.8rem;
+    font-weight: 650;
+}
+
+
+/* Site */
+
+.stm-site {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.stm-site-name {
+    color: #354052;
+    font-weight: 550;
+}
+
+.stm-site-id {
+    color: #979fad;
+    font-size: 0.73rem;
+}
+
+
+/* Direction */
+
+.stm-direction {
+    color: #a0a7b3;
+    font-size: 0.9rem;
+}
+
+
+/* Connected */
+
+.stm-connected {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.stm-connected-number {
+    color: #354052;
+    font-weight: 600;
+}
+
+.stm-connected-site {
+    color: #919aab;
+    font-size: 0.73rem;
+}
+
+.stm-not-connected {
+    display: inline-flex;
+    padding: 0.3rem 0.55rem;
+    border-radius: 7px;
+    background: #faf4f4;
+    color: #a97478;
+    font-size: 0.73rem;
+    font-weight: 600;
+}
+
+
+/* Action */
+
+.stm-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.stm-view-link {
+    padding: 0.38rem 0.7rem;
+    border-radius: 7px;
+    color: #667085;
+    font-size: 0.8rem;
+    font-weight: 550;
+    text-decoration: none;
+}
+
+    .stm-view-link:hover {
+        background: #f1f3f6;
+        color: #344054;
+    }
+
+
+/* Empty */
+
+.stms-empty {
+    padding: 4rem 1rem !important;
+    text-align: center;
+}
+
+.stms-empty-title {
+    margin-bottom: 0.3rem;
+    color: #495366;
+    font-weight: 600;
+}
+
+.stms-empty-text {
+    margin: 0;
+    color: #929bab;
+    font-size: 0.84rem;
+}
+
+
+/* Pagination */
+
+.stms-pagination-area {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.4rem;
+    border-top: 1px solid #edf0f4;
+}
+
+.stms-page-info {
+    color: #8a94a6;
+    font-size: 0.8rem;
+}
+
+.stms-pagination {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.stms-page-link {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 0.55rem;
+    border-radius: 8px;
+    background: transparent;
+    color: #667085;
+    font-size: 0.8rem;
+    font-weight: 550;
+    text-decoration: none;
+}
+
+    .stms-page-link:hover {
+        background: #f2f4f7;
+        color: #344054;
+    }
+
+    .stms-page-link.active {
+        background: #eef2ff;
+        color: #4263eb;
+        font-weight: 700;
+    }
+
+    .stms-page-link.disabled {
+        color: #c8ced8;
+        pointer-events: none;
+    }
+
+.stms-page-ellipsis {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 34px;
+    color: #98a2b3;
+}
+
+
+/* Responsive */
+
+@media (max-width: 1000px) {
+
+    .stms-filter-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .stms-filter-actions {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 650px) {
+
+    .stms-page {
+        padding: 1.25rem 0.8rem 2rem;
+    }
+
+    .stms-header {
+        flex-direction: column;
+    }
+
+    .stms-filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .stms-filter-actions {
+        grid-column: auto;
+    }
+
+    .stms-filter-btn {
+        flex: 1;
+    }
+
+    .stms-pagination-area {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .stms-pagination {
+        flex-wrap: wrap;
+    }
+}
+/* =========================================================
+   STM Details
+   ========================================================= */
+
+.stm-details-page {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 3rem;
+}
+
+.stm-details-top {
+    margin-bottom: 1.5rem;
+}
+
+.stm-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-bottom: 1.15rem;
+    color: #7c8698;
+    font-size: 0.84rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+    .stm-back-link:hover {
+        color: #4263eb;
+    }
+
+.stm-details-title {
+    margin: 0;
+    color: #172033;
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.stm-details-subtitle {
+    margin: 0.35rem 0 0;
+    color: #8790a1;
+    font-size: 0.9rem;
+}
+
+
+/* Main card */
+
+.stm-details-card {
+    overflow: hidden;
+}
+
+.stm-details-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem 1.7rem;
+    border-bottom: 1px solid #edf0f4;
+}
+
+.stm-details-identity {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+}
+
+.stm-details-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 64px;
+    height: 42px;
+    padding: 0 0.8rem;
+    background: #eef2ff;
+    border-radius: 9px;
+    color: #4263eb;
+    font-size: 0.86rem;
+    font-weight: 700;
+}
+
+.stm-details-link-name {
+    margin: 0;
+    color: #303a4c;
+    font-size: 1rem;
+    font-weight: 650;
+}
+
+.stm-details-link-caption {
+    margin-top: 0.2rem;
+    color: #929bab;
+    font-size: 0.76rem;
+}
+
+.stm-details-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.7rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 650;
+}
+
+    .stm-details-status.connected {
+        background: #f0f8f4;
+        color: #54806a;
+    }
+
+    .stm-details-status.disconnected {
+        background: #faf4f4;
+        color: #a16d72;
+    }
+
+
+/* Section */
+
+.stm-details-section {
+    padding: 1.6rem 1.7rem;
+}
+
+    .stm-details-section + .stm-details-section {
+        border-top: 1px solid #edf0f4;
+    }
+
+.stm-section-title {
+    margin: 0 0 1.2rem;
+    color: #6e788a;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.045em;
+    text-transform: uppercase;
+}
+
+
+/* Information grid */
+
+.stm-details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.4rem 2rem;
+}
+
+.stm-detail-label {
+    margin-bottom: 0.35rem;
+    color: #9aa2b1;
+    font-size: 0.72rem;
+    font-weight: 650;
+    letter-spacing: 0.035em;
+    text-transform: uppercase;
+}
+
+.stm-detail-value {
+    color: #374153;
+    font-size: 0.9rem;
+    font-weight: 550;
+}
+
+.stm-detail-muted {
+    margin-top: 0.15rem;
+    color: #939cac;
+    font-size: 0.76rem;
+}
+
+
+/* Route */
+
+.stm-route {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 1rem;
+}
+
+.stm-route-site {
+    padding: 1rem 1.1rem;
+    background: #fafbfc;
+    border: 1px solid #edf0f4;
+    border-radius: 10px;
+}
+
+    .stm-route-site:last-child {
+        text-align: right;
+    }
+
+.stm-route-name {
+    color: #354052;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.stm-route-id {
+    margin-top: 0.2rem;
+    color: #98a1b0;
+    font-size: 0.75rem;
+}
+
+.stm-route-arrow {
+    color: #a5adba;
+    font-size: 1.1rem;
+}
+
+
+/* Connected STM */
+
+.stm-connected-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.1rem;
+    background: #fafbfc;
+    border: 1px solid #edf0f4;
+    border-radius: 10px;
+}
+
+.stm-connected-main {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.stm-connected-title {
+    color: #364052;
+    font-size: 0.9rem;
+    font-weight: 650;
+}
+
+.stm-connected-description {
+    color: #929bab;
+    font-size: 0.76rem;
+}
+
+.stm-connected-link {
+    padding: 0.38rem 0.65rem;
+    border-radius: 7px;
+    color: #4263eb;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+    .stm-connected-link:hover {
+        background: #eef2ff;
+    }
+
+
+/* E1 summary */
+
+.stm-e1-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.1rem;
+    background: #fafbfc;
+    border: 1px solid #edf0f4;
+    border-radius: 10px;
+}
+
+.stm-e1-count {
+    color: #354052;
+    font-size: 0.9rem;
+    font-weight: 650;
+}
+
+.stm-e1-caption {
+    margin-top: 0.2rem;
+    color: #929bab;
+    font-size: 0.76rem;
+}
+
+
+/* Footer */
+
+.stm-details-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 1.15rem 1.7rem;
+    background: #fcfcfd;
+    border-top: 1px solid #edf0f4;
+}
+
+.stm-details-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 39px;
+    padding: 0 0.9rem;
+    border: 1px solid #dfe4eb;
+    border-radius: 8px;
+    background: #fff;
+    color: #667085;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+    .stm-details-secondary:hover {
+        background: #f6f7f9;
+        color: #344054;
+    }
+
+.stm-details-primary-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 39px;
+    padding: 0 0.9rem;
+    border-radius: 8px;
+    background: #eef2ff;
+    color: #4263eb;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+    .stm-details-primary-link:hover {
+        background: #e4e9ff;
+        color: #3657da;
+    }
+
+
+/* Mobile */
+
+@media (max-width: 650px) {
+
+    .stm-details-page {
+        padding: 1.25rem 0.8rem 2rem;
+    }
+
+    .stm-details-card-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .stm-details-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .stm-route {
+        grid-template-columns: 1fr;
+    }
+
+    .stm-route-site:last-child {
+        text-align: left;
+    }
+
+    .stm-route-arrow {
+        transform: rotate(90deg);
+        justify-self: center;
+    }
+
+    .stm-connected-card,
+    .stm-e1-summary {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .stm-details-footer {
+        align-items: stretch;
+        flex-direction: column;
+    }
+}

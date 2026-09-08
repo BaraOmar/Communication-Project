@@ -14,13 +14,43 @@ namespace CommunicationProject.ViewModels
         [Display(Name = "Source Site")]
         public string? SourceSiteId { get; set; }
 
+
         public List<SelectListItem> LinkOptions { get; set; } =
-            new List<SelectListItem>();
+            new();
 
         public List<SelectListItem> SiteOptions { get; set; } =
-            new List<SelectListItem>();
+            new();
 
         public List<PathSearchResultViewModel> Results { get; set; } =
-            new List<PathSearchResultViewModel>();
+            new();
+
+
+        // Pagination
+        public int PageNumber { get; set; } = 1;
+
+        public int PageSize { get; set; } = 10;
+
+        public int TotalItems { get; set; }
+
+        public int TotalPages { get; set; }
+
+
+        public bool HasPreviousPage =>
+            PageNumber > 1;
+
+        public bool HasNextPage =>
+            PageNumber < TotalPages;
+
+
+        public int FirstItem =>
+            TotalItems == 0
+                ? 0
+                : ((PageNumber - 1) * PageSize) + 1;
+
+
+        public int LastItem =>
+            Math.Min(
+                PageNumber * PageSize,
+                TotalItems);
     }
 }

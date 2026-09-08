@@ -1,0 +1,569 @@
+﻿/* =========================================================
+   Users
+   ========================================================= */
+
+.users-page {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 3rem;
+}
+
+
+/* Header */
+
+.users-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.7rem;
+}
+
+.users-title {
+    margin: 0;
+    color: #172033;
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -.025em;
+}
+
+.users-subtitle {
+    margin: .4rem 0 0;
+    color: #7f899a;
+    font-size: .92rem;
+}
+
+
+/* Shared card */
+
+.users-card {
+    background: #fff;
+    border: 1px solid #e8ecf2;
+    border-radius: 14px;
+    box-shadow: 0 3px 14px rgba(20, 32, 56, .035);
+}
+
+
+/* Primary button */
+
+.users-primary-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    min-height: 42px;
+    padding: 0 1rem;
+    border: 1px solid #4263eb;
+    border-radius: 9px;
+    background: #4263eb;
+    color: #fff;
+    font-size: .88rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all .15s ease;
+}
+
+    .users-primary-btn:hover {
+        background: #3657da;
+        border-color: #3657da;
+        color: #fff;
+        box-shadow: 0 5px 14px rgba(66, 99, 235, .14);
+    }
+
+
+/* =========================================================
+   Filters
+   ========================================================= */
+
+.users-filter-card {
+    margin-bottom: 1.25rem;
+    padding: 1.2rem;
+}
+
+.users-filter-grid {
+    display: grid;
+    grid-template-columns: minmax(280px, 1fr) 220px auto;
+    gap: .8rem;
+    align-items: end;
+}
+
+.users-field label {
+    display: block;
+    margin-bottom: .45rem;
+    color: #4b5567;
+    font-size: .8rem;
+    font-weight: 600;
+}
+
+.users-input,
+.users-select {
+    width: 100%;
+    height: 42px;
+    padding: 0 .8rem;
+    border: 1px solid #dfe4eb;
+    border-radius: 9px;
+    background: #fbfcfe;
+    color: #293346;
+    font-size: .9rem;
+    outline: none;
+    transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+}
+
+    .users-input::placeholder {
+        color: #a4acb9;
+    }
+
+    .users-input:focus,
+    .users-select:focus {
+        background: #fff;
+        border-color: #9caef7;
+        box-shadow: 0 0 0 3px rgba(66, 99, 235, .08);
+    }
+
+
+/* Filter actions */
+
+.users-filter-actions {
+    display: flex;
+    gap: .5rem;
+}
+
+.users-filter-btn,
+.users-clear-btn {
+    min-height: 42px;
+    padding: 0 1rem;
+    border-radius: 9px;
+    font-size: .85rem;
+    font-weight: 600;
+}
+
+.users-filter-btn {
+    border: 1px solid #4263eb;
+    background: #4263eb;
+    color: #fff;
+}
+
+    .users-filter-btn:hover {
+        background: #3657da;
+    }
+
+.users-clear-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #dfe4eb;
+    background: #fff;
+    color: #687386;
+    text-decoration: none;
+}
+
+    .users-clear-btn:hover {
+        background: #f7f8fa;
+        color: #374151;
+    }
+
+
+/* =========================================================
+   Table
+   ========================================================= */
+
+.users-table-card {
+    overflow: hidden;
+}
+
+.users-table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.1rem 1.35rem;
+    border-bottom: 1px solid #edf0f4;
+}
+
+.users-table-title {
+    margin: 0;
+    color: #263044;
+    font-size: 1rem;
+    font-weight: 650;
+}
+
+.users-count {
+    padding: .3rem .65rem;
+    background: #f4f6f9;
+    border-radius: 999px;
+    color: #778196;
+    font-size: .76rem;
+    font-weight: 600;
+}
+
+.users-table {
+    width: 100%;
+    margin: 0;
+    border-collapse: collapse;
+}
+
+    .users-table thead th {
+        padding: .8rem 1.3rem;
+        background: #fafbfc;
+        border-bottom: 1px solid #e9edf3;
+        color: #8a94a6;
+        font-size: .7rem;
+        font-weight: 700;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+    }
+
+    .users-table tbody td {
+        padding: .95rem 1.3rem;
+        border-bottom: 1px solid #f0f2f5;
+        color: #4d576a;
+        font-size: .88rem;
+        vertical-align: middle;
+    }
+
+    .users-table tbody tr {
+        transition: background-color .15s ease;
+    }
+
+        .users-table tbody tr:hover {
+            background: #fafbfe;
+        }
+
+        .users-table tbody tr:last-child td {
+            border-bottom: 0;
+        }
+
+
+/* User identity */
+
+.user-identity {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+
+.user-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    background: #eef2ff;
+    border-radius: 9px;
+    color: #4263eb;
+    font-size: .78rem;
+    font-weight: 700;
+}
+
+.user-name {
+    color: #344054;
+    font-size: .9rem;
+    font-weight: 650;
+}
+
+.user-email {
+    color: #657085;
+}
+
+
+/* Roles */
+
+.user-role {
+    display: inline-flex;
+    align-items: center;
+    padding: .32rem .6rem;
+    border-radius: 7px;
+    font-size: .73rem;
+    font-weight: 650;
+}
+
+.user-role-admin {
+    background: #eef2ff;
+    color: #5367d7;
+}
+
+.user-role-operator {
+    background: #fff7eb;
+    color: #987746;
+}
+
+.user-role-viewer {
+    background: #f2f7f4;
+    color: #637f6d;
+}
+
+.user-role-default {
+    background: #f4f6f8;
+    color: #7d8798;
+}
+
+
+/* Empty */
+
+.users-empty {
+    padding: 4rem 1rem !important;
+    text-align: center;
+}
+
+.users-empty-title {
+    margin-bottom: .3rem;
+    color: #495366;
+    font-weight: 600;
+}
+
+.users-empty-text {
+    margin: 0;
+    color: #929bab;
+    font-size: .84rem;
+}
+
+
+/* =========================================================
+   Pagination
+   ========================================================= */
+
+.users-pagination-area {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.35rem;
+    border-top: 1px solid #edf0f4;
+}
+
+.users-page-info {
+    color: #8a94a6;
+    font-size: .8rem;
+}
+
+.users-pagination {
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.users-page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 .55rem;
+    border-radius: 8px;
+    color: #667085;
+    font-size: .8rem;
+    font-weight: 550;
+    text-decoration: none;
+}
+
+    .users-page-link:hover {
+        background: #f2f4f7;
+        color: #344054;
+    }
+
+    .users-page-link.active {
+        background: #eef2ff;
+        color: #4263eb;
+        font-weight: 700;
+    }
+
+    .users-page-link.disabled {
+        color: #c8ced8;
+        pointer-events: none;
+    }
+
+.users-page-ellipsis {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 34px;
+    color: #98a2b3;
+}
+
+
+/* =========================================================
+   Create User
+   ========================================================= */
+
+.users-form-page {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 3rem;
+}
+
+.users-back-link {
+    display: inline-flex;
+    margin-bottom: 1.1rem;
+    color: #7f899a;
+    font-size: .86rem;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+    .users-back-link:hover {
+        color: #4263eb;
+    }
+
+.users-form-title {
+    margin: 0;
+    color: #172033;
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -.02em;
+}
+
+.users-form-subtitle {
+    margin: .35rem 0 1.5rem;
+    color: #8790a1;
+    font-size: .9rem;
+}
+
+.users-form-card {
+    padding: 2rem;
+}
+
+.users-form-section-title {
+    margin: 0 0 1.2rem;
+    color: #7a8495;
+    font-size: .73rem;
+    font-weight: 700;
+    letter-spacing: .045em;
+    text-transform: uppercase;
+}
+
+.users-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.2rem;
+}
+
+.users-form-group {
+    margin-bottom: 1.3rem;
+}
+
+.users-form-label {
+    display: block;
+    margin-bottom: .45rem;
+    color: #465064;
+    font-size: .82rem;
+    font-weight: 600;
+}
+
+.users-form-control,
+.users-form-select {
+    width: 100%;
+    min-height: 44px;
+    padding: .65rem .85rem;
+    border: 1px solid #dfe4eb;
+    border-radius: 9px;
+    background: #fbfcfe;
+    color: #293346;
+    font-size: .9rem;
+    outline: none;
+}
+
+    .users-form-control:focus,
+    .users-form-select:focus {
+        background: #fff;
+        border-color: #9caef7;
+        box-shadow: 0 0 0 3px rgba(66, 99, 235, .08);
+    }
+
+.users-validation {
+    display: block;
+    margin-top: .35rem;
+    color: #c85f67;
+    font-size: .76rem;
+}
+
+.users-validation-summary:empty {
+    display: none;
+}
+
+.users-validation-summary {
+    margin-bottom: 1.3rem;
+    padding: .85rem 1rem;
+    background: #fff7f7;
+    border: 1px solid #f1dddd;
+    border-radius: 9px;
+    color: #a0545a;
+    font-size: .8rem;
+}
+
+.users-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: .6rem;
+    margin-top: 1.7rem;
+    padding-top: 1.3rem;
+    border-top: 1px solid #edf0f4;
+}
+
+.users-secondary-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0 1rem;
+    border: 1px solid #dfe4eb;
+    border-radius: 9px;
+    background: #fff;
+    color: #667085;
+    font-size: .85rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+    .users-secondary-btn:hover {
+        background: #f7f8fa;
+        color: #344054;
+    }
+
+
+/* Responsive */
+
+@media (max-width: 700px) {
+
+    .users-page,
+    .users-form-page {
+        padding: 1.25rem .8rem 2rem;
+    }
+
+    .users-header {
+        flex-direction: column;
+    }
+
+    .users-primary-btn {
+        width: 100%;
+    }
+
+    .users-filter-grid,
+    .users-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .users-pagination-area {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .users-pagination {
+        flex-wrap: wrap;
+    }
+
+    .users-form-card {
+        padding: 1.3rem;
+    }
+
+    .users-form-actions {
+        flex-direction: column-reverse;
+    }
+
+        .users-form-actions > * {
+            width: 100%;
+        }
+}

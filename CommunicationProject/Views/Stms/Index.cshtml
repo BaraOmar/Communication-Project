@@ -1,108 +1,509 @@
-﻿@model IEnumerable<CommunicationProject.Models.Stm>
+﻿@model CommunicationProject.ViewModels.StmIndexViewModel
 
 @{
     ViewData["Title"] = "STMs";
 }
 
-<h1>STMs</h1>
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/stms.css"
+          asp-append-version="true" />
+}
 
-<p class="text-muted">
-    Every STM belongs to the source site of its directional communication link
-    and is connected automatically to the corresponding STM on the reverse link.
-</p>
+<div class="stms-page">
 
-<table class="table table-striped table-bordered">
-    <thead>
-        <tr>
-            <th>STM ID</th>
-            <th>STM Number</th>
-            <th>Site From</th>
-            <th>Site To</th>
-            <th>Connected STM</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
+    <!-- Header -->
+    <div class="stms-header">
 
-    <tbody>
-        @foreach (var item in Model)
-        {
-            /*
-             * IsFromSide is no longer needed.
-             *
-             * The STM belongs to Link.SiteFrom.
-             * The opposite endpoint is Link.SiteTo.
-             */
-            var displayedSiteFrom = item.Link?.SiteFrom;
-            var displayedSiteTo = item.Link?.SiteTo;
+        <div>
 
-            <tr>
-                <td>
-                    @item.Id
-                </td>
+            <h1 class="stms-title">
+                STMs
+            </h1>
 
-                <td>
-                    STM @item.Number
-                </td>
+            <p class="stms-subtitle">
+                View STM units generated from communication links
+                and their connected endpoints.
+            </p>
 
-                <td>
-                    @if (displayedSiteFrom != null)
-                    {
-                        <span>
-                            @displayedSiteFrom.Id -
-                            @displayedSiteFrom.Name
-                        </span>
-                    }
-                    else
-                    {
-                        <span>Not available</span>
-                    }
-                </td>
+        </div>
 
-                <td>
-                    @if (displayedSiteTo != null)
-                    {
-                        <span>
-                            @displayedSiteTo.Id -
-                            @displayedSiteTo.Name
-                        </span>
-                    }
-                    else
-                    {
-                        <span>Not available</span>
-                    }
-                </td>
+        <div class="stms-readonly">
+            Read only
+        </div>
 
-                <td>
-                    @if (item.ConnectedStm != null)
-                    {
-                        <div>
-                            <strong>
-                                STM @item.ConnectedStm.Number
-                            </strong>
-                        </div>
+    </div>
 
-                        @if (item.ConnectedStm.Link?.SiteFrom != null)
+
+    <!-- Filters -->
+    <div class="stms-card stms-filter-card">
+
+        <form asp-action="Index"
+              method="get">
+
+            <div class="stms-filter-grid">
+
+                <!-- Search -->
+                <div class="stms-field">
+
+                    <label for="search">
+                        Search
+                    </label>
+
+                    <input id="search"
+                           name="search"
+                           value="@Model.Search"
+                           class="stms-input"
+                           placeholder="STM, link or site..." />
+
+                </div>
+
+
+                <!-- Site -->
+                <div class="stms-field">
+
+                    <label for="siteId">
+                        Source site
+                    </label>
+
+                    <select id="siteId"
+                            name="siteId"
+                            class="stms-select">
+
+                        <option value="">
+                            All sites
+                        </option>
+
+                        @foreach (var site in Model.Sites)
                         {
-                            <div class="text-muted">
-                                @item.ConnectedStm.Link.SiteFrom.Id -
-                                @item.ConnectedStm.Link.SiteFrom.Name
-                            </div>
+                            if (Model.SiteId == site.Id)
+                            {
+                                <option value="@site.Id"
+                                        selected>
+                                    @site.Name
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="@site.Id">
+                                    @site.Name
+                                </option>
+                            }
+                        }
+
+                    </select>
+
+                </div>
+
+
+                <!-- Connection -->
+                <div class="stms-field">
+
+                    <label for="connectionStatus">
+                        Connection
+                    </label>
+
+                    <select id="connectionStatus"
+                            name="connectionStatus"
+                            class="stms-select">
+
+                        <option value="">
+                            All
+                        </option>
+
+                        @if (Model.ConnectionStatus == "connected")
+                        {
+                            <option value="connected" selected>
+                                Connected
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="connected">
+                                Connected
+                            </option>
+                        }
+
+                        @if (Model.ConnectionStatus == "not-connected")
+                        {
+                            <option value="not-connected" selected>
+                                Not connected
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="not-connected">
+                                Not connected
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+
+                <!-- Buttons -->
+                <div class="stms-filter-actions">
+
+                    <button type="submit"
+                            class="stms-filter-btn">
+                        Apply
+                    </button>
+
+                    <a asp-action="Index"
+                           class="stms-reset-btn">
+                        Clear
+                    </a>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <!-- Table -->
+    <div class="stms-card stms-table-card">
+
+        <div class="stms-table-header">
+
+            <h2 class="stms-table-title">
+                All STMs
+            </h2>
+
+            <span class="stms-count">
+                @Model.TotalItems total
+            </span>
+
+        </div>
+
+
+        <div class="table-responsive">
+
+            <table class="stms-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            STM
+                        </th>
+
+                        <th>
+                            Source
+                        </th>
+
+                        <th>
+                            Destination
+                        </th>
+
+                        <th>
+                            Connected STM
+                        </th>
+
+                        <th class="text-end">
+                            Action
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    @if (Model.Stms.Any())
+                    {
+                        foreach (var stm in Model.Stms)
+                        {
+                            <tr>
+
+                                <!-- STM -->
+                                <td>
+
+                                    <span class="stm-number">
+                                        STM @stm.Number
+                                    </span>
+
+                                </td>
+
+
+                                <!-- Source -->
+                                <td>
+
+                                    <div class="stm-site">
+
+                                        <span class="stm-site-name">
+                                            @stm.Link.SiteFrom.Name
+                                        </span>
+
+                                        <span class="stm-site-id">
+                                            @stm.Link.SiteFrom.Id
+                                        </span>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- Destination -->
+                                <td>
+
+                                    <div class="stm-site">
+
+                                        <span class="stm-site-name">
+                                            @stm.Link.SiteTo.Name
+                                        </span>
+
+                                        <span class="stm-site-id">
+                                            @stm.Link.SiteTo.Id
+                                        </span>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- Connected STM -->
+                                <td>
+
+                                    @if (stm.ConnectedStm != null)
+                                    {
+                                        <div class="stm-connected">
+
+                                            <span class="stm-connected-number">
+                                                STM @stm.ConnectedStm.Number
+                                            </span>
+
+                                            @if (stm.ConnectedStm.Link?.SiteFrom != null)
+                                            {
+                                                <span class="stm-connected-site">
+                                                    @stm.ConnectedStm.Link.SiteFrom.Name
+                                                </span>
+                                            }
+
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="stm-not-connected">
+                                            Not connected
+                                        </span>
+                                    }
+
+                                </td>
+
+
+                                <!-- Action -->
+                                <td>
+
+                                    <div class="stm-actions">
+
+                                        <a asp-action="Details"
+                                               asp-route-id="@stm.Id"
+                                               class="stm-view-link">
+                                            View
+                                        </a>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
                         }
                     }
                     else
                     {
-                        <span>Not connected</span>
-                    }
-                </td>
+                        <tr>
 
-                <td>
-                    <a asp-action="Details"
-                           asp-route-id="@item.Id"
-                           class="btn btn-sm btn-info">
-                        Details
-                    </a>
-                </td>
-            </tr>
+                            <td colspan="5"
+                                class="stms-empty">
+
+                                <div class="stms-empty-title">
+                                    No STMs found
+                                </div>
+
+                                <p class="stms-empty-text">
+                                    Try changing your search or filters.
+                                </p>
+
+                            </td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- Compact Pagination -->
+        @if (Model.TotalPages > 1)
+        {
+            <div class="stms-pagination-area">
+
+                <div class="stms-page-info">
+                    Page @Model.PageNumber of @Model.TotalPages
+                </div>
+
+
+                <ul class="stms-pagination">
+
+                    <!-- Previous -->
+                    <li>
+
+                        @if (Model.HasPreviousPage)
+                        {
+                            <a asp-action="Index"
+                                   asp-route-search="@Model.Search"
+                                   asp-route-siteId="@Model.SiteId"
+                                   asp-route-connectionStatus="@Model.ConnectionStatus"
+                                   asp-route-pageNumber="@(Model.PageNumber - 1)"
+                                   class="stms-page-link">
+                                ‹
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="stms-page-link disabled">
+                                ‹
+                            </span>
+                        }
+
+                    </li>
+
+
+                    @{
+                        int currentPage = Model.PageNumber;
+                        int totalPages = Model.TotalPages;
+
+                        int startPage =
+                            Math.Max(2, currentPage - 2);
+
+                        int endPage =
+                            Math.Min(
+                                totalPages - 1,
+                                currentPage + 2);
+                    }
+
+
+                    <!-- Page 1 -->
+                    <li>
+
+                        <a asp-action="Index"
+                               asp-route-search="@Model.Search"
+                               asp-route-siteId="@Model.SiteId"
+                               asp-route-connectionStatus="@Model.ConnectionStatus"
+                               asp-route-pageNumber="1"
+                               class="stms-page-link
+                            @(currentPage == 1
+                                                           ? "active"
+                                                           : "")">
+                            1
+                        </a>
+
+                    </li>
+
+
+                    <!-- Left ellipsis -->
+                    @if (startPage > 2)
+                    {
+                        <li>
+                            <span class="stms-page-ellipsis">
+                                …
+                            </span>
+                        </li>
+                    }
+
+
+                    <!-- Nearby -->
+                    @for (int i = startPage;
+                          i <= endPage;
+                          i++)
+                    {
+                        <li>
+
+                            <a asp-action="Index"
+                                   asp-route-search="@Model.Search"
+                                   asp-route-siteId="@Model.SiteId"
+                                   asp-route-connectionStatus="@Model.ConnectionStatus"
+                                   asp-route-pageNumber="@i"
+                                   class="stms-page-link
+                                @(currentPage == i
+                                                                   ? "active"
+                                                                   : "")">
+                                @i
+                            </a>
+
+                        </li>
+                    }
+
+
+                    <!-- Right ellipsis -->
+                    @if (endPage < totalPages - 1)
+                    {
+                        <li>
+                            <span class="stms-page-ellipsis">
+                                …
+                            </span>
+                        </li>
+                    }
+
+
+                    <!-- Last -->
+                    @if (totalPages > 1)
+                    {
+                        <li>
+
+                            <a asp-action="Index"
+                                   asp-route-search="@Model.Search"
+                                   asp-route-siteId="@Model.SiteId"
+                                   asp-route-connectionStatus="@Model.ConnectionStatus"
+                                   asp-route-pageNumber="@totalPages"
+                                   class="stms-page-link
+                                @(currentPage == totalPages
+                                                                   ? "active"
+                                                                   : "")">
+                                @totalPages
+                            </a>
+
+                        </li>
+                    }
+
+
+                    <!-- Next -->
+                    <li>
+
+                        @if (Model.HasNextPage)
+                        {
+                            <a asp-action="Index"
+                                   asp-route-search="@Model.Search"
+                                   asp-route-siteId="@Model.SiteId"
+                                   asp-route-connectionStatus="@Model.ConnectionStatus"
+                                   asp-route-pageNumber="@(Model.PageNumber + 1)"
+                                   class="stms-page-link">
+                                ›
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="stms-page-link disabled">
+                                ›
+                            </span>
+                        }
+
+                    </li>
+
+                </ul>
+
+            </div>
         }
-    </tbody>
-</table>
+
+    </div>
+
+</div>

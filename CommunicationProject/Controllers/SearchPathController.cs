@@ -31,7 +31,14 @@ namespace CommunicationProject.Controllers
             NormalizeFilters(model);
 
             await LoadFilterOptionsAsync(model);
+            if (model.PageNumber < 1)
+            {
+                model.PageNumber = 1;
+            }
 
+            const int pageSize = 10;
+
+            model.PageSize = pageSize;
             /*
              * Start with every PathId stored in the E1 table.
              */
@@ -105,6 +112,9 @@ namespace CommunicationProject.Controllers
 
             if (pathIds.Count == 0)
             {
+                model.TotalItems = 0;
+                model.TotalPages = 0;
+
                 return View(model);
             }
 
@@ -124,8 +134,35 @@ namespace CommunicationProject.Controllers
                 .ThenBy(e1 => e1.PathOrder)
                 .ToListAsync();
 
-            model.Results =
+            var allResults =
                 BuildPathResults(pathE1s);
+
+
+            model.TotalItems =
+                allResults.Count;
+
+
+            model.TotalPages =
+                (int)Math.Ceiling(
+                    model.TotalItems /
+                    (double)model.PageSize);
+
+
+            if (model.TotalPages > 0 &&
+                model.PageNumber > model.TotalPages)
+            {
+                model.PageNumber =
+                    model.TotalPages;
+            }
+
+
+            model.Results = allResults
+                .Skip(
+                    (model.PageNumber - 1) *
+                    model.PageSize)
+                .Take(model.PageSize)
+                .ToList();
+
 
             return View(model);
         }

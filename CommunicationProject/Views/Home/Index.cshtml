@@ -1,8 +1,352 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@using CommunicationProject.Security
+
+@{
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/home.css"
+          asp-append-version="true" />
+}
+
+
+<div class="home-page">
+
+    <!-- Header -->
+    <div class="home-header">
+
+        <h1 class="home-title">
+            Network Management
+        </h1>
+
+        <p class="home-subtitle">
+            Access communication sites, links, channels
+            and network path management from one place.
+        </p>
+
+    </div>
+
+
+    <!-- =====================================================
+         MANAGEMENT
+         ===================================================== -->
+    @if (User.IsInRole(AppRoles.Admin))
+    {
+        <section class="home-section">
+
+            <h2 class="home-section-title">
+                Management
+            </h2>
+
+
+            <div class="home-grid">
+
+
+                <!-- Users -->
+                <a asp-controller="Users"
+                       asp-action="Index"
+                       class="home-nav-card">
+
+                    <span class="home-card-icon">
+                        US
+                    </span>
+
+                    <h3 class="home-card-title">
+                        Users
+                    </h3>
+
+                    <p class="home-card-description">
+                        Create system accounts and manage
+                        user access roles.
+                    </p>
+
+                    <div class="home-card-footer">
+
+                        <span>
+                            User management
+                        </span>
+
+                        <span class="home-card-arrow">
+                            →
+                        </span>
+
+                    </div>
+
+                </a>
+
+
+                <!-- Sites -->
+                <a asp-controller="Sites"
+                       asp-action="Index"
+                       class="home-nav-card home-card-green">
+
+                    <span class="home-card-icon">
+                        SI
+                    </span>
+
+                    <h3 class="home-card-title">
+                        Sites
+                    </h3>
+
+                    <p class="home-card-description">
+                        Manage communication sites
+                        and their locations.
+                    </p>
+
+                    <div class="home-card-footer">
+
+                        <span>
+                            Site management
+                        </span>
+
+                        <span class="home-card-arrow">
+                            →
+                        </span>
+
+                    </div>
+
+                </a>
+
+
+                <!-- Links -->
+                <a asp-controller="CommunicationLinks"
+                       asp-action="Index"
+                       class="home-nav-card home-card-purple">
+
+                    <span class="home-card-icon">
+                        LN
+                    </span>
+
+                    <h3 class="home-card-title">
+                        Communication Links
+                    </h3>
+
+                    <p class="home-card-description">
+                        Manage network routes, capacities,
+                        STMs and imported links.
+                    </p>
+
+                    <div class="home-card-footer">
+
+                        <span>
+                            Link management
+                        </span>
+
+                        <span class="home-card-arrow">
+                            →
+                        </span>
+
+                    </div>
+
+                </a>
+
+
+                <!-- Link Types -->
+                <a asp-controller="LinkTypes"
+                       asp-action="Index"
+                       class="home-nav-card home-card-gray">
+
+                    <span class="home-card-icon">
+                        LT
+                    </span>
+
+                    <h3 class="home-card-title">
+                        Link Types
+                    </h3>
+
+                    <p class="home-card-description">
+                        Manage the technologies used
+                        by communication links.
+                    </p>
+
+                    <div class="home-card-footer">
+
+                        <span>
+                            Type configuration
+                        </span>
+
+                        <span class="home-card-arrow">
+                            →
+                        </span>
+
+                    </div>
+
+                </a>
+
+            </div>
+
+        </section>
+    }
+
+
+    <!-- =====================================================
+         NETWORK
+         ===================================================== -->
+
+    <section class="home-section">
+
+        <h2 class="home-section-title">
+            Network
+        </h2>
+
+
+        <div class="home-grid">
+
+
+            <!-- STM -->
+            <a asp-controller="Stms"
+                   asp-action="Index"
+                   class="home-nav-card">
+
+                <span class="home-card-icon">
+                    STM
+                </span>
+
+                <h3 class="home-card-title">
+                    STMs
+                </h3>
+
+                <p class="home-card-description">
+                    Browse generated STM units,
+                    routes and connected endpoints.
+                </p>
+
+                <div class="home-card-footer">
+
+                    <span>
+                        STM inventory
+                    </span>
+
+                    <span class="home-card-arrow">
+                        →
+                    </span>
+
+                </div>
+
+            </a>
+
+
+            <!-- E1 -->
+            <a asp-controller="E1s"
+                   asp-action="Index"
+                   class="home-nav-card home-card-green">
+
+                <span class="home-card-icon">
+                    E1
+                </span>
+
+                <h3 class="home-card-title">
+                    E1 Channels
+                </h3>
+
+                <p class="home-card-description">
+                    Browse E1 channels, connection
+                    state and path assignment.
+                </p>
+
+                <div class="home-card-footer">
+
+                    <span>
+                        Channel inventory
+                    </span>
+
+                    <span class="home-card-arrow">
+                        →
+                    </span>
+
+                </div>
+
+            </a>
+
+
+            <!-- Search -->
+            <a asp-controller="SearchPath"
+                   asp-action="Index"
+                   class="home-nav-card home-card-purple">
+
+                <span class="home-card-icon">
+                    PATH
+                </span>
+
+                <h3 class="home-card-title">
+                    Search Paths
+                </h3>
+
+                <p class="home-card-description">
+                    Find saved network paths and
+                    visualize their complete route.
+                </p>
+
+                <div class="home-card-footer">
+
+                    <span>
+                        Path visualization
+                    </span>
+
+                    <span class="home-card-arrow">
+                        →
+                    </span>
+
+                </div>
+
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         OPERATIONS
+         ===================================================== -->
+    @if (User.IsInRole(AppRoles.Admin) ||
+             User.IsInRole(AppRoles.Operator))
+    {
+        <section class="home-section">
+
+            <h2 class="home-section-title">
+                Operations
+            </h2>
+
+
+            <div class="home-grid">
+
+
+                <a asp-controller="CrossConnections"
+                       asp-action="Create"
+                       class="home-nav-card home-card-amber">
+
+                    <span class="home-card-icon">
+                        XC
+                    </span>
+
+                    <h3 class="home-card-title">
+                        Cross Connection
+                    </h3>
+
+                    <p class="home-card-description">
+                        Join incoming and outgoing E1
+                        channels to create or extend a path.
+                    </p>
+
+                    <div class="home-card-footer">
+
+                        <span>
+                            Create connection
+                        </span>
+
+                        <span class="home-card-arrow">
+                            →
+                        </span>
+
+                    </div>
+
+                </a>
+
+            </div>
+
+        </section>
+    }
+
 </div>

@@ -1,0 +1,184 @@
+﻿@model CommunicationProject.ViewModels.CreateUserViewModel
+
+@{
+    ViewData["Title"] = "Create User";
+}
+
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/users.css"
+          asp-append-version="true" />
+}
+
+
+<div class="users-form-page">
+
+    <a asp-action="Index"
+           class="users-back-link">
+        ← Users
+    </a>
+
+
+    <h1 class="users-form-title">
+        Create user
+    </h1>
+
+    <p class="users-form-subtitle">
+        Create a system account and assign its access role.
+    </p>
+
+
+    <div class="users-card users-form-card">
+
+        <form asp-action="Create"
+              method="post">
+
+            <div asp-validation-summary="ModelOnly"
+                 class="users-validation-summary">
+            </div>
+
+
+            <h2 class="users-form-section-title">
+                User information
+            </h2>
+
+
+            <div class="users-form-grid">
+
+                <div class="users-form-group">
+
+                    <label asp-for="FullName"
+                           class="users-form-label">
+                        Full name
+                    </label>
+
+                    <input asp-for="FullName"
+                           class="users-form-control"
+                           placeholder="Enter full name" />
+
+                    <span asp-validation-for="FullName"
+                          class="users-validation">
+                    </span>
+
+                </div>
+
+
+                <div class="users-form-group">
+
+                    <label asp-for="Email"
+                           class="users-form-label">
+                        Email
+                    </label>
+
+                    <input asp-for="Email"
+                           class="users-form-control"
+                           placeholder="name@example.com" />
+
+                    <span asp-validation-for="Email"
+                          class="users-validation">
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="users-form-group">
+
+                <label asp-for="Role"
+                       class="users-form-label">
+                    Role
+                </label>
+
+                <select asp-for="Role"
+                        class="users-form-select">
+
+                    <option value="">
+                        Select role
+                    </option>
+
+                    @foreach (string role in ViewBag.Roles)
+                    {
+                        <option value="@role">
+                            @role
+                        </option>
+                    }
+
+                </select>
+
+                <span asp-validation-for="Role"
+                      class="users-validation">
+                </span>
+
+            </div>
+
+
+            <h2 class="users-form-section-title mt-4">
+                Credentials
+            </h2>
+
+
+            <div class="users-form-grid">
+
+                <div class="users-form-group">
+
+                    <label asp-for="Password"
+                           class="users-form-label">
+                        Password
+                    </label>
+
+                    <input asp-for="Password"
+                           class="users-form-control"
+                           placeholder="Enter password" />
+
+                    <span asp-validation-for="Password"
+                          class="users-validation">
+                    </span>
+
+                </div>
+
+
+                <div class="users-form-group">
+
+                    <label asp-for="ConfirmPassword"
+                           class="users-form-label">
+                        Confirm password
+                    </label>
+
+                    <input asp-for="ConfirmPassword"
+                           class="users-form-control"
+                           placeholder="Repeat password" />
+
+                    <span asp-validation-for="ConfirmPassword"
+                          class="users-validation">
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="users-form-actions">
+
+                <a asp-action="Index"
+                       class="users-secondary-btn">
+                    Cancel
+                </a>
+
+                <button type="submit"
+                        class="users-primary-btn">
+                    Create user
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

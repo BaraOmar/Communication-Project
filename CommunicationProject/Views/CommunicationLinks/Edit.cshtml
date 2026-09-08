@@ -1,49 +1,262 @@
 ﻿@model CommunicationProject.Models.CommunicationLink
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Edit Communication Link";
 }
 
-<h1>Edit</h1>
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/links.css"
+          asp-append-version="true" />
+}
 
-<h4>CommunicationLink</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="LinkTypeId" class="control-label"></label>
-                <select asp-for="LinkTypeId" class="form-control" asp-items="ViewBag.LinkTypeId"></select>
-                <span asp-validation-for="LinkTypeId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="SiteFromId" class="control-label"></label>
-                <select asp-for="SiteFromId" class="form-control" asp-items="ViewBag.SiteFromId"></select>
-                <span asp-validation-for="SiteFromId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="SiteToId" class="control-label"></label>
-                <select asp-for="SiteToId" class="form-control" asp-items="ViewBag.SiteToId"></select>
-                <span asp-validation-for="SiteToId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+
+<div class="links-form-page">
+
+    <div class="links-form-top">
+
+        <a asp-action="Details"
+               asp-route-id="@Model.Id"
+               class="links-back-link">
+            ← Link details
+        </a>
+
+        <h1 class="links-form-title">
+            Edit communication link
+        </h1>
+
+        <p class="links-form-subtitle">
+            Update the link and its route.
+            Changes are applied to both directions.
+        </p>
+
     </div>
+
+
+    <div class="links-card links-form-card">
+
+        <form asp-action="Edit"
+              asp-route-id="@Model.Id"
+              method="post">
+
+            <input type="hidden"
+                   asp-for="Id" />
+
+
+            <div asp-validation-summary="ModelOnly"
+                 class="links-validation-summary">
+            </div>
+
+
+            <!-- Link -->
+            <section class="links-form-section">
+
+                <h2 class="links-form-section-title">
+                    Link information
+                </h2>
+
+
+                <div class="links-form-grid">
+
+                    <div>
+
+                        <label asp-for="Name"
+                               class="links-form-label">
+                            Link name
+                        </label>
+
+                        <input asp-for="Name"
+                               class="links-form-control" />
+
+                        <span asp-validation-for="Name"
+                              class="links-validation">
+                        </span>
+
+                    </div>
+
+
+                    <div>
+
+                        <label asp-for="LinkTypeId"
+                               class="links-form-label">
+                            Link type
+                        </label>
+
+                        <select asp-for="LinkTypeId"
+                                asp-items="ViewBag.LinkTypeId"
+                                class="links-form-select">
+                        </select>
+
+                        <span asp-validation-for="LinkTypeId"
+                              class="links-validation">
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- Route -->
+            <section class="links-form-section">
+
+                <h2 class="links-form-section-title">
+                    Route
+                </h2>
+
+
+                <div class="links-route-form">
+
+                    <div class="links-route-form-grid">
+
+                        <div>
+
+                            <label asp-for="SiteFromId"
+                                   class="links-form-label">
+                                Source site
+                            </label>
+
+                            <select asp-for="SiteFromId"
+                                    asp-items="ViewBag.SiteFromId"
+                                    class="links-form-select">
+                            </select>
+
+                            <span asp-validation-for="SiteFromId"
+                                  class="links-validation">
+                            </span>
+
+                        </div>
+
+
+                        <div class="links-route-divider">
+                            →
+                        </div>
+
+
+                        <div>
+
+                            <label asp-for="SiteToId"
+                                   class="links-form-label">
+                                Destination site
+                            </label>
+
+                            <select asp-for="SiteToId"
+                                    asp-items="ViewBag.SiteToId"
+                                    class="links-form-select">
+                            </select>
+
+                            <span asp-validation-for="SiteToId"
+                                  class="links-validation">
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <div class="links-inventory-note">
+
+                <div class="links-inventory-note-icon">
+                    i
+                </div>
+
+                <div>
+
+                    <div class="links-inventory-note-title">
+                        Existing inventory is preserved
+                    </div>
+
+                    <p class="links-inventory-note-text">
+                        Editing this link updates its logical
+                        information in both directions without
+                        recreating the STM and E1 inventory.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="links-form-actions">
+
+                <a asp-action="Details"
+                       asp-route-id="@Model.Id"
+                       class="links-form-cancel">
+                    Cancel
+                </a>
+
+                <button type="submit"
+                        class="links-form-submit">
+                    Save changes
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+                const siteFrom =
+                    document.getElementById("SiteFromId");
+
+                const siteTo =
+                    document.getElementById("SiteToId");
+
+
+                function updateSiteOptions() {
+
+                    const selectedFrom =
+                        siteFrom.value;
+
+                    const selectedTo =
+                        siteTo.value;
+
+
+                    for (const option of siteTo.options) {
+
+                        option.disabled =
+                            option.value !== "" &&
+                            option.value === selectedFrom;
+                    }
+
+
+                    for (const option of siteFrom.options) {
+
+                        option.disabled =
+                            option.value !== "" &&
+                            option.value === selectedTo;
+                    }
+                }
+
+
+                siteFrom.addEventListener(
+                    "change",
+                    updateSiteOptions);
+
+                siteTo.addEventListener(
+                    "change",
+                    updateSiteOptions);
+
+                updateSiteOptions();
+            });
+
+    </script>
 }

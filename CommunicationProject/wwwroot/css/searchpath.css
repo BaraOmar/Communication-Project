@@ -1,0 +1,675 @@
+﻿/* =========================================================
+   Search Paths
+   ========================================================= */
+
+.path-page {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 3rem;
+}
+
+
+/* =========================================================
+   Header
+   ========================================================= */
+
+.path-header {
+    margin-bottom: 1.7rem;
+}
+
+.path-title {
+    margin: 0;
+    color: #172033;
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -.025em;
+}
+
+.path-subtitle {
+    max-width: 720px;
+    margin: .4rem 0 0;
+    color: #7f899a;
+    font-size: .9rem;
+    line-height: 1.55;
+}
+
+
+/* =========================================================
+   Cards
+   ========================================================= */
+
+.path-card {
+    background: #fff;
+    border: 1px solid #e8ecf2;
+    border-radius: 14px;
+    box-shadow: 0 3px 14px rgba(20, 32, 56, .035);
+}
+
+
+/* =========================================================
+   Filters
+   ========================================================= */
+
+.path-filter-card {
+    margin-bottom: 1.4rem;
+    padding: 1.2rem;
+}
+
+.path-filter-grid {
+    display: grid;
+    grid-template-columns: minmax(250px, 1fr) 220px 230px auto;
+    gap: .8rem;
+    align-items: end;
+}
+
+.path-field label {
+    display: block;
+    margin-bottom: .45rem;
+    color: #4d5768;
+    font-size: .77rem;
+    font-weight: 600;
+}
+
+.path-input,
+.path-select {
+    width: 100%;
+    height: 42px;
+    padding: 0 .8rem;
+    background: #fbfcfe;
+    border: 1px solid #dfe4eb;
+    border-radius: 9px;
+    color: #293346;
+    font-size: .85rem;
+    outline: none;
+    transition: border-color .18s ease, background-color .18s ease, box-shadow .18s ease;
+}
+
+    .path-input::placeholder {
+        color: #a4acb9;
+    }
+
+    .path-input:focus,
+    .path-select:focus {
+        background: #fff;
+        border-color: #a0b0f5;
+        box-shadow: 0 0 0 3px rgba(66, 99, 235, .08);
+    }
+
+
+/* Filter Buttons */
+
+.path-filter-actions {
+    display: flex;
+    gap: .5rem;
+}
+
+.path-search-btn,
+.path-clear-btn {
+    min-height: 42px;
+    padding: 0 1rem;
+    border-radius: 9px;
+    font-size: .82rem;
+    font-weight: 600;
+}
+
+.path-search-btn {
+    border: 1px solid #4263eb;
+    background: #4263eb;
+    color: #fff;
+}
+
+    .path-search-btn:hover {
+        background: #3657da;
+        border-color: #3657da;
+    }
+
+.path-clear-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #dfe4eb;
+    background: #fff;
+    color: #687386;
+    text-decoration: none;
+}
+
+    .path-clear-btn:hover {
+        background: #f7f8fa;
+        color: #374151;
+    }
+
+
+/* =========================================================
+   Results Header
+   ========================================================= */
+
+.path-results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: .9rem;
+}
+
+.path-results-title {
+    margin: 0;
+    color: #344054;
+    font-size: .95rem;
+    font-weight: 650;
+}
+
+.path-results-count {
+    padding: .3rem .65rem;
+    background: #f4f6f9;
+    border-radius: 999px;
+    color: #778196;
+    font-size: .73rem;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   Path Result
+   ========================================================= */
+
+.path-result {
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.path-result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #edf0f4;
+}
+
+.path-result-identity {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+
+.path-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 60px;
+    height: 34px;
+    padding: 0 .65rem;
+    background: #eef2ff;
+    border-radius: 8px;
+    color: #4263eb;
+    font-size: .72rem;
+    font-weight: 700;
+}
+
+.path-result-description {
+    margin: 0;
+    color: #344054;
+    font-size: .9rem;
+    font-weight: 650;
+}
+
+.path-result-no-description {
+    color: #9aa2b1;
+    font-weight: 500;
+}
+
+.path-link-count {
+    padding: .3rem .6rem;
+    background: #f4f6f8;
+    border-radius: 7px;
+    color: #747f90;
+    font-size: .71rem;
+    font-weight: 600;
+}
+
+.path-result-body {
+    padding: 1.5rem;
+}
+
+
+/* =========================================================
+   Topology
+   ========================================================= */
+
+.path-topology {
+    max-width: 790px;
+    margin: 0 auto;
+}
+
+
+/* =========================================================
+   Site Node
+   ========================================================= */
+
+.path-node {
+    display: grid;
+    grid-template-columns: 76px 1fr;
+    min-height: 100px;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid #e4e8ef;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(20, 32, 56, .025);
+}
+
+
+    /* Start Site */
+
+    .path-node.start {
+        border-color: #dce4ff;
+    }
+
+        .path-node.start .path-node-marker {
+            background: #eef2ff;
+            color: #4263eb;
+        }
+
+
+    /* Transit */
+
+    .path-node.transit {
+        border-color: #e5e8ed;
+    }
+
+        .path-node.transit .path-node-marker {
+            background: #f5f6f8;
+            color: #778196;
+        }
+
+
+    /* Destination */
+
+    .path-node.end {
+        border-color: #d9e9df;
+    }
+
+        .path-node.end .path-node-marker {
+            background: #eff7f2;
+            color: #5e7b68;
+        }
+
+
+/* Marker */
+
+.path-node-marker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid #e7eaf0;
+    font-size: .61rem;
+    font-weight: 750;
+    letter-spacing: .055em;
+}
+
+
+/* Content */
+
+.path-node-content {
+    padding: 1rem 1.15rem;
+}
+
+.path-node-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.path-node-label {
+    margin-bottom: .12rem;
+    color: #a0a7b4;
+    font-size: .65rem;
+    font-weight: 650;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.path-node-site {
+    color: #293346;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -.015em;
+}
+
+
+/* Node Status */
+
+.path-node-status {
+    display: inline-flex;
+    align-items: center;
+    padding: .3rem .55rem;
+    border-radius: 7px;
+    font-size: .67rem;
+    font-weight: 650;
+    white-space: nowrap;
+}
+
+.path-node-status-start {
+    background: #eef2ff;
+    color: #5367d7;
+}
+
+.path-node-status-transit {
+    background: #f3f4f6;
+    color: #7a8495;
+}
+
+.path-node-status-end {
+    background: #eff7f2;
+    color: #647f6d;
+}
+
+
+/* =========================================================
+   Channels
+   ========================================================= */
+
+.path-node-channels {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .45rem;
+    margin-top: .75rem;
+}
+
+.path-channel {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    min-height: 30px;
+    padding: .3rem .55rem;
+    border: 1px solid #eaedf2;
+    border-radius: 7px;
+    background: #f8f9fb;
+    color: #657085;
+    font-size: .72rem;
+    font-weight: 550;
+}
+
+.path-channel-direction {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 30px;
+    font-size: .61rem;
+    font-weight: 750;
+    letter-spacing: .03em;
+}
+
+.path-channel-in {
+    background: #f6f7fb;
+}
+
+    .path-channel-in
+    .path-channel-direction {
+        color: #6977b5;
+    }
+
+.path-channel-out {
+    background: #f5f8f6;
+}
+
+    .path-channel-out
+    .path-channel-direction {
+        color: #668070;
+    }
+
+
+/* =========================================================
+   Connection
+   ========================================================= */
+
+.path-connection {
+    display: grid;
+    grid-template-columns: 76px 1fr;
+    min-height: 105px;
+}
+
+
+/* Rail */
+
+.path-connection-rail {
+    position: relative;
+    display: flex;
+    justify-content: center;
+}
+
+.path-connection-line {
+    position: absolute;
+    top: 0;
+    bottom: 18px;
+    width: 2px;
+    background: #d7dde7;
+}
+
+.path-connection-arrow {
+    position: absolute;
+    bottom: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    background: #fff;
+    color: #a2aab8;
+    font-size: .72rem;
+    z-index: 2;
+}
+
+
+/* Link Card */
+
+.path-connection-card {
+    align-self: center;
+    width: fit-content;
+    min-width: 220px;
+    margin-left: 1.1rem;
+    padding: .65rem .8rem;
+    background: #fafbfc;
+    border: 1px solid #e6e9ef;
+    border-radius: 9px;
+}
+
+.path-connection-label {
+    margin-bottom: .13rem;
+    color: #9ba3b1;
+    font-size: .61rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.path-connection-name {
+    color: #465064;
+    font-size: .8rem;
+    font-weight: 650;
+}
+
+.path-connection-direction {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    margin-top: .2rem;
+    color: #929bab;
+    font-size: .68rem;
+}
+
+
+/* =========================================================
+   Empty
+   ========================================================= */
+
+.path-empty {
+    padding: 3.5rem 1rem;
+    text-align: center;
+}
+
+.path-empty-title {
+    margin-bottom: .3rem;
+    color: #495366;
+    font-size: .9rem;
+    font-weight: 650;
+}
+
+.path-empty-text {
+    margin: 0;
+    color: #929bab;
+    font-size: .8rem;
+}
+
+
+/* =========================================================
+   Pagination
+   ========================================================= */
+
+.path-pagination-area {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding: 1rem 1.2rem;
+    background: #fff;
+    border: 1px solid #e9edf3;
+    border-radius: 12px;
+}
+
+.path-page-info {
+    color: #8a94a6;
+    font-size: .78rem;
+}
+
+.path-pagination {
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.path-page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 .55rem;
+    border-radius: 8px;
+    color: #667085;
+    font-size: .79rem;
+    font-weight: 550;
+    text-decoration: none;
+}
+
+    .path-page-link:hover {
+        background: #f2f4f7;
+        color: #344054;
+    }
+
+    .path-page-link.active {
+        background: #eef2ff;
+        color: #4263eb;
+        font-weight: 700;
+    }
+
+    .path-page-link.disabled {
+        color: #c8ced8;
+        pointer-events: none;
+    }
+
+.path-page-ellipsis {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 34px;
+    color: #98a2b3;
+}
+
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+@media (max-width: 950px) {
+
+    .path-filter-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .path-filter-actions {
+        grid-column: 1 / -1;
+    }
+}
+
+
+@media (max-width: 650px) {
+
+    .path-page {
+        padding: 1.25rem .8rem 2rem;
+    }
+
+    .path-filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .path-filter-actions {
+        grid-column: auto;
+    }
+
+    .path-search-btn {
+        flex: 1;
+    }
+
+
+    .path-result-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+
+    .path-result-body {
+        padding: 1rem;
+    }
+
+
+    .path-node {
+        grid-template-columns: 58px 1fr;
+    }
+
+    .path-connection {
+        grid-template-columns: 58px 1fr;
+    }
+
+
+    .path-node-top {
+        flex-direction: column;
+        gap: .5rem;
+    }
+
+
+    .path-node-content {
+        padding: .9rem;
+    }
+
+
+    .path-connection-card {
+        min-width: 0;
+        margin-left: .7rem;
+    }
+
+
+    .path-pagination-area {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .path-pagination {
+        flex-wrap: wrap;
+    }
+}

@@ -1,6 +1,7 @@
 ﻿using CommunicationProject.Data;
 using CommunicationProject.Models;
 using CommunicationProject.Security;
+using CommunicationProject.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -28,52 +29,129 @@ public class E1sController : Controller
            AppRoles.Operator + "," +
            AppRoles.Viewer)]
     // GET: E1s
-    // GET: E1s
     public async Task<IActionResult> Index(
-    int page = 1)
+    string? search,
+    string? siteId,
+    string? connectionStatus,
+    string? state,
+    int pageNumber = 1)
     {
         const int pageSize = 20;
 
-        if (page < 1)
+        if (pageNumber < 1)
         {
-            page = 1;
+            pageNumber = 1;
         }
 
-        int totalItems = await _context.E1s
+        var query = _context.E1s
             .AsNoTracking()
-            .CountAsync();
+            .AsQueryable();
 
-        int totalPages = (int)Math.Ceiling(
-            totalItems / (double)pageSize);
+
+        // Search
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            search = search.Trim();
+
+            query = query.Where(e1 =>
+                e1.E1Number.Contains(search) ||
+
+                e1.Stm.Number.Contains(search) ||
+
+                e1.Stm.Link.Name.Contains(search) ||
+
+                e1.Stm.Link.SiteFrom.Id.Contains(search) ||
+                e1.Stm.Link.SiteFrom.Name.Contains(search) ||
+
+                e1.Stm.Link.SiteTo.Id.Contains(search) ||
+                e1.Stm.Link.SiteTo.Name.Contains(search) ||
+
+                (e1.ConnectedE1 != null &&
+                 e1.ConnectedE1.E1Number.Contains(search)) ||
+
+                (e1.Description != null &&
+                 e1.Description.Contains(search)));
+        }
+
+
+        // Site filter
+        if (!string.IsNullOrWhiteSpace(siteId))
+        {
+            query = query.Where(e1 =>
+                e1.Stm.Link.SiteFromId == siteId ||
+                e1.Stm.Link.SiteToId == siteId);
+        }
+
+
+        // Connection filter
+        if (connectionStatus == "connected")
+        {
+            query = query.Where(e1 =>
+                e1.ConnectedE1Id != null);
+        }
+        else if (connectionStatus == "not-connected")
+        {
+            query = query.Where(e1 =>
+                e1.ConnectedE1Id == null);
+        }
+
+
+        // Cross-connection state
+        if (!string.IsNullOrWhiteSpace(state) &&
+            Enum.TryParse<E1CrossConnectionState>(
+                state,
+                true,
+                out var parsedState))
+        {
+            query = query.Where(e1 =>
+                e1.CrossConnectionState == parsedState);
+        }
+
+
+        int totalItems =
+            await query.CountAsync();
+
+        int totalPages =
+            (int)Math.Ceiling(
+                totalItems / (double)pageSize);
+
 
         if (totalPages > 0 &&
-            page > totalPages)
+            pageNumber > totalPages)
         {
-            page = totalPages;
+            pageNumber = totalPages;
         }
+
 
         /*
          * First query:
-         * Select only 20 IDs from the E1 table.
-         *
-         * Do not load Links, Sites, STMs or ConnectedE1s yet.
+         * Get only IDs for this page.
          */
-        var pageIds = await _context.E1s
-            .AsNoTracking()
-            .OrderBy(e1 => e1.StmId)
-            .ThenBy(e1 => e1.E1Number)
-            .Skip((page - 1) * pageSize)
+        var pageIds = await query
+            .OrderBy(e1 =>
+                e1.Stm.Link.SiteFrom.Name)
+            .ThenBy(e1 =>
+                e1.Stm.Link.Name)
+            .ThenBy(e1 =>
+                e1.StmId)
+            .ThenBy(e1 =>
+                e1.E1Number)
+            .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .Select(e1 => e1.Id)
             .ToListAsync();
 
+
         /*
          * Second query:
-         * Load relationships for only those 20 E1 records.
+         * Load relationships only for the
+         * E1 records shown on this page.
          */
         var e1Channels = await _context.E1s
             .AsNoTracking()
-            .Where(e1 => pageIds.Contains(e1.Id))
+
+            .Where(e1 =>
+                pageIds.Contains(e1.Id))
 
             .Include(e1 => e1.Stm)
                 .ThenInclude(stm => stm.Link)
@@ -84,15 +162,21 @@ public class E1sController : Controller
                     .ThenInclude(link => link.SiteTo)
 
             .Include(e1 => e1.ConnectedE1)
-                .ThenInclude(connectedE1 =>
-                    connectedE1!.Stm)
+                .ThenInclude(connected =>
+                    connected!.Stm)
+                        .ThenInclude(stm => stm.Link)
+                            .ThenInclude(link => link.SiteFrom)
+
+            .Include(e1 => e1.ConnectedE1)
+                .ThenInclude(connected =>
+                    connected!.Stm)
+                        .ThenInclude(stm => stm.Link)
+                            .ThenInclude(link => link.SiteTo)
 
             .ToListAsync();
 
-        /*
-         * SQL does not guarantee that the second query returns
-         * records in the same order as pageIds.
-         */
+
+        // Restore page ordering
         var orderLookup = pageIds
             .Select((id, index) => new
             {
@@ -103,16 +187,38 @@ public class E1sController : Controller
                 item => item.id,
                 item => item.index);
 
+
         e1Channels = e1Channels
-            .OrderBy(e1 => orderLookup[e1.Id])
+            .OrderBy(e1 =>
+                orderLookup[e1.Id])
             .ToList();
 
-        ViewBag.CurrentPage = page;
-        ViewBag.TotalPages = totalPages;
-        ViewBag.PageSize = pageSize;
-        ViewBag.TotalItems = totalItems;
 
-        return View(e1Channels);
+        var sites = await _context.Sites
+            .AsNoTracking()
+            .OrderBy(site => site.Name)
+            .ToListAsync();
+
+
+        var model = new E1IndexViewModel
+        {
+            E1Channels = e1Channels,
+
+            Search = search,
+            SiteId = siteId,
+            ConnectionStatus = connectionStatus,
+            State = state,
+
+            Sites = sites,
+
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            TotalPages = totalPages,
+            TotalItems = totalItems
+        };
+
+
+        return View(model);
     }
     // GET: E1s/Details/{id}
     public async Task<IActionResult> Details(Guid? id)

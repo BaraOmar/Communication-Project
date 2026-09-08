@@ -1,43 +1,123 @@
 ﻿@model CommunicationProject.Models.Site
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Create Site";
 }
 
-<h1>Create</h1>
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/sites.css"
+          asp-append-version="true" />
+}
 
-<h4>Site</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Id" class="control-label"></label>
-                <input asp-for="Id" class="form-control" />
-                <span asp-validation-for="Id" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Location" class="control-label"></label>
-                <input asp-for="Location" class="form-control" />
-                <span asp-validation-for="Location" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+<div class="sites-form-page">
+
+    <div class="sites-page-top">
+
+        <a asp-action="Index"
+               class="sites-back-link">
+            ← Sites
+        </a>
+
+        <h1 class="sites-form-title">
+            Create site
+        </h1>
+
+        <p class="sites-form-subtitle">
+            Add a new communication site.
+        </p>
+
     </div>
-</div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
+
+    <div class="sites-card sites-form-card">
+
+        <form asp-action="Create"
+              method="post">
+
+            <div asp-validation-summary="ModelOnly"
+                 class="sites-validation">
+            </div>
+
+
+            <div class="sites-form-group">
+
+                <label asp-for="Id"
+                       class="sites-form-label">
+                    Site ID
+                </label>
+
+                <input asp-for="Id"
+                       class="sites-form-control"
+                       placeholder="Enter site ID" />
+
+                <div class="sites-form-hint">
+                    The ID must be unique.
+                </div>
+
+                <span asp-validation-for="Id"
+                      class="sites-validation">
+                </span>
+
+            </div>
+
+
+            <div class="sites-form-group">
+
+                <label asp-for="Name"
+                       class="sites-form-label">
+                    Site name
+                </label>
+
+                <input asp-for="Name"
+                       class="sites-form-control"
+                       placeholder="Enter site name" />
+
+                <span asp-validation-for="Name"
+                      class="sites-validation">
+                </span>
+
+            </div>
+
+
+            <div class="sites-form-group">
+
+                <label asp-for="Location"
+                       class="sites-form-label">
+                    Location
+                </label>
+
+                <input asp-for="Location"
+                       class="sites-form-control"
+                       placeholder="Enter location" />
+
+                <span asp-validation-for="Location"
+                      class="sites-validation">
+                </span>
+
+            </div>
+
+
+            <div class="sites-form-actions">
+
+                <a asp-action="Index"
+                       class="sites-secondary-btn">
+                    Cancel
+                </a>
+
+                <button type="submit"
+                        class="sites-save-btn">
+                    Create site
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <partial name="_ValidationScriptsPartial" />
 }

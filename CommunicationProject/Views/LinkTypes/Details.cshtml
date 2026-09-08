@@ -1,24 +1,113 @@
 ﻿@model CommunicationProject.Models.LinkType
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Link Type Details";
 }
 
-<h1>Details</h1>
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/linktypes.css"
+          asp-append-version="true" />
+}
 
-<div>
-    <h4>LinkType</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+
+<div class="linktypes-details-page">
+
+    <div class="linktypes-page-top">
+
+        <a asp-action="Index"
+               class="linktypes-back-link">
+            ← Link Types
+        </a>
+
+        <h1 class="linktypes-form-title">
+            Link type details
+        </h1>
+
+        <p class="linktypes-form-subtitle">
+            View and manage this communication-link type.
+        </p>
+
+    </div>
+
+
+    <div class="linktypes-card linktypes-details-card">
+
+        <!-- Header -->
+        <div class="linktypes-details-header">
+
+            <div>
+
+                <h2 class="linktypes-details-name">
+                    @Model.Name
+                </h2>
+
+                <div class="linktypes-details-caption">
+                    Communication link type
+                </div>
+
+            </div>
+
+
+            <span class="linktypes-details-badge">
+                Link Type
+            </span>
+
+        </div>
+
+
+        <!-- Body -->
+        <div class="linktypes-details-body">
+
+            <div>
+
+                <div class="linktypes-detail-label">
+                    Name
+                </div>
+
+                <div class="linktypes-detail-value">
+                    @Model.Name
+                </div>
+
+            </div>
+
+
+            <div class="linktypes-details-note">
+                Communication links can reference this type.
+                A type that is currently being used cannot be deleted
+                until those links no longer reference it.
+            </div>
+
+        </div>
+
+
+        <!-- Footer -->
+        <div class="linktypes-details-footer">
+
+            <a asp-action="Index"
+                   class="linktypes-secondary-btn">
+                Back
+            </a>
+
+
+            <div class="linktypes-details-actions">
+
+                <a asp-action="Edit"
+                       asp-route-id="@Model.Id"
+                       class="linktype-action linktype-edit">
+                    Edit
+                </a>
+
+                <a asp-action="Delete"
+                       asp-route-id="@Model.Id"
+                       class="linktype-action linktype-delete">
+                    Delete
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </div>

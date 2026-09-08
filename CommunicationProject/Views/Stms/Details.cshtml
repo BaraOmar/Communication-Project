@@ -1,36 +1,305 @@
 ﻿@model CommunicationProject.Models.Stm
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "STM Details";
+
+    bool isConnected = Model.ConnectedStm != null;
 }
 
-<h1>Details</h1>
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/stms.css"
+          asp-append-version="true" />
+}
 
-<div>
-    <h4>Stm</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Number)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Number)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Link)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Link.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ConnectedStm)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ConnectedStm.Number)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+
+<div class="stm-details-page">
+
+    <!-- Header -->
+    <div class="stm-details-top">
+
+        <a asp-action="Index"
+               class="stm-back-link">
+            ← STMs
+        </a>
+
+        <h1 class="stm-details-title">
+            STM details
+        </h1>
+
+        <p class="stm-details-subtitle">
+            View the STM route, connection and channel information.
+        </p>
+
+    </div>
+
+
+    <div class="stms-card stm-details-card">
+
+        <!-- Identity -->
+        <div class="stm-details-card-header">
+
+            <div class="stm-details-identity">
+
+                <span class="stm-details-number">
+                    STM @Model.Number
+                </span>
+
+                <div>
+
+                    <h2 class="stm-details-link-name">
+                        @Model.Link.Name
+                    </h2>
+
+                    <div class="stm-details-link-caption">
+                        Communication link
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            @if (isConnected)
+            {
+                <span class="stm-details-status connected">
+                    Connected
+                </span>
+            }
+            else
+            {
+                <span class="stm-details-status disconnected">
+                    Not connected
+                </span>
+            }
+
+        </div>
+
+
+        <!-- Route -->
+        <div class="stm-details-section">
+
+            <h3 class="stm-section-title">
+                Route
+            </h3>
+
+            <div class="stm-route">
+
+                <div class="stm-route-site">
+
+                    <div class="stm-route-name">
+                        @Model.Link.SiteFrom.Name
+                    </div>
+
+                    <div class="stm-route-id">
+                        @Model.Link.SiteFrom.Id
+                    </div>
+
+                </div>
+
+
+                <div class="stm-route-arrow">
+                    →
+                </div>
+
+
+                <div class="stm-route-site">
+
+                    <div class="stm-route-name">
+                        @Model.Link.SiteTo.Name
+                    </div>
+
+                    <div class="stm-route-id">
+                        @Model.Link.SiteTo.Id
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- STM Information -->
+        <div class="stm-details-section">
+
+            <h3 class="stm-section-title">
+                STM information
+            </h3>
+
+
+            <div class="stm-details-grid">
+
+                <div>
+
+                    <div class="stm-detail-label">
+                        STM Number
+                    </div>
+
+                    <div class="stm-detail-value">
+                        @Model.Number
+                    </div>
+
+                </div>
+
+
+                <div>
+
+                    <div class="stm-detail-label">
+                        Communication Link
+                    </div>
+
+                    <div class="stm-detail-value">
+                        @Model.Link.Name
+                    </div>
+
+                </div>
+
+
+                <div>
+
+                    <div class="stm-detail-label">
+                        Source Site
+                    </div>
+
+                    <div class="stm-detail-value">
+                        @Model.Link.SiteFrom.Name
+                    </div>
+
+                    <div class="stm-detail-muted">
+                        @Model.Link.SiteFrom.Id
+                    </div>
+
+                </div>
+
+
+                <div>
+
+                    <div class="stm-detail-label">
+                        Destination Site
+                    </div>
+
+                    <div class="stm-detail-value">
+                        @Model.Link.SiteTo.Name
+                    </div>
+
+                    <div class="stm-detail-muted">
+                        @Model.Link.SiteTo.Id
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Connected STM -->
+        <div class="stm-details-section">
+
+            <h3 class="stm-section-title">
+                Opposite STM
+            </h3>
+
+
+            @if (Model.ConnectedStm != null)
+            {
+                <div class="stm-connected-card">
+
+                    <div class="stm-connected-main">
+
+                        <div class="stm-connected-title">
+                            STM @Model.ConnectedStm.Number
+                        </div>
+
+                        @if (Model.ConnectedStm.Link != null)
+                        {
+                            <div class="stm-connected-description">
+
+                                @Model.ConnectedStm.Link.SiteFrom.Name
+                                →
+                                @Model.ConnectedStm.Link.SiteTo.Name
+
+                            </div>
+                        }
+
+                    </div>
+
+
+                    <a asp-action="Details"
+                           asp-route-id="@Model.ConnectedStm.Id"
+                           class="stm-connected-link">
+                        View STM
+                    </a>
+
+                </div>
+            }
+            else
+            {
+                <div class="stm-connected-card">
+
+                    <div class="stm-connected-main">
+
+                        <div class="stm-connected-title">
+                            No connected STM
+                        </div>
+
+                        <div class="stm-connected-description">
+                            This STM currently has no opposite endpoint.
+                        </div>
+
+                    </div>
+
+                </div>
+            }
+
+        </div>
+
+
+        <!-- E1 Channels -->
+        <div class="stm-details-section">
+
+            <h3 class="stm-section-title">
+                E1 channels
+            </h3>
+
+            <div class="stm-e1-summary">
+
+                <div>
+
+                    <div class="stm-e1-count">
+                        @Model.E1Channels.Count channels
+                    </div>
+
+                    <div class="stm-e1-caption">
+                        E1 channels assigned to this STM.
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Footer -->
+        <div class="stm-details-footer">
+
+            <a asp-action="Index"
+                   class="stm-details-secondary">
+                Back to STMs
+            </a>
+
+
+            <a asp-controller="CommunicationLinks"
+                   asp-action="Details"
+                   asp-route-id="@Model.LinkId"
+                   class="stm-details-primary-link">
+                View communication link
+            </a>
+
+        </div>
+
+    </div>
+
 </div>
