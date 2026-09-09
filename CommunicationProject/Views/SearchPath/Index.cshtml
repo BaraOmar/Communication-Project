@@ -359,28 +359,30 @@
 
                                                     @if (incoming)
                                                     {
+                                                        var incomingText =
+                                                            channel.Substring(3).Trim();
+
                                                         <span class="
                                                             path-channel-direction">
                                                             IN
                                                         </span>
 
                                                         <span>
-                                                            @channel
-                                                            .Substring(3)
-                                                            .Trim()
+                                                            @incomingText
                                                         </span>
                                                     }
                                                     else if (outgoing)
                                                     {
+                                                        var outgoingText =
+                                                            channel.Substring(4).Trim();
+
                                                         <span class="
                                                             path-channel-direction">
                                                             OUT
                                                         </span>
 
                                                         <span>
-                                                            @channel
-                                                            .Substring(4)
-                                                            .Trim()
+                                                            @outgoingText
                                                         </span>
                                                     }
                                                     else

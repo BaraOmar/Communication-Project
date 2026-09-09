@@ -36,6 +36,7 @@ public class E1sController : Controller
     string? state,
     int pageNumber = 1)
     {
+
         const int pageSize = 20;
 
         if (pageNumber < 1)
@@ -49,28 +50,45 @@ public class E1sController : Controller
 
 
         // Search
+        // Search
+        // Search
+        // Search
         if (!string.IsNullOrWhiteSpace(search))
         {
             search = search.Trim();
 
-            query = query.Where(e1 =>
-                e1.E1Number.Contains(search) ||
+            var normalizedSearch = search;
 
-                e1.Stm.Number.Contains(search) ||
+            // Allow searches such as "E1 1"
+            if (normalizedSearch.StartsWith(
+                "E1 ",
+                StringComparison.OrdinalIgnoreCase))
+            {
+                normalizedSearch =
+                    normalizedSearch[3..].Trim();
 
-                e1.Stm.Link.Name.Contains(search) ||
+                query = query.Where(e1 =>
+                    e1.E1Number.StartsWith(normalizedSearch));
+            }
 
-                e1.Stm.Link.SiteFrom.Id.Contains(search) ||
-                e1.Stm.Link.SiteFrom.Name.Contains(search) ||
+            // Allow searches such as "STM 1"
+            else if (normalizedSearch.StartsWith(
+                "STM ",
+                StringComparison.OrdinalIgnoreCase))
+            {
+                normalizedSearch =
+                    normalizedSearch[4..].Trim();
 
-                e1.Stm.Link.SiteTo.Id.Contains(search) ||
-                e1.Stm.Link.SiteTo.Name.Contains(search) ||
+                query = query.Where(e1 =>
+                    e1.Stm.Number.StartsWith(normalizedSearch));
+            }
 
-                (e1.ConnectedE1 != null &&
-                 e1.ConnectedE1.E1Number.Contains(search)) ||
-
-                (e1.Description != null &&
-                 e1.Description.Contains(search)));
+            else
+            {
+                query = query.Where(e1 =>
+                    e1.E1Number.StartsWith(normalizedSearch) ||
+                    e1.Stm.Number.StartsWith(normalizedSearch));
+            }
         }
 
 
@@ -128,14 +146,8 @@ public class E1sController : Controller
          * Get only IDs for this page.
          */
         var pageIds = await query
-            .OrderBy(e1 =>
-                e1.Stm.Link.SiteFrom.Name)
-            .ThenBy(e1 =>
-                e1.Stm.Link.Name)
-            .ThenBy(e1 =>
-                e1.StmId)
-            .ThenBy(e1 =>
-                e1.E1Number)
+            .OrderBy(e1 => e1.StmId)
+            .ThenBy(e1 => e1.E1Number)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .Select(e1 => e1.Id)

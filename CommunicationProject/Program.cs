@@ -158,6 +158,21 @@ app.Use(async (context, next) =>
     await next();
 });
 
+app.Use(async (context, next) =>
+{
+    var stopwatch =
+        System.Diagnostics.Stopwatch.StartNew();
+
+    await next();
+
+    stopwatch.Stop();
+
+    Console.WriteLine(
+        $"{context.Request.Method} " +
+        $"{context.Request.Path} " +
+        $"=> {context.Response.StatusCode} " +
+        $"in {stopwatch.ElapsedMilliseconds} ms");
+});
 
 app.UseRouting();
 

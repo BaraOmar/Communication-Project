@@ -44,19 +44,29 @@ public class StmsController : Controller
                 .ThenInclude(stm => stm!.Link)
             .AsQueryable();
 
+        // Search
         if (!string.IsNullOrWhiteSpace(search))
         {
             search = search.Trim();
 
-            query = query.Where(stm =>
-                stm.Number.Contains(search) ||
-                stm.Link.Name.Contains(search) ||
-                stm.Link.SiteFromId.Contains(search) ||
-                stm.Link.SiteToId.Contains(search) ||
-                stm.Link.SiteFrom.Name.Contains(search) ||
-                stm.Link.SiteTo.Name.Contains(search) ||
-                (stm.ConnectedStm != null &&
-                 stm.ConnectedStm.Number.Contains(search)));
+            var normalizedSearch = search;
+
+            // User can type "STM 1"
+            if (normalizedSearch.StartsWith(
+                "STM ",
+                StringComparison.OrdinalIgnoreCase))
+            {
+                normalizedSearch =
+                    normalizedSearch[4..].Trim();
+
+                query = query.Where(stm =>
+                    stm.Number.StartsWith(normalizedSearch));
+            }
+            else
+            {
+                query = query.Where(stm =>
+                    stm.Number.StartsWith(normalizedSearch));
+            }
         }
 
         if (!string.IsNullOrWhiteSpace(siteId))

@@ -28,6 +28,7 @@ namespace CommunicationProject.Controllers
         public async Task<IActionResult> Index(
             SearchPathViewModel model)
         {
+
             NormalizeFilters(model);
 
             await LoadFilterOptionsAsync(model);
@@ -42,6 +43,9 @@ namespace CommunicationProject.Controllers
             /*
              * Start with every PathId stored in the E1 table.
              */
+            /*
+             * Start with every PathId stored in the E1 table.
+             */
             IQueryable<Guid> pathIdsQuery =
                 _context.E1s
                     .AsNoTracking()
@@ -49,62 +53,79 @@ namespace CommunicationProject.Controllers
                     .Select(e1 => e1.PathId!.Value)
                     .Distinct();
 
+
             /*
-             * Description filter.
+             * Description search.
              *
-             * A path is included when any E1 belonging to the
-             * path contains the entered description.
+             * Get matching PathIds directly instead of running
+             * a correlated Any() for every path.
              */
-            if (!string.IsNullOrWhiteSpace(
-                    model.Description))
+            if (!string.IsNullOrWhiteSpace(model.Description))
             {
                 string description =
-                    model.Description;
+                    model.Description.Trim();
+
+                var descriptionPathIds =
+                    _context.E1s
+                        .AsNoTracking()
+                        .Where(e1 =>
+                            e1.PathId.HasValue &&
+                            e1.Description != null &&
+                            e1.Description.StartsWith(description))
+                        .Select(e1 => e1.PathId!.Value)
+                        .Distinct();
 
                 pathIdsQuery =
-                    pathIdsQuery.Where(pathId =>
-                        _context.E1s.Any(e1 =>
-                            e1.PathId == pathId &&
-                            e1.Description != null &&
-                            e1.Description.Contains(
-                                description)));
+                    pathIdsQuery.Intersect(
+                        descriptionPathIds);
             }
+
 
             /*
              * Link filter.
-             *
-             * This searches using the logical link name,
-             * such as I1, without using IsPrimary.
              */
-            if (!string.IsNullOrWhiteSpace(
-                    model.LinkName))
+            if (!string.IsNullOrWhiteSpace(model.LinkName))
             {
                 string linkName =
-                    model.LinkName;
+                    model.LinkName.Trim();
+
+                var linkPathIds =
+                    _context.E1s
+                        .AsNoTracking()
+                        .Where(e1 =>
+                            e1.PathId.HasValue &&
+                            e1.Stm.Link.Name == linkName)
+                        .Select(e1 => e1.PathId!.Value)
+                        .Distinct();
 
                 pathIdsQuery =
-                    pathIdsQuery.Where(pathId =>
-                        _context.E1s.Any(e1 =>
-                            e1.PathId == pathId &&
-                            e1.Stm.Link.Name == linkName));
+                    pathIdsQuery.Intersect(
+                        linkPathIds);
             }
+
 
             /*
              * Source site is the site of PathOrder 1.
              */
-            if (!string.IsNullOrWhiteSpace(
-                    model.SourceSiteId))
+            if (!string.IsNullOrWhiteSpace(model.SourceSiteId))
             {
                 string sourceSiteId =
-                    model.SourceSiteId;
+                    model.SourceSiteId.Trim();
 
-                pathIdsQuery =
-                    pathIdsQuery.Where(pathId =>
-                        _context.E1s.Any(e1 =>
-                            e1.PathId == pathId &&
+                var sourcePathIds =
+                    _context.E1s
+                        .AsNoTracking()
+                        .Where(e1 =>
+                            e1.PathId.HasValue &&
                             e1.PathOrder == 1 &&
                             e1.Stm.Link.SiteFromId ==
-                                sourceSiteId));
+                                sourceSiteId)
+                        .Select(e1 => e1.PathId!.Value)
+                        .Distinct();
+
+                pathIdsQuery =
+                    pathIdsQuery.Intersect(
+                        sourcePathIds);
             }
 
             var pathIds =
