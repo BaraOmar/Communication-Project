@@ -4,6 +4,7 @@ using CommunicationProject.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CommunicationProject.Migrations
 {
     [DbContext(typeof(CommunicationDbContext))]
-    partial class CommunicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260913083204_AddCustomersAndCustomerConnections")]
+    partial class AddCustomersAndCustomerConnections
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -294,34 +297,6 @@ namespace CommunicationProject.Migrations
                     b.ToTable("CustomerConnections");
                 });
 
-            modelBuilder.Entity("CommunicationProject.Models.CustomerConnectionSegment", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("CommunicationPathSegmentId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("CustomerConnectionId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("E1Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CommunicationPathSegmentId");
-
-                    b.HasIndex("E1Id")
-                        .IsUnique();
-
-                    b.HasIndex("CustomerConnectionId", "CommunicationPathSegmentId")
-                        .IsUnique();
-
-                    b.ToTable("CustomerConnectionSegments");
-                });
-
             modelBuilder.Entity("CommunicationProject.Models.E1", b =>
                 {
                     b.Property<Guid>("Id")
@@ -360,6 +335,12 @@ namespace CommunicationProject.Migrations
                     b.Property<Guid?>("JoinE1Id")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("PathId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("PathOrder")
+                        .HasColumnType("int");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -384,6 +365,10 @@ namespace CommunicationProject.Migrations
                         .HasFilter("[ConnectedE1Id] IS NOT NULL");
 
                     b.HasIndex("ConnectionGroupId");
+
+                    b.HasIndex("PathId", "PathOrder")
+                        .IsUnique()
+                        .HasFilter("[PathId] IS NOT NULL AND [PathOrder] IS NOT NULL");
 
                     b.HasIndex("StmId", "E1Number")
                         .IsUnique();
@@ -762,33 +747,6 @@ namespace CommunicationProject.Migrations
                     b.Navigation("Customer");
                 });
 
-            modelBuilder.Entity("CommunicationProject.Models.CustomerConnectionSegment", b =>
-                {
-                    b.HasOne("CommunicationProject.Models.CommunicationPathSegment", "CommunicationPathSegment")
-                        .WithMany()
-                        .HasForeignKey("CommunicationPathSegmentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("CommunicationProject.Models.CustomerConnection", "CustomerConnection")
-                        .WithMany("Segments")
-                        .HasForeignKey("CustomerConnectionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("CommunicationProject.Models.E1", "E1")
-                        .WithMany()
-                        .HasForeignKey("E1Id")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("CommunicationPathSegment");
-
-                    b.Navigation("CustomerConnection");
-
-                    b.Navigation("E1");
-                });
-
             modelBuilder.Entity("CommunicationProject.Models.E1", b =>
                 {
                     b.HasOne("CommunicationProject.Models.E1", "ConnectedE1")
@@ -952,11 +910,6 @@ namespace CommunicationProject.Migrations
             modelBuilder.Entity("CommunicationProject.Models.Customer", b =>
                 {
                     b.Navigation("Connections");
-                });
-
-            modelBuilder.Entity("CommunicationProject.Models.CustomerConnection", b =>
-                {
-                    b.Navigation("Segments");
                 });
 
             modelBuilder.Entity("CommunicationProject.Models.LinkType", b =>

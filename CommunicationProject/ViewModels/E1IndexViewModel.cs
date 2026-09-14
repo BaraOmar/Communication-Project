@@ -7,10 +7,13 @@ namespace CommunicationProject.ViewModels
         public List<E1> E1Channels { get; set; } = new();
 
         public string? Search { get; set; }
-        public string? SiteId { get; set; }
+        public string? SiteFromId { get; set; }
+        public string? SiteToId { get; set; }
+        public string? Description { get; set; }
         public string? ConnectionStatus { get; set; }
         public string? State { get; set; }
-
+        public string? OperationalStatus { get; set; }
+        public string? ConnectionType { get; set; }
         public List<Site> Sites { get; set; } = new();
 
         public int PageNumber { get; set; }

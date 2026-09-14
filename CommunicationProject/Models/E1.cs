@@ -1,11 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Net.NetworkInformation;
 
 namespace CommunicationProject.Models;
 
 [Index(nameof(StmId), nameof(E1Number), IsUnique = true)]
 [Index(nameof(ConnectedE1Id), IsUnique = true)]
+[Index(nameof(ConnectionGroupId))]
+
 public class E1 : IValidatableObject
 {
     [Key]
@@ -34,15 +37,28 @@ public class E1 : IValidatableObject
 
     [Display(Name = "Join E1")]
     public Guid? JoinE1Id { get; set; }
-    [Display(Name = "Path ID")]
-    public Guid? PathId { get; set; }
+
+
+    [Display(Name = "Connection Group")]
+    public Guid? ConnectionGroupId { get; set; }
+
+    [Display(Name = "Status")]
+    public E1OperationalStatus Status { get; set; }
+    = E1OperationalStatus.Available;
+
+    [StringLength(
+        200,
+        ErrorMessage = "Visitor name cannot exceed 200 characters.")]
+    [Display(Name = "Visitor")]
+    public string? VisitorName { get; set; }
+
+    [Display(Name = "Visit Date")]
+    public DateTime? VisitDate { get; set; }
 
     public E1CrossConnectionState CrossConnectionState { get; set; }
     = E1CrossConnectionState.Available;
 
-    [Range(1, int.MaxValue)]
-    [Display(Name = "Path Order")]
-    public int? PathOrder { get; set; }
+
 
     [ForeignKey(nameof(ConnectedE1Id))]
     public E1? ConnectedE1 { get; set; }
@@ -51,6 +67,10 @@ public class E1 : IValidatableObject
         1000,
         ErrorMessage = "Description cannot exceed 1000 characters.")]
     public string? Description { get; set; }
+
+    [Display(Name = "Connection Type")]
+    public E1ConnectionType ConnectionType { get; set; }
+    = E1ConnectionType.Physical;
 
     public IEnumerable<ValidationResult> Validate(
         ValidationContext validationContext)
@@ -77,5 +97,24 @@ public class E1 : IValidatableObject
                 "An E1 channel cannot connect to itself.",
                 new[] { nameof(ConnectedE1Id) });
         }
+        if (ConnectionGroupId.HasValue &&
+    ConnectionGroupId.Value == Guid.Empty)
+        {
+            yield return new ValidationResult(
+                "The connection group is invalid.",
+                new[] { nameof(ConnectionGroupId) });
+        }
+    }
+    public enum E1OperationalStatus
+    {
+        Available,
+        Connected,
+        Wrong,
+        Damaged
+    }
+    public enum E1ConnectionType
+    {
+        Physical,
+        Logical
     }
 }

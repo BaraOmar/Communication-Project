@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
+using static CommunicationProject.Models.E1;
 
 namespace CommunicationProject.Controllers;
 
@@ -168,26 +169,51 @@ public class CrossConnectionsController : Controller
              */
             query = baseQuery.Where(e1 =>
                 (
-                    e1.CrossConnectionState ==
-                        E1CrossConnectionState.Available &&
+e1.CrossConnectionState ==
+    E1CrossConnectionState.Available &&
 
-                    e1.PathId == null &&
-                    e1.PathOrder == null &&
-                    e1.JoinE1Id == null
+e1.Status ==
+    E1OperationalStatus.Available &&
+
+e1.ConnectionGroupId == null &&
+
+e1.JoinE1Id == null &&
+
+e1.ConnectedE1!.CrossConnectionState ==
+    E1CrossConnectionState.Available &&
+
+e1.ConnectedE1.Status ==
+    E1OperationalStatus.Available &&
+
+e1.ConnectedE1.ConnectionGroupId == null &&
+
+e1.ConnectedE1.JoinE1Id == null
                 )
                 ||
-                (
-                    e1.CrossConnectionState ==
-                        E1CrossConnectionState.ExtendExistingPath &&
+(
+    e1.CrossConnectionState ==
+        E1CrossConnectionState.ExtendExistingPath &&
 
-                    e1.PathId != null &&
-                    e1.PathOrder != null &&
-                    e1.JoinE1Id == null &&
+    e1.ConnectionGroupId != null &&
+    e1.JoinE1Id == null &&
 
-                    !_context.E1s.Any(pathE1 =>
-                        pathE1.PathId == e1.PathId &&
-                        pathE1.PathOrder > e1.PathOrder)
-                )
+    _context.CustomerConnectionSegments
+        .Any(customerSegment =>
+            customerSegment.CustomerConnection.ConnectionGroupId ==
+                e1.ConnectionGroupId &&
+
+            customerSegment.E1.ConnectedE1Id ==
+                e1.Id &&
+
+            customerSegment.CommunicationPathSegment.Order ==
+                _context.CommunicationPathSegments
+                    .Where(pathSegment =>
+                        pathSegment.CommunicationPathId ==
+                            customerSegment.CustomerConnection
+                                .CommunicationPathId)
+                    .Max(pathSegment =>
+                        pathSegment.Order))
+)
             );
         }
         else
@@ -199,16 +225,23 @@ public class CrossConnectionsController : Controller
             query = baseQuery.Where(e1 =>
                 e1.CrossConnectionState ==
                     E1CrossConnectionState.Available &&
+                    e1.Status ==
+    E1OperationalStatus.Available &&
 
-                e1.PathId == null &&
-                e1.PathOrder == null &&
+e1.ConnectionGroupId == null &&
+
+e1.ConnectedE1!.Status ==
+    E1OperationalStatus.Available &&
+
+e1.ConnectedE1.ConnectionGroupId == null &&
+
+
                 e1.JoinE1Id == null &&
 
                 e1.ConnectedE1!.CrossConnectionState ==
                     E1CrossConnectionState.Available &&
 
-                e1.ConnectedE1.PathId == null &&
-                e1.ConnectedE1.PathOrder == null &&
+
                 e1.ConnectedE1.JoinE1Id == null
             );
         }
@@ -223,14 +256,22 @@ public class CrossConnectionsController : Controller
                     e1.CrossConnectionState ==
                         E1CrossConnectionState.ExtendExistingPath
 
-                        ? $"E1 {e1.E1Number} — Extend existing path"
-                        : $"E1 {e1.E1Number} — Available",
+                        ? $"E1 {e1.E1Number} — {e1.ConnectionType} — Extend existing path"
+                        : $"E1 {e1.E1Number} — {e1.ConnectionType} — Available",
 
                 state = e1.CrossConnectionState.ToString(),
 
-                description = e1.Description ?? string.Empty,
 
-                pathId = e1.PathId
+                customerName =
+                    e1.ConnectionGroupId.HasValue
+                        ? _context.CustomerConnections
+                            .Where(connection =>
+                                connection.ConnectionGroupId ==
+                                e1.ConnectionGroupId.Value)
+                            .Select(connection =>
+                                connection.Customer.Name)
+                            .FirstOrDefault()
+                        : null
             })
             .ToListAsync();
 
@@ -265,6 +306,8 @@ public class CrossConnectionsController : Controller
                 .Include(e1 => e1.Stm)
                     .ThenInclude(stm => stm.Link)
                 .Include(e1 => e1.ConnectedE1)
+                    .ThenInclude(connectedE1 => connectedE1!.Stm)
+                        .ThenInclude(stm => stm.Link)
                 .FirstOrDefaultAsync(e1 =>
                     e1.Id == model.IncomingE1Id!.Value);
 
@@ -272,6 +315,8 @@ public class CrossConnectionsController : Controller
                 .Include(e1 => e1.Stm)
                     .ThenInclude(stm => stm.Link)
                 .Include(e1 => e1.ConnectedE1)
+                    .ThenInclude(connectedE1 => connectedE1!.Stm)
+                        .ThenInclude(stm => stm.Link)
                 .FirstOrDefaultAsync(e1 =>
                     e1.Id == model.OutgoingE1Id!.Value);
 
@@ -334,46 +379,68 @@ public class CrossConnectionsController : Controller
                     outgoingE1);
             }
             bool isExtendingExistingPath =
-    incomingE1 != null &&
-    incomingE1.CrossConnectionState ==
-        E1CrossConnectionState.ExtendExistingPath &&
-    incomingE1.PathId.HasValue;
+                incomingE1 != null &&
+                incomingE1.CrossConnectionState ==
+                    E1CrossConnectionState.ExtendExistingPath &&
+                incomingE1.ConnectionGroupId.HasValue;
 
-            string pathDescription =
-                model.Description?.Trim() ?? string.Empty;
+            Guid? existingCommunicationPathId = null;
 
-            if (incomingE1 != null)
+            string customerName =
+                model.CustomerName?.Trim() ?? string.Empty;
+
+            if (isExtendingExistingPath)
             {
-                if (isExtendingExistingPath)
-                {
-                    /*
-                     * Never trust the posted description when extending.
-                     * Read the original description from the database.
-                     */
-                    pathDescription = await _context.E1s
-                        .AsNoTracking()
-                        .Where(e1 =>
-                            e1.PathId == incomingE1.PathId &&
-                            e1.Description != null &&
-                            e1.Description != "")
-                        .OrderBy(e1 => e1.PathOrder)
-                        .Select(e1 => e1.Description!)
-                        .FirstOrDefaultAsync()
-                        ?? string.Empty;
-
-                    if (string.IsNullOrWhiteSpace(pathDescription))
-                    {
-                        ModelState.AddModelError(
-                            nameof(model.Description),
-                            "The existing path does not have a description.");
-                    }
-                }
-                else if (string.IsNullOrWhiteSpace(pathDescription))
+                if (!incomingE1!.ConnectionGroupId.HasValue)
                 {
                     ModelState.AddModelError(
-                        nameof(model.Description),
-                        "Enter a description for the new path.");
+                        nameof(model.CustomerName),
+                        "The existing connection does not have a customer connection group.");
                 }
+                else
+                {
+                    var existingConnection =
+                        await _context.CustomerConnections
+                            .AsNoTracking()
+                            .Where(connection =>
+                                connection.ConnectionGroupId ==
+                                incomingE1.ConnectionGroupId.Value)
+                            .Select(connection => new
+                            {
+                                CustomerName = connection.Customer.Name,
+                                connection.CommunicationPathId
+                            })
+                            .FirstOrDefaultAsync();
+
+                    if (existingConnection == null ||
+                        string.IsNullOrWhiteSpace(existingConnection.CustomerName))
+                    {
+                        ModelState.AddModelError(
+                            nameof(model.CustomerName),
+                            "The customer for this existing connection could not be found.");
+                    }
+                    else
+                    {
+                        customerName =
+                            existingConnection.CustomerName;
+
+                        model.CustomerName =
+                            existingConnection.CustomerName;
+
+                        existingCommunicationPathId =
+                            existingConnection.CommunicationPathId;
+
+                        ModelState.Remove(
+                            nameof(model.CustomerName));
+                    }
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(customerName))
+            {
+                ModelState.AddModelError(
+                    nameof(model.CustomerName),
+                    "Enter the customer name.");
             }
 
             if (!ModelState.IsValid)
@@ -384,6 +451,22 @@ public class CrossConnectionsController : Controller
                 return View(model);
             }
 
+            var customer =
+    await _context.Customers
+        .FirstOrDefaultAsync(c =>
+            c.Name == customerName);
+
+            if (customer == null)
+            {
+                customer = new Customer
+                {
+                    Id = Guid.NewGuid(),
+                    Name = customerName,
+                    IsActive = true
+                };
+
+                _context.Customers.Add(customer);
+            }
 
             var incomingConnectedE1 =
                 incomingE1!.ConnectedE1!;
@@ -391,6 +474,48 @@ public class CrossConnectionsController : Controller
             var outgoingConnectedE1 =
                 outgoingE1!.ConnectedE1!;
 
+
+            Guid connectionGroupId;
+
+            if (isExtendingExistingPath &&
+                incomingE1.ConnectionGroupId.HasValue)
+            {
+                connectionGroupId =
+                    incomingE1.ConnectionGroupId.Value;
+            }
+            else
+            {
+                connectionGroupId =
+                    Guid.NewGuid();
+            }
+
+            incomingConnectedE1.ConnectionGroupId =
+                connectionGroupId;
+
+            incomingE1.ConnectionGroupId =
+                connectionGroupId;
+
+            outgoingE1.ConnectionGroupId =
+                connectionGroupId;
+
+            outgoingConnectedE1.ConnectionGroupId =
+                connectionGroupId;
+
+
+            incomingConnectedE1.Status =
+    E1OperationalStatus.Connected;
+
+            incomingE1.Status =
+                E1OperationalStatus.Connected;
+
+            outgoingE1.Status =
+                E1OperationalStatus.Connected;
+
+            outgoingConnectedE1.Status =
+                E1OperationalStatus.Connected;
+            /*
+             * Existing cross-connection logic continues.
+             */
             incomingE1.JoinE1Id = outgoingE1.Id;
             outgoingE1.JoinE1Id = incomingE1.Id;
 
@@ -400,6 +525,9 @@ public class CrossConnectionsController : Controller
             outgoingE1.CrossConnectionState =
                 E1CrossConnectionState.CrossConnected;
 
+            var customerSegmentAssignments =
+    new List<(CommunicationPathSegment Segment, E1 E1)>();
+
             Guid pathId;
 
             if (isExtendingExistingPath)
@@ -407,25 +535,36 @@ public class CrossConnectionsController : Controller
                 /*
                  * Only an existing path has a PathId.
                  */
-                pathId = incomingE1.PathId!.Value;
+                pathId = existingCommunicationPathId!.Value;
 
-                int maximumOrder = await _context.E1s
-                    .Where(e1 => e1.PathId == pathId)
-                    .MaxAsync(e1 => e1.PathOrder ?? 0);
+                int maximumSegmentOrder =
+    await _context.CommunicationPathSegments
+        .Where(segment =>
+            segment.CommunicationPathId == pathId)
+        .MaxAsync(segment => (int?)segment.Order)
+    ?? 0;
 
-                outgoingE1.PathId = pathId;
-                outgoingE1.PathOrder = maximumOrder + 1;
+                var extendedSegment =
+                    new CommunicationPathSegment
+                    {
+                        Id = Guid.NewGuid(),
+                        CommunicationPathId = pathId,
+                        CommunicationLinkId =
+                            outgoingE1.Stm.LinkId,
+                        Order = maximumSegmentOrder + 1
+                    };
 
-                outgoingConnectedE1.PathId = pathId;
-                outgoingConnectedE1.PathOrder =
-                    maximumOrder + 2;
+                _context.CommunicationPathSegments.Add(
+                    extendedSegment);
+
+                customerSegmentAssignments.Add(
+                    (extendedSegment, outgoingE1));
+
 
                 outgoingConnectedE1.CrossConnectionState =
                     E1CrossConnectionState.ExtendExistingPath;
 
-                incomingE1.Description = pathDescription;
-                outgoingE1.Description = pathDescription;
-                outgoingConnectedE1.Description = pathDescription;
+
             }
             else
             {
@@ -435,39 +574,102 @@ public class CrossConnectionsController : Controller
                  */
                 pathId = Guid.NewGuid();
 
-                incomingConnectedE1.PathId = pathId;
-                incomingConnectedE1.PathOrder = 1;
+                _context.CommunicationPaths.Add(
+    new CommunicationPath
+    {
+        Id = pathId,
+        Name = $"PATH-{pathId}",
+        IsActive = true,
+        CreatedAt = DateTime.Now
+    });
+
+                var firstSegment =
+                    new CommunicationPathSegment
+                    {
+                        Id = Guid.NewGuid(),
+                        CommunicationPathId = pathId,
+                        CommunicationLinkId =
+                            incomingConnectedE1.Stm.LinkId,
+                        Order = 1
+                    };
+
+                var secondSegment =
+                    new CommunicationPathSegment
+                    {
+                        Id = Guid.NewGuid(),
+                        CommunicationPathId = pathId,
+                        CommunicationLinkId =
+                            outgoingE1.Stm.LinkId,
+                        Order = 2
+                    };
+
+                _context.CommunicationPathSegments.AddRange(
+                    firstSegment,
+                    secondSegment);
+
+                customerSegmentAssignments.Add(
+                    (firstSegment, incomingConnectedE1));
+
+                customerSegmentAssignments.Add(
+                    (secondSegment, outgoingE1));
+
                 incomingConnectedE1.CrossConnectionState =
                     E1CrossConnectionState.ExtendExistingPath;
 
-                incomingE1.PathId = pathId;
-                incomingE1.PathOrder = 2;
-
-                outgoingE1.PathId = pathId;
-                outgoingE1.PathOrder = 3;
-
-                outgoingConnectedE1.PathId = pathId;
-                outgoingConnectedE1.PathOrder = 4;
                 outgoingConnectedE1.CrossConnectionState =
                     E1CrossConnectionState.ExtendExistingPath;
 
-                incomingConnectedE1.Description = pathDescription;
-                incomingE1.Description = pathDescription;
-                outgoingE1.Description = pathDescription;
-                outgoingConnectedE1.Description = pathDescription;
+
             }
 
+
+            var customerConnection =
+    await _context.CustomerConnections
+        .FirstOrDefaultAsync(connection =>
+            connection.ConnectionGroupId ==
+            connectionGroupId);
+
+            if (customerConnection == null)
+            {
+                customerConnection =
+                    new CustomerConnection
+                    {
+                        Id = Guid.NewGuid(),
+                        CustomerId = customer.Id,
+                        CommunicationPathId = pathId,
+                        ConnectionGroupId = connectionGroupId,
+                        IsActive = true,
+                        CreatedAt = DateTime.Now
+                    };
+
+                _context.CustomerConnections.Add(
+                    customerConnection);
+            }
+            foreach (var assignment in customerSegmentAssignments)
+            {
+                _context.CustomerConnectionSegments.Add(
+                    new CustomerConnectionSegment
+                    {
+                        Id = Guid.NewGuid(),
+                        CustomerConnectionId =
+                            customerConnection.Id,
+
+                        CommunicationPathSegmentId =
+                            assignment.Segment.Id,
+
+                        E1Id =
+                            assignment.E1.Id
+                    });
+            }
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
 
             TempData["SuccessMessage"] =
                 isExtendingExistingPath
-                    ? $"Path extended successfully. " +
-                      $"Path ID: {pathId}. " +
-                      $"Description: {pathDescription}."
-                    : $"New path created successfully. " +
-                      $"Path ID: {pathId}. " +
-                      $"Description: {pathDescription}.";
+                    ? $"Path extended successfully for customer {customerName}. " +
+                      $"Path ID: {pathId}."
+                    : $"New path created successfully for customer {customerName}. " +
+                      $"Path ID: {pathId}.";
 
             return RedirectToAction(nameof(Create));
         }
@@ -819,12 +1021,9 @@ public class CrossConnectionsController : Controller
             outgoingConnectedE1.CrossConnectionState !=
                 E1CrossConnectionState.Available ||
 
-            outgoingE1.PathId.HasValue ||
-            outgoingE1.PathOrder.HasValue ||
+
             outgoingE1.JoinE1Id.HasValue ||
 
-            outgoingConnectedE1.PathId.HasValue ||
-            outgoingConnectedE1.PathOrder.HasValue ||
             outgoingConnectedE1.JoinE1Id.HasValue;
 
         bool outgoingPairIsJoinTarget =
@@ -851,12 +1050,9 @@ public class CrossConnectionsController : Controller
                 incomingConnectedE1.CrossConnectionState !=
                     E1CrossConnectionState.Available ||
 
-                incomingE1.PathId.HasValue ||
-                incomingE1.PathOrder.HasValue ||
+
                 incomingE1.JoinE1Id.HasValue ||
 
-                incomingConnectedE1.PathId.HasValue ||
-                incomingConnectedE1.PathOrder.HasValue ||
                 incomingConnectedE1.JoinE1Id.HasValue;
 
             bool incomingPairIsJoinTarget =
@@ -885,20 +1081,11 @@ public class CrossConnectionsController : Controller
         if (incomingE1.CrossConnectionState ==
             E1CrossConnectionState.ExtendExistingPath)
         {
-            if (!incomingE1.PathId.HasValue)
+            if (!incomingE1.ConnectionGroupId.HasValue)
             {
                 ModelState.AddModelError(
                     nameof(CreateCrossConnectionViewModel.IncomingE1Id),
-                    "The selected path endpoint does not have a Path ID.");
-
-                return;
-            }
-
-            if (!incomingE1.PathOrder.HasValue)
-            {
-                ModelState.AddModelError(
-                    nameof(CreateCrossConnectionViewModel.IncomingE1Id),
-                    "The selected path endpoint does not have a path order.");
+                    "The selected path endpoint does not have a connection group.");
 
                 return;
             }
@@ -925,37 +1112,32 @@ public class CrossConnectionsController : Controller
             }
 
             /*
-             * Only the E1 with the highest PathOrder can extend
-             * the existing path.
+             * The endpoint must belong to the final segment
+             * of the reusable CommunicationPath.
              */
-            int maximumOrder = await _context.E1s
-                .Where(e1 =>
-                    e1.PathId == incomingE1.PathId)
-                .MaxAsync(e1 =>
-                    e1.PathOrder ?? 0);
+            bool isFinalPathEndpoint =
+                await _context.CustomerConnectionSegments
+                    .AnyAsync(customerSegment =>
+                        customerSegment.CustomerConnection.ConnectionGroupId ==
+                            incomingE1.ConnectionGroupId.Value &&
 
-            if (incomingE1.PathOrder.Value != maximumOrder)
+                        customerSegment.E1.ConnectedE1Id ==
+                            incomingE1.Id &&
+
+                        customerSegment.CommunicationPathSegment.Order ==
+                            _context.CommunicationPathSegments
+                                .Where(pathSegment =>
+                                    pathSegment.CommunicationPathId ==
+                                        customerSegment.CustomerConnection
+                                            .CommunicationPathId)
+                                .Max(pathSegment =>
+                                    pathSegment.Order));
+
+            if (!isFinalPathEndpoint)
             {
                 ModelState.AddModelError(
                     nameof(CreateCrossConnectionViewModel.IncomingE1Id),
                     "The selected incoming E1 is not the final endpoint of the path.");
-            }
-
-            /*
-             * Its physically connected E1 must be the preceding
-             * record in the same path.
-             *
-             * Example:
-             * order 3 ⇄ ConnectedE1 ⇄ order 4 endpoint
-             */
-            if (incomingConnectedE1.PathId != incomingE1.PathId ||
-                !incomingConnectedE1.PathOrder.HasValue ||
-                incomingConnectedE1.PathOrder.Value !=
-                    incomingE1.PathOrder.Value - 1)
-            {
-                ModelState.AddModelError(
-                    nameof(CreateCrossConnectionViewModel.IncomingE1Id),
-                    "The selected E1 is not a valid endpoint of this path.");
             }
 
             return;

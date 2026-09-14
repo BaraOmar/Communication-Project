@@ -418,10 +418,7 @@ public class CommunicationLinksController : Controller
 
         await ValidateCreateReferencesAsync(model, linkTypeId);
         await ValidateLogicalDuplicateAsync(
-            model.Name,
-            linkTypeId,
-            model.SiteFromId,
-            model.SiteToId);
+    model.Name);
 
         if (!ModelState.IsValid)
         {
@@ -747,11 +744,7 @@ public class CommunicationLinksController : Controller
         {
             await ValidateLogicalDuplicateAsync(
                 submittedLink.Name,
-                submittedLink.LinkTypeId,
-                submittedLink.SiteFromId,
-                submittedLink.SiteToId,
-                primaryLink.Id,
-                reverseLink.Id);
+                primaryLink.Id);
         }
 
         if (!ModelState.IsValid)
@@ -1182,53 +1175,23 @@ public class CommunicationLinksController : Controller
     }
 
     private async Task ValidateLogicalDuplicateAsync(
-        string name,
-        Guid linkTypeId,
-        string siteFromId,
-        string siteToId,
-        Guid? excludedPrimaryId = null,
-        Guid? excludedReverseId = null)
+    string name,
+    Guid? excludedPrimaryId = null)
     {
-        bool duplicateName = await _context.CommunicationLinks
-            .AsNoTracking()
-            .AnyAsync(existing =>
-                existing.IsPrimary &&
-                existing.Name == name &&
-                (!excludedPrimaryId.HasValue ||
-                 existing.Id != excludedPrimaryId.Value));
+        bool duplicateName =
+            await _context.CommunicationLinks
+                .AsNoTracking()
+                .AnyAsync(existing =>
+                    existing.IsPrimary &&
+                    existing.Name == name &&
+                    (!excludedPrimaryId.HasValue ||
+                     existing.Id != excludedPrimaryId.Value));
 
         if (duplicateName)
         {
             ModelState.AddModelError(
                 nameof(CommunicationLink.Name),
                 $"Communication link '{name}' already exists.");
-        }
-
-        bool duplicateRoute = await _context.CommunicationLinks
-            .AsNoTracking()
-            .AnyAsync(existing =>
-                existing.LinkTypeId == linkTypeId &&
-                (!excludedPrimaryId.HasValue ||
-                 existing.Id != excludedPrimaryId.Value) &&
-                (!excludedReverseId.HasValue ||
-                 existing.Id != excludedReverseId.Value) &&
-                (
-                    (
-                        existing.SiteFromId == siteFromId &&
-                        existing.SiteToId == siteToId
-                    )
-                    ||
-                    (
-                        existing.SiteFromId == siteToId &&
-                        existing.SiteToId == siteFromId
-                    )
-                ));
-
-        if (duplicateRoute)
-        {
-            ModelState.AddModelError(
-                string.Empty,
-                "A communication link with this type and these two sites already exists.");
         }
     }
 

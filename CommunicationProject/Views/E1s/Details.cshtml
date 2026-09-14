@@ -1,6 +1,6 @@
 ﻿@model CommunicationProject.Models.E1
 @using CommunicationProject.Models
-
+@using CommunicationProject.Security
 @{
     ViewData["Title"] = "E1 Details";
 
@@ -198,38 +198,53 @@
                     </div>
 
                 </div>
+                <div>
 
+                    <div class="e1-detail-label">
+                        Operational Status
+                    </div>
 
-                @if (Model.PathOrder.HasValue)
+                    <div class="e1-detail-value">
+                        @Model.Status
+                    </div>
+
+                </div>
+                <div>
+
+                    <div class="e1-detail-label">
+                        Connection Type
+                    </div>
+
+                    <div class="e1-detail-value">
+                        @Model.ConnectionType
+                    </div>
+
+                </div>
+                @if (!string.IsNullOrWhiteSpace(Model.VisitorName))
                 {
                     <div>
 
                         <div class="e1-detail-label">
-                            Path Order
+                            Visitor
                         </div>
 
                         <div class="e1-detail-value">
-                            @Model.PathOrder
+                            @Model.VisitorName
                         </div>
 
                     </div>
                 }
 
-
-                @if (Model.PathId.HasValue)
+                @if (Model.VisitDate.HasValue)
                 {
                     <div>
 
                         <div class="e1-detail-label">
-                            Path
+                            Visit Date
                         </div>
 
                         <div class="e1-detail-value">
-                            Assigned
-                        </div>
-
-                        <div class="e1-detail-muted">
-                            This channel belongs to a path.
+                            @Model.VisitDate.Value.ToString("dd/MM/yyyy")
                         </div>
 
                     </div>
@@ -339,12 +354,37 @@
             </a>
 
 
-            <a asp-controller="Stms"
-                   asp-action="Details"
-                   asp-route-id="@Model.StmId"
-                   class="e1-details-primary">
-                View STM
-            </a>
+            <div class="d-flex gap-2">
+
+                @if (Model.ConnectionGroupId.HasValue &&
+                     (User.IsInRole(AppRoles.Admin) ||
+                      User.IsInRole(AppRoles.Operator)))
+                {
+                    <a asp-action="ChangeStatus"
+                           asp-route-id="@Model.Id"
+                           class="e1-details-secondary">
+                        Change Status
+                    </a>
+                }
+
+                @if (User.IsInRole(AppRoles.Admin) ||
+                     User.IsInRole(AppRoles.Operator))
+                {
+                    <a asp-action="ChangeConnectionType"
+                           asp-route-id="@Model.Id"
+                           class="e1-details-secondary">
+                        Change Type
+                    </a>
+                }
+
+                <a asp-controller="Stms"
+                       asp-action="Details"
+                       asp-route-id="@Model.StmId"
+                       class="e1-details-primary">
+                    View STM
+                </a>
+
+            </div>
 
         </div>
 

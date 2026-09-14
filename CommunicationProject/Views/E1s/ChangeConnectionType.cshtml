@@ -1,0 +1,98 @@
+﻿@model CommunicationProject.ViewModels.ChangeE1ConnectionTypeViewModel
+
+@{
+    ViewData["Title"] = "Change Connection Type";
+}
+
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/e1channels.css"
+          asp-append-version="true" />
+}
+
+<div class="container py-4">
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+
+            <div class="mb-4">
+                <h2 class="mb-1">
+                    Change Connection Type
+                </h2>
+
+                <p class="text-muted mb-0">
+                    E1 @Model.E1Number
+                </p>
+            </div>
+
+            <div asp-validation-summary="ModelOnly"
+                 class="alert alert-danger"></div>
+
+            <form asp-action="ChangeConnectionType"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <input asp-for="E1Id"
+                       type="hidden" />
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Current Type
+                    </label>
+
+                    <input class="form-control"
+                           value="@Model.CurrentType"
+                           readonly />
+
+                </div>
+
+                <div class="mb-4">
+
+                    <label asp-for="ConnectionType"
+                           class="form-label"></label>
+
+                    <select asp-for="ConnectionType"
+                            class="form-select">
+
+                        <option value="Physical">
+                            Physical
+                        </option>
+
+                        <option value="Logical">
+                            Logical
+                        </option>
+
+                    </select>
+
+                    <span asp-validation-for="ConnectionType"
+                          class="text-danger"></span>
+
+                </div>
+
+                <div class="d-flex gap-2">
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Save Type
+                    </button>
+
+                    <a asp-action="Details"
+                           asp-route-id="@Model.E1Id"
+                           class="btn btn-outline-secondary">
+                        Cancel
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

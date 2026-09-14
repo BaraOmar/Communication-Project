@@ -1,0 +1,93 @@
+﻿@model CommunicationProject.ViewModels.CreateMuxCardViewModel
+
+@{
+    ViewData["Title"] = "Add MUX Card";
+}
+
+<div class="container py-4">
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+
+            <div class="mb-4">
+                <h2 class="mb-1">
+                    Add Card
+                </h2>
+
+                <p class="text-muted mb-0">
+                    MUX @Model.MuxName
+                </p>
+            </div>
+
+            <form asp-action="Create"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <input asp-for="MuxId"
+                       type="hidden" />
+
+                <div asp-validation-summary="ModelOnly"
+                     class="alert alert-danger"></div>
+
+                <div class="mb-3">
+
+                    <label asp-for="CardTypeId"
+                           class="form-label"></label>
+
+                    <select asp-for="CardTypeId"
+                            asp-items="Model.CardTypeOptions"
+                            class="form-select">
+
+                        <option value="">
+                            Select card type
+                        </option>
+
+                    </select>
+
+                    <span asp-validation-for="CardTypeId"
+                          class="text-danger"></span>
+
+                </div>
+
+                <div class="mb-4">
+
+                    <label asp-for="SlotNumber"
+                           class="form-label"></label>
+
+                    <input asp-for="SlotNumber"
+                           type="number"
+                           min="1"
+                           class="form-control" />
+
+                    <span asp-validation-for="SlotNumber"
+                          class="text-danger"></span>
+
+                </div>
+
+                <div class="d-flex gap-2">
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Add Card
+                    </button>
+
+                    <a asp-controller="Muxes"
+                           asp-action="Details"
+                           asp-route-id="@Model.MuxId"
+                           class="btn btn-outline-secondary">
+                        Cancel
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

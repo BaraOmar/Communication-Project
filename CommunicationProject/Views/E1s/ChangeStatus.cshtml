@@ -1,0 +1,238 @@
+﻿@model CommunicationProject.ViewModels.ChangeE1StatusViewModel
+
+@{
+    ViewData["Title"] = "Change E1 Status";
+}
+
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/e1channels.css"
+          asp-append-version="true" />
+}
+
+<div class="container py-4">
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+
+            <div class="mb-4">
+                <h2 class="mb-1">
+                    Change E1 Status
+                </h2>
+
+                <p class="text-muted mb-0">
+                    E1 @Model.E1Number
+                </p>
+            </div>
+
+
+            <div asp-validation-summary="ModelOnly"
+                 class="alert alert-danger"></div>
+
+
+            <div class="row g-3 mb-4">
+
+                <div class="col-md-6">
+                    <label class="form-label">
+                        Current Status
+                    </label>
+
+                    <input class="form-control"
+                           value="@Model.CurrentStatus"
+                           readonly />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">
+                        Connection Group
+                    </label>
+
+                    <input class="form-control"
+                           value="@Model.ConnectionGroupId"
+                           readonly />
+                </div>
+                <div class="mt-3">
+
+                    <label class="form-label">
+                        Customer
+                    </label>
+
+                    <input class="form-control"
+                           value="@(string.IsNullOrWhiteSpace(Model.CustomerName)
+                                              ? "—"
+                                              : Model.CustomerName)"
+                           readonly />
+
+                </div>
+            </div>
+
+
+            <form asp-action="ChangeStatus"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <input asp-for="E1Id"
+                       type="hidden" />
+
+
+                <div class="mb-3">
+                    <label asp-for="Status"
+                           class="form-label"></label>
+
+                    <select asp-for="Status"
+                            class="form-select"
+                            id="statusSelect">
+
+                        <option value="Connected">
+                            Connected
+                        </option>
+
+                        <option value="Wrong">
+                            Wrong
+                        </option>
+
+                        <option value="Damaged">
+                            Damaged
+                        </option>
+
+                        <option value="Available">
+                            Available / Release Connection
+                        </option>
+
+                    </select>
+
+                    <span asp-validation-for="Status"
+                          class="text-danger"></span>
+                </div>
+
+
+                <div class="mb-3">
+                    <label asp-for="VisitorName"
+                           class="form-label"></label>
+
+                    <input asp-for="VisitorName"
+                           class="form-control"
+                           autocomplete="off" />
+
+                    <span asp-validation-for="VisitorName"
+                          class="text-danger"></span>
+                </div>
+
+
+                <div class="mb-3">
+                    <label asp-for="VisitDate"
+                           class="form-label"></label>
+
+                    <input asp-for="VisitDate"
+                           type="date"
+                           class="form-control" />
+
+                    <span asp-validation-for="VisitDate"
+                          class="text-danger"></span>
+                </div>
+
+
+                <div class="mb-4"
+                     id="descriptionContainer">
+
+                    <label asp-for="Description" class="form-label">
+                        Operational Description
+                    </label>
+
+                    <textarea asp-for="Description"
+                              class="form-control"
+                              rows="4"></textarea>
+
+                    <div class="form-text"
+                         id="descriptionHelp">
+                        Operational description is required when the connection is marked Connected.
+                    </div>
+
+                    <span asp-validation-for="Description"
+                          class="text-danger"></span>
+                </div>
+
+
+                <div class="alert alert-warning d-none"
+                     id="releaseWarning">
+
+                    <strong>Warning:</strong>
+
+                    Setting this E1 to Available will release
+                    the complete E1 connection associated with
+                    this connection group.
+
+                    Other E1 connections using the same STM or
+                    communication link will not be affected.
+                </div>
+
+
+                <div class="d-flex gap-2">
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Save Status
+                    </button>
+
+                    <a asp-action="Details"
+                           asp-route-id="@Model.E1Id"
+                           class="btn btn-outline-secondary">
+                        Cancel
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        const statusSelect =
+            document.getElementById("statusSelect");
+
+        const descriptionContainer =
+            document.getElementById("descriptionContainer");
+
+        const releaseWarning =
+            document.getElementById("releaseWarning");
+
+
+        function updateStatusForm() {
+
+            const status =
+                statusSelect.value;
+
+            if (status === "Connected") {
+                descriptionContainer.classList.remove("d-none");
+            }
+            else {
+                descriptionContainer.classList.add("d-none");
+            }
+
+
+            if (status === "Available") {
+                releaseWarning.classList.remove("d-none");
+            }
+            else {
+                releaseWarning.classList.add("d-none");
+            }
+        }
+
+
+        statusSelect.addEventListener(
+            "change",
+            updateStatusForm);
+
+
+        updateStatusForm();
+    </script>
+}

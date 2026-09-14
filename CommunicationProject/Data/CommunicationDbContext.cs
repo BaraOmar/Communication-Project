@@ -1,6 +1,7 @@
 ﻿using CommunicationProject.Models;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using static CommunicationProject.Models.E1;
 namespace CommunicationProject.Data;
 
 public class CommunicationDbContext
@@ -22,6 +23,20 @@ public class CommunicationDbContext
 
     public DbSet<E1> E1s { get; set; }
 
+    public DbSet<CommunicationPath> CommunicationPaths { get; set; }
+    public DbSet<CommunicationPathSegment> CommunicationPathSegments { get; set; }
+
+
+    public DbSet<Customer> Customers { get; set; }
+    public DbSet<CustomerConnection> CustomerConnections { get; set; }
+    public DbSet<CustomerConnectionSegment> CustomerConnectionSegments { get; set; }
+
+
+    public DbSet<Mux> Muxes { get; set; }
+    public DbSet<CardType> CardTypes { get; set; }
+    public DbSet<MuxCard> MuxCards { get; set; }
+    public DbSet<MuxPort> MuxPorts { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -30,6 +45,15 @@ public class CommunicationDbContext
         ConfigureCommunicationLink(modelBuilder);
         ConfigureStm(modelBuilder);
         ConfigureE1(modelBuilder);
+        ConfigureMux(modelBuilder);
+        ConfigureCardType(modelBuilder);
+        ConfigureMuxCard(modelBuilder);
+        ConfigureMuxPort(modelBuilder);
+        ConfigureCommunicationPath(modelBuilder);
+        ConfigureCommunicationPathSegment(modelBuilder);
+        ConfigureCustomer(modelBuilder);
+        ConfigureCustomerConnection(modelBuilder);
+        ConfigureCustomerConnectionSegment(modelBuilder);
     }
 
     private static void ConfigureCommunicationLink(
@@ -118,7 +142,8 @@ public class CommunicationDbContext
             {
                 link.LinkTypeId,
                 link.SiteFromId,
-                link.SiteToId
+                link.SiteToId,
+                link.Name
             })
             .IsUnique();
     }
@@ -166,7 +191,7 @@ public class CommunicationDbContext
             })
             .IsUnique();
     }
-
+   
     private static void ConfigureE1(
         ModelBuilder modelBuilder)
     {
@@ -207,15 +232,7 @@ public class CommunicationDbContext
                 e1.E1Number
             })
             .IsUnique();
-        modelBuilder.Entity<E1>()
-    .HasIndex(e1 => new
-    {
-        e1.PathId,
-        e1.PathOrder
-    })
-    .IsUnique()
-    .HasFilter(
-        "[PathId] IS NOT NULL AND [PathOrder] IS NOT NULL");
+
 
         modelBuilder.Entity<E1>()
     .Property(e1 => e1.CrossConnectionState)
@@ -230,6 +247,18 @@ public class CommunicationDbContext
             "CK_E1s_CrossConnectionState",
             "[CrossConnectionState] IN " +
             "('Available', 'CrossConnected', 'ExtendExistingPath')"));
+        modelBuilder.Entity<E1>()
+    .Property(e1 => e1.Status)
+    .HasConversion<string>()
+    .HasMaxLength(32)
+    .HasDefaultValue(E1OperationalStatus.Available)
+    .IsRequired();
+        modelBuilder.Entity<E1>()
+    .Property(e1 => e1.ConnectionType)
+    .HasConversion<string>()
+    .HasMaxLength(32)
+    .HasDefaultValue(E1ConnectionType.Physical)
+    .IsRequired();
     }
     private static void ConfigureSite(
     ModelBuilder modelBuilder)
@@ -238,5 +267,201 @@ public class CommunicationDbContext
             .Property(site => site.Id)
             .HasMaxLength(100)
             .IsRequired();
+    }
+    private static void ConfigureMux(
+    ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Mux>()
+            .HasOne(mux => mux.Site)
+            .WithMany()
+            .HasForeignKey(mux => mux.SiteId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Mux>()
+            .HasOne(mux => mux.CommunicationLink)
+            .WithMany()
+            .HasForeignKey(mux => mux.CommunicationLinkId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Mux>()
+            .HasIndex(mux => new
+            {
+                mux.CommunicationLinkId,
+                mux.SiteId,
+                mux.Name
+            })
+            .IsUnique();
+    }
+    private static void ConfigureCardType(
+    ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<CardType>()
+            .Property(cardType => cardType.Category)
+            .HasConversion<string>()
+            .HasMaxLength(32)
+            .IsRequired();
+
+        modelBuilder.Entity<CardType>()
+            .HasIndex(cardType => cardType.Name)
+            .IsUnique();
+    }
+    private static void ConfigureMuxCard(
+    ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<MuxCard>()
+            .HasOne(card => card.Mux)
+            .WithMany(mux => mux.Cards)
+            .HasForeignKey(card => card.MuxId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<MuxCard>()
+            .HasOne(card => card.CardType)
+            .WithMany(cardType => cardType.Cards)
+            .HasForeignKey(card => card.CardTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<MuxCard>()
+            .HasIndex(card => new
+            {
+                card.MuxId,
+                card.SlotNumber
+            })
+            .IsUnique();
+    }
+    private static void ConfigureMuxPort(
+    ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<MuxPort>()
+            .HasOne(port => port.MuxCard)
+            .WithMany(card => card.Ports)
+            .HasForeignKey(port => port.MuxCardId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<MuxPort>()
+            .HasOne(port => port.E1)
+            .WithMany()
+            .HasForeignKey(port => port.E1Id)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<MuxPort>()
+            .Property(port => port.Status)
+            .HasConversion<string>()
+            .HasMaxLength(32)
+            .HasDefaultValue(MuxPortStatus.Available)
+            .IsRequired();
+
+        modelBuilder.Entity<MuxPort>()
+            .HasIndex(port => new
+            {
+                port.MuxCardId,
+                port.PortNumber
+            })
+            .IsUnique();
+
+        modelBuilder.Entity<MuxPort>()
+            .HasIndex(port => port.E1Id)
+            .IsUnique()
+            .HasFilter("[E1Id] IS NOT NULL");
+    }
+    private static void ConfigureCommunicationPath(
+    ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<CommunicationPath>()
+            .HasIndex(path => path.Name)
+            .IsUnique();
+
+        modelBuilder.Entity<CommunicationPath>()
+            .Property(path => path.IsActive)
+            .HasDefaultValue(true);
+    }
+    private static void ConfigureCommunicationPathSegment(
+    ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<CommunicationPathSegment>()
+            .HasOne(segment => segment.CommunicationPath)
+            .WithMany(path => path.Segments)
+            .HasForeignKey(segment => segment.CommunicationPathId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<CommunicationPathSegment>()
+            .HasOne(segment => segment.CommunicationLink)
+            .WithMany()
+            .HasForeignKey(segment => segment.CommunicationLinkId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<CommunicationPathSegment>()
+            .HasIndex(segment => new
+            {
+                segment.CommunicationPathId,
+                segment.Order
+            })
+            .IsUnique();
+    }
+    private static void ConfigureCustomer(
+    ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Customer>()
+            .HasIndex(customer => customer.Name)
+            .IsUnique();
+
+        modelBuilder.Entity<Customer>()
+            .Property(customer => customer.IsActive)
+            .HasDefaultValue(true);
+    }
+    private static void ConfigureCustomerConnection(
+    ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<CustomerConnection>()
+            .HasOne(connection => connection.Customer)
+            .WithMany(customer => customer.Connections)
+            .HasForeignKey(connection => connection.CustomerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<CustomerConnection>()
+            .HasOne(connection => connection.CommunicationPath)
+            .WithMany(path => path.CustomerConnections)
+            .HasForeignKey(connection => connection.CommunicationPathId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<CustomerConnection>()
+            .HasIndex(connection => connection.ConnectionGroupId)
+            .IsUnique();
+
+        modelBuilder.Entity<CustomerConnection>()
+            .Property(connection => connection.IsActive)
+            .HasDefaultValue(true);
+    }
+    private static void ConfigureCustomerConnectionSegment(
+    ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<CustomerConnectionSegment>()
+            .HasOne(segment => segment.CustomerConnection)
+            .WithMany(connection => connection.Segments)
+            .HasForeignKey(segment => segment.CustomerConnectionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<CustomerConnectionSegment>()
+            .HasOne(segment => segment.CommunicationPathSegment)
+            .WithMany()
+            .HasForeignKey(segment => segment.CommunicationPathSegmentId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<CustomerConnectionSegment>()
+            .HasOne(segment => segment.E1)
+            .WithMany()
+            .HasForeignKey(segment => segment.E1Id)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<CustomerConnectionSegment>()
+            .HasIndex(segment => new
+            {
+                segment.CustomerConnectionId,
+                segment.CommunicationPathSegmentId
+            })
+            .IsUnique();
+
+        modelBuilder.Entity<CustomerConnectionSegment>()
+            .HasIndex(segment => segment.E1Id)
+            .IsUnique();
     }
 }

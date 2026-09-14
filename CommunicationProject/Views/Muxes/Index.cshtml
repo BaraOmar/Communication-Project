@@ -1,0 +1,111 @@
+﻿@model List<CommunicationProject.Models.Mux>
+@using CommunicationProject.Security
+
+@{
+    ViewData["Title"] = "MUXes";
+}
+
+<div class="container py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h1 class="mb-1">
+                MUXes
+            </h1>
+
+            <p class="text-muted mb-0">
+                View MUX devices assigned to communication links.
+            </p>
+        </div>
+
+        @if (User.IsInRole(AppRoles.Admin) ||
+             User.IsInRole(AppRoles.Operator))
+        {
+            <a asp-action="Create"
+                   class="btn btn-primary">
+                Add MUX
+            </a>
+        }
+
+    </div>
+
+
+    <div class="card border-0 shadow-sm">
+
+        <div class="table-responsive">
+
+            <table class="table align-middle mb-0">
+
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Site</th>
+                        <th>Communication Link</th>
+                        <th>Route</th>
+                        <th class="text-end">
+                            Action
+                        </th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @if (Model.Any())
+                    {
+                        foreach (var mux in Model)
+                        {
+                            <tr>
+
+                                <td>
+                                    <strong>
+                                        @mux.Name
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    @mux.Site.Name
+                                </td>
+
+                                <td>
+                                    @mux.CommunicationLink.Name
+                                </td>
+
+                                <td>
+                                    @mux.CommunicationLink.SiteFrom.Name
+                                    →
+                                    @mux.CommunicationLink.SiteTo.Name
+                                </td>
+
+                                <td class="text-end">
+
+                                    <a asp-action="Details"
+                                           asp-route-id="@mux.Id"
+                                           class="btn btn-sm btn-outline-secondary">
+                                        View
+                                    </a>
+
+                                </td>
+
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5"
+                                class="text-center py-4 text-muted">
+                                No MUX devices have been added yet.
+                            </td>
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>

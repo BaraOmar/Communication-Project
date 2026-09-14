@@ -4,6 +4,7 @@ using CommunicationProject.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CommunicationProject.Migrations
 {
     [DbContext(typeof(CommunicationDbContext))]
-    partial class CommunicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260910074107_AddE1ConnectionGroup")]
+    partial class AddE1ConnectionGroup
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -91,33 +94,6 @@ namespace CommunicationProject.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("CommunicationProject.Models.CardType", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("PortCount")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("CardTypes");
-                });
-
             modelBuilder.Entity("CommunicationProject.Models.CommunicationLink", b =>
                 {
                     b.Property<Guid>("Id")
@@ -165,161 +141,10 @@ namespace CommunicationProject.Migrations
                     b.HasIndex("Name", "IsPrimary")
                         .IsUnique();
 
-                    b.HasIndex("LinkTypeId", "SiteFromId", "SiteToId", "Name")
+                    b.HasIndex("LinkTypeId", "SiteFromId", "SiteToId")
                         .IsUnique();
 
                     b.ToTable("CommunicationLinks");
-                });
-
-            modelBuilder.Entity("CommunicationProject.Models.CommunicationPath", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("CommunicationPaths");
-                });
-
-            modelBuilder.Entity("CommunicationProject.Models.CommunicationPathSegment", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("CommunicationLinkId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("CommunicationPathId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Order")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CommunicationLinkId");
-
-                    b.HasIndex("CommunicationPathId", "Order")
-                        .IsUnique();
-
-                    b.ToTable("CommunicationPathSegments");
-                });
-
-            modelBuilder.Entity("CommunicationProject.Models.Customer", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("Customers");
-                });
-
-            modelBuilder.Entity("CommunicationProject.Models.CustomerConnection", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("CommunicationPathId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ConnectionGroupId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("CustomerId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CommunicationPathId");
-
-                    b.HasIndex("ConnectionGroupId")
-                        .IsUnique();
-
-                    b.HasIndex("CustomerId");
-
-                    b.ToTable("CustomerConnections");
-                });
-
-            modelBuilder.Entity("CommunicationProject.Models.CustomerConnectionSegment", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("CommunicationPathSegmentId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("CustomerConnectionId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("E1Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CommunicationPathSegmentId");
-
-                    b.HasIndex("E1Id")
-                        .IsUnique();
-
-                    b.HasIndex("CustomerConnectionId", "CommunicationPathSegmentId")
-                        .IsUnique();
-
-                    b.ToTable("CustomerConnectionSegments");
                 });
 
             modelBuilder.Entity("CommunicationProject.Models.E1", b =>
@@ -333,13 +158,6 @@ namespace CommunicationProject.Migrations
 
                     b.Property<Guid?>("ConnectionGroupId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ConnectionType")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)")
-                        .HasDefaultValue("Physical");
 
                     b.Property<string>("CrossConnectionState")
                         .IsRequired()
@@ -360,22 +178,14 @@ namespace CommunicationProject.Migrations
                     b.Property<Guid?>("JoinE1Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)")
-                        .HasDefaultValue("Available");
+                    b.Property<Guid?>("PathId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("PathOrder")
+                        .HasColumnType("int");
 
                     b.Property<Guid>("StmId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("VisitDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("VisitorName")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
 
                     b.HasKey("Id");
 
@@ -384,6 +194,10 @@ namespace CommunicationProject.Migrations
                         .HasFilter("[ConnectedE1Id] IS NOT NULL");
 
                     b.HasIndex("ConnectionGroupId");
+
+                    b.HasIndex("PathId", "PathOrder")
+                        .IsUnique()
+                        .HasFilter("[PathId] IS NOT NULL AND [PathOrder] IS NOT NULL");
 
                     b.HasIndex("StmId", "E1Number")
                         .IsUnique();
@@ -411,93 +225,6 @@ namespace CommunicationProject.Migrations
                         .IsUnique();
 
                     b.ToTable("LinkTypes");
-                });
-
-            modelBuilder.Entity("CommunicationProject.Models.Mux", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("CommunicationLinkId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("SiteId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SiteId");
-
-                    b.HasIndex("CommunicationLinkId", "SiteId", "Name")
-                        .IsUnique();
-
-                    b.ToTable("Muxes");
-                });
-
-            modelBuilder.Entity("CommunicationProject.Models.MuxCard", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("CardTypeId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("MuxId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("SlotNumber")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CardTypeId");
-
-                    b.HasIndex("MuxId", "SlotNumber")
-                        .IsUnique();
-
-                    b.ToTable("MuxCards");
-                });
-
-            modelBuilder.Entity("CommunicationProject.Models.MuxPort", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("E1Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("MuxCardId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("PortNumber")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)")
-                        .HasDefaultValue("Available");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("E1Id")
-                        .IsUnique()
-                        .HasFilter("[E1Id] IS NOT NULL");
-
-                    b.HasIndex("MuxCardId", "PortNumber")
-                        .IsUnique();
-
-                    b.ToTable("MuxPorts");
                 });
 
             modelBuilder.Entity("CommunicationProject.Models.Site", b =>
@@ -724,71 +451,6 @@ namespace CommunicationProject.Migrations
                     b.Navigation("SiteTo");
                 });
 
-            modelBuilder.Entity("CommunicationProject.Models.CommunicationPathSegment", b =>
-                {
-                    b.HasOne("CommunicationProject.Models.CommunicationLink", "CommunicationLink")
-                        .WithMany()
-                        .HasForeignKey("CommunicationLinkId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("CommunicationProject.Models.CommunicationPath", "CommunicationPath")
-                        .WithMany("Segments")
-                        .HasForeignKey("CommunicationPathId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CommunicationLink");
-
-                    b.Navigation("CommunicationPath");
-                });
-
-            modelBuilder.Entity("CommunicationProject.Models.CustomerConnection", b =>
-                {
-                    b.HasOne("CommunicationProject.Models.CommunicationPath", "CommunicationPath")
-                        .WithMany("CustomerConnections")
-                        .HasForeignKey("CommunicationPathId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("CommunicationProject.Models.Customer", "Customer")
-                        .WithMany("Connections")
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("CommunicationPath");
-
-                    b.Navigation("Customer");
-                });
-
-            modelBuilder.Entity("CommunicationProject.Models.CustomerConnectionSegment", b =>
-                {
-                    b.HasOne("CommunicationProject.Models.CommunicationPathSegment", "CommunicationPathSegment")
-                        .WithMany()
-                        .HasForeignKey("CommunicationPathSegmentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("CommunicationProject.Models.CustomerConnection", "CustomerConnection")
-                        .WithMany("Segments")
-                        .HasForeignKey("CustomerConnectionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("CommunicationProject.Models.E1", "E1")
-                        .WithMany()
-                        .HasForeignKey("E1Id")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("CommunicationPathSegment");
-
-                    b.Navigation("CustomerConnection");
-
-                    b.Navigation("E1");
-                });
-
             modelBuilder.Entity("CommunicationProject.Models.E1", b =>
                 {
                     b.HasOne("CommunicationProject.Models.E1", "ConnectedE1")
@@ -805,62 +467,6 @@ namespace CommunicationProject.Migrations
                     b.Navigation("ConnectedE1");
 
                     b.Navigation("Stm");
-                });
-
-            modelBuilder.Entity("CommunicationProject.Models.Mux", b =>
-                {
-                    b.HasOne("CommunicationProject.Models.CommunicationLink", "CommunicationLink")
-                        .WithMany()
-                        .HasForeignKey("CommunicationLinkId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("CommunicationProject.Models.Site", "Site")
-                        .WithMany()
-                        .HasForeignKey("SiteId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("CommunicationLink");
-
-                    b.Navigation("Site");
-                });
-
-            modelBuilder.Entity("CommunicationProject.Models.MuxCard", b =>
-                {
-                    b.HasOne("CommunicationProject.Models.CardType", "CardType")
-                        .WithMany("Cards")
-                        .HasForeignKey("CardTypeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("CommunicationProject.Models.Mux", "Mux")
-                        .WithMany("Cards")
-                        .HasForeignKey("MuxId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("CardType");
-
-                    b.Navigation("Mux");
-                });
-
-            modelBuilder.Entity("CommunicationProject.Models.MuxPort", b =>
-                {
-                    b.HasOne("CommunicationProject.Models.E1", "E1")
-                        .WithMany()
-                        .HasForeignKey("E1Id")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("CommunicationProject.Models.MuxCard", "MuxCard")
-                        .WithMany("Ports")
-                        .HasForeignKey("MuxCardId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("E1");
-
-                    b.Navigation("MuxCard");
                 });
 
             modelBuilder.Entity("CommunicationProject.Models.Stm", b =>
@@ -932,46 +538,14 @@ namespace CommunicationProject.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("CommunicationProject.Models.CardType", b =>
-                {
-                    b.Navigation("Cards");
-                });
-
             modelBuilder.Entity("CommunicationProject.Models.CommunicationLink", b =>
                 {
                     b.Navigation("Stms");
                 });
 
-            modelBuilder.Entity("CommunicationProject.Models.CommunicationPath", b =>
-                {
-                    b.Navigation("CustomerConnections");
-
-                    b.Navigation("Segments");
-                });
-
-            modelBuilder.Entity("CommunicationProject.Models.Customer", b =>
-                {
-                    b.Navigation("Connections");
-                });
-
-            modelBuilder.Entity("CommunicationProject.Models.CustomerConnection", b =>
-                {
-                    b.Navigation("Segments");
-                });
-
             modelBuilder.Entity("CommunicationProject.Models.LinkType", b =>
                 {
                     b.Navigation("Links");
-                });
-
-            modelBuilder.Entity("CommunicationProject.Models.Mux", b =>
-                {
-                    b.Navigation("Cards");
-                });
-
-            modelBuilder.Entity("CommunicationProject.Models.MuxCard", b =>
-                {
-                    b.Navigation("Ports");
                 });
 
             modelBuilder.Entity("CommunicationProject.Models.Site", b =>

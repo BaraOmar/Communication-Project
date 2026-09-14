@@ -1,0 +1,348 @@
+﻿@model CommunicationProject.ViewModels.AddCustomerToPathViewModel
+
+@{
+    ViewData["Title"] = "Add Customer to Path";
+}
+
+<div class="container py-4">
+
+    <div class="mb-4">
+        <h2 class="mb-1">
+            Add Customer to Path
+        </h2>
+
+        <p class="text-muted mb-0">
+            @Model.PathDisplay
+        </p>
+    </div>
+
+
+    <form asp-action="AddCustomer"
+          method="post">
+
+        @Html.AntiForgeryToken()
+
+        <input asp-for="PathId"
+               type="hidden" />
+
+
+        <div asp-validation-summary="ModelOnly"
+             class="text-danger mb-3">
+        </div>
+
+
+        <div class="card border-0 shadow-sm mb-4">
+
+            <div class="card-body">
+
+                <div class="mb-3">
+
+                    <label asp-for="CustomerName"
+                           class="form-label">
+                    </label>
+
+                    <input asp-for="CustomerName"
+                           class="form-control"
+                           placeholder="Enter customer name" />
+
+                    <span asp-validation-for="CustomerName"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+
+                        <label asp-for="StartSiteId"
+                               class="form-label">
+                        </label>
+
+                        <select asp-for="StartSiteId"
+                                asp-items="Model.PathSites"
+                                class="form-select">
+
+                            <option value="">
+                                Select start site
+                            </option>
+
+                        </select>
+
+                        <span asp-validation-for="StartSiteId"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+
+                    <div class="col-md-6 mb-3">
+
+                        <label asp-for="DestinationSiteId"
+                               class="form-label">
+                        </label>
+
+                        <select asp-for="DestinationSiteId"
+                                asp-items="Model.PathSites"
+                                class="form-select">
+
+                            <option value="">
+                                Select destination site
+                            </option>
+
+                        </select>
+
+                        <span asp-validation-for="DestinationSiteId"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="card border-0 shadow-sm">
+
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    E1 Assignments
+                </h5>
+            </div>
+
+            <div class="card-body">
+
+                @for (int i = 0;
+                      i < Model.Segments.Count;
+                      i++)
+                {
+                    <input asp-for="Segments[i].CommunicationPathSegmentId"
+                           type="hidden" />
+
+                    <input asp-for="Segments[i].Order"
+                           type="hidden" />
+
+                    <input asp-for="Segments[i].SiteFrom"
+                           type="hidden" />
+
+                    <input asp-for="Segments[i].SiteTo"
+                           type="hidden" />
+
+
+                    <div class="border rounded p-3 mb-3 customer-path-segment"
+                         data-site-from="@Model.Segments[i].SiteFrom"
+                         data-site-to="@Model.Segments[i].SiteTo"
+                         data-order="@Model.Segments[i].Order">
+
+                        <div class="row align-items-center">
+
+                            <div class="col-md-4">
+
+                                <div class="fw-semibold">
+                                    @Model.Segments[i].SiteFrom
+                                    →
+                                    @Model.Segments[i].SiteTo
+                                </div>
+
+                                <small class="text-muted">
+                                    Segment @Model.Segments[i].Order
+                                </small>
+
+                            </div>
+
+
+                            <div class="col-md-8">
+
+                                <label asp-for="Segments[i].E1Id"
+                                       class="form-label">
+                                    E1
+                                </label>
+
+                                <select asp-for="Segments[i].E1Id"
+                                        asp-items="Model.Segments[i].AvailableE1s"
+                                        class="form-select">
+
+                                    <option value="">
+                                        Select E1
+                                    </option>
+
+                                </select>
+
+                                <span asp-validation-for="Segments[i].E1Id"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                }
+
+            </div>
+
+        </div>
+
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+
+            <a asp-action="Index"
+                   class="btn btn-outline-secondary">
+                Cancel
+            </a>
+
+            <button type="submit"
+                    class="btn btn-primary">
+                Add Customer
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const startSelect =
+                document.getElementById("StartSiteId");
+
+            const destinationSelect =
+                document.getElementById("DestinationSiteId");
+
+            const segmentElements =
+                document.querySelectorAll(".customer-path-segment");
+
+
+            function getPathSites() {
+
+                return Array.from(startSelect.options)
+                    .map(option => option.value)
+                    .filter(value => value !== "");
+            }
+
+                    function updateDestinationOptions() {
+
+            const pathSites =
+                getPathSites();
+
+            const startIndex =
+                pathSites.indexOf(
+                    startSelect.value);
+
+            Array.from(
+                destinationSelect.options)
+                .forEach(option => {
+
+                    if (option.value === "") {
+                        option.disabled = false;
+                        return;
+                    }
+
+                    const destinationIndex =
+                        pathSites.indexOf(
+                            option.value);
+
+                    option.disabled =
+                        startIndex >= 0 &&
+                        destinationIndex <= startIndex;
+                });
+
+
+            if (destinationSelect
+                .selectedOptions[0]?.disabled) {
+
+                destinationSelect.value = "";
+            }
+        }
+            function updateVisibleSegments() {
+
+                const pathSites =
+                    getPathSites();
+
+                const startSite =
+                    startSelect.value;
+
+                const destinationSite =
+                    destinationSelect.value;
+
+                const startIndex =
+                    pathSites.indexOf(startSite);
+
+                const destinationIndex =
+                    pathSites.indexOf(destinationSite);
+
+
+                segmentElements.forEach(segment => {
+
+                    const siteFrom =
+                        segment.dataset.siteFrom;
+
+                    const siteTo =
+                        segment.dataset.siteTo;
+
+                    const fromIndex =
+                        pathSites.indexOf(siteFrom);
+
+                    const toIndex =
+                        pathSites.indexOf(siteTo);
+
+                    const e1Select =
+                        segment.querySelector("select");
+
+
+                    const shouldShow =
+                        startIndex >= 0 &&
+                        destinationIndex >= 0 &&
+                        startIndex < destinationIndex &&
+                        fromIndex >= startIndex &&
+                        toIndex <= destinationIndex;
+
+
+                    if (shouldShow) {
+
+                        segment.style.display = "";
+
+                        if (e1Select) {
+                            e1Select.disabled = false;
+                        }
+                    }
+                    else {
+
+                        segment.style.display = "none";
+
+                        if (e1Select) {
+                            e1Select.value = "";
+                            e1Select.disabled = true;
+                        }
+                    }
+                });
+            }
+
+
+        startSelect.addEventListener(
+            "change",
+            function () {
+
+                updateDestinationOptions();
+                updateVisibleSegments();
+            });
+
+            destinationSelect.addEventListener(
+                "change",
+                updateVisibleSegments);
+
+            updateDestinationOptions();
+            updateVisibleSegments();
+        });
+    </script>
+}

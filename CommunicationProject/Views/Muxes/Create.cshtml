@@ -1,0 +1,185 @@
+﻿@model CommunicationProject.ViewModels.CreateMuxViewModel
+
+@{
+    ViewData["Title"] = "Add MUX";
+}
+
+<div class="container py-4">
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+
+            <div class="mb-4">
+                <h2 class="mb-1">
+                    Add MUX
+                </h2>
+
+                <p class="text-muted mb-0">
+                    Assign a MUX to a communication link and one of its endpoint sites.
+                </p>
+            </div>
+
+
+            <form asp-action="Create"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly"
+                     class="alert alert-danger"></div>
+
+
+                <div class="mb-3">
+
+                    <label asp-for="Name"
+                           class="form-label"></label>
+
+                    <input asp-for="Name"
+                           class="form-control"
+                           autocomplete="off" />
+
+                    <span asp-validation-for="Name"
+                          class="text-danger"></span>
+
+                </div>
+
+
+                <div class="mb-3">
+
+                    <label asp-for="CommunicationLinkId"
+                           class="form-label"></label>
+
+                    <select asp-for="CommunicationLinkId"
+                            asp-items="Model.CommunicationLinkOptions"
+                            class="form-select"
+                            id="communicationLinkSelect">
+
+                        <option value="">
+                            Select communication link
+                        </option>
+
+                    </select>
+
+                    <span asp-validation-for="CommunicationLinkId"
+                          class="text-danger"></span>
+
+                </div>
+
+
+                <div class="mb-4">
+
+                    <label asp-for="SiteId"
+                           class="form-label"></label>
+
+                    <select asp-for="SiteId"
+                            class="form-select"
+                            id="siteSelect"
+                            disabled>
+
+                        <option value="">
+                            Select communication link first
+                        </option>
+
+                    </select>
+
+                    <span asp-validation-for="SiteId"
+                          class="text-danger"></span>
+
+                </div>
+
+
+                <div class="d-flex gap-2">
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Create MUX
+                    </button>
+
+                    <a asp-action="Index"
+                           class="btn btn-outline-secondary">
+                        Cancel
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+
+        const linkSelect =
+            document.getElementById(
+                "communicationLinkSelect");
+
+        const siteSelect =
+            document.getElementById(
+                "siteSelect");
+
+
+        async function loadSites() {
+
+            const linkId =
+                linkSelect.value;
+
+            siteSelect.innerHTML = "";
+
+            if (!linkId) {
+
+                siteSelect.disabled = true;
+
+                siteSelect.innerHTML =
+                    '<option value="">Select communication link first</option>';
+
+                return;
+            }
+
+
+            const response =
+                await fetch(
+                    '@Url.Action("GetLinkSites", "Muxes")' +
+                    '?communicationLinkId=' +
+                    encodeURIComponent(linkId));
+
+
+            const sites =
+                await response.json();
+
+
+            siteSelect.innerHTML =
+                '<option value="">Select site</option>';
+
+
+            for (const site of sites) {
+
+                const option =
+                    document.createElement("option");
+
+                option.value =
+                    site.value;
+
+                option.textContent =
+                    site.text;
+
+                siteSelect.appendChild(option);
+            }
+
+
+            siteSelect.disabled = false;
+        }
+
+
+        linkSelect.addEventListener(
+            "change",
+            loadSites);
+
+    </script>
+}

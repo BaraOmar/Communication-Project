@@ -17,17 +17,7 @@ namespace CommunicationProject.Models;
     nameof(IsPrimary),
     IsUnique = true)]
 
-/*
- * يمنع تكرار الاتجاه نفسه لنفس نوع الرابط:
- *
- * Amman -> Zarqa
- * Amman -> Zarqa
- */
-[Index(
-    nameof(LinkTypeId),
-    nameof(SiteFromId),
-    nameof(SiteToId),
-    IsUnique = true)]
+
 
 /*
  * كل سجل رابط يمكن أن يكون مرتبطًا بسجل عكسي واحد فقط.

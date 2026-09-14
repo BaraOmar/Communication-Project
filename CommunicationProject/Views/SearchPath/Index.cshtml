@@ -1,4 +1,6 @@
 ﻿@model CommunicationProject.ViewModels.SearchPathViewModel
+@using CommunicationProject.Models
+@using static CommunicationProject.Models.E1
 
 @{
     ViewData["Title"] = "Search Paths";
@@ -73,16 +75,42 @@
                 <!-- Source -->
                 <div class="path-field">
 
-                    <label asp-for="SourceSiteId">
-                        Source site
+                    <label asp-for="SiteId">
+                        Site
                     </label>
 
-                    <select asp-for="SourceSiteId"
+                    <select asp-for="SiteId"
                             asp-items="Model.SiteOptions"
                             class="path-select">
 
                         <option value="">
-                            All source sites
+                            All sites
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="path-field">
+
+                    <label asp-for="SitePosition">
+                        Position
+                    </label>
+
+                    <select asp-for="SitePosition"
+                            class="path-select">
+
+                        <option value="anywhere">
+                            Anywhere in path
+                        </option>
+
+                        <option value="start">
+                            Start site
+                        </option>
+
+                        <option value="destination">
+                            Destination site
                         </option>
 
                     </select>
@@ -222,12 +250,26 @@
                     </div>
 
 
-                    <span class="path-link-count">
+                    <div class="d-flex align-items-center gap-2">
 
-                        @path.LinkCount
-                        link@(path.LinkCount == 1 ? "" : "s")
+                        @if (User.IsInRole("Admin") ||
+                             User.IsInRole("Operator"))
+                        {
+                            <a asp-action="AddCustomer"
+                                   asp-route-pathId="@path.PathId"
+                                   class="btn btn-sm btn-outline-primary">
+                                Add Customer
+                            </a>
+                        }
 
-                    </span>
+                        <span class="path-link-count">
+
+                            @path.LinkCount
+                            link@(path.LinkCount == 1 ? "" : "s")
+
+                        </span>
+
+                    </div>
 
                 </div>
 
@@ -462,7 +504,174 @@
                         }
 
                     </div>
+                    <!-- Customers Using This Path -->
+                    <div class="path-customers">
 
+                        <div class="path-customers-header">
+
+                            <div>
+                                <h4 class="path-customers-title">
+                                    Customers
+                                </h4>
+
+                                <p class="path-customers-subtitle">
+                                    Customers currently using this communication path.
+                                </p>
+                            </div>
+
+                            <span class="path-customers-count">
+                                @path.Customers.Count
+                                customer@(path.Customers.Count == 1 ? "" : "s")
+                            </span>
+
+                        </div>
+
+
+                        @if (!path.Customers.Any())
+                        {
+                            <div class="path-customers-empty">
+                                No customers are assigned to this path yet.
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+
+                                <table class="table align-middle mb-0">
+
+                                    <thead>
+                                        <tr>
+                                            <th>Customer</th>
+                                            <th>E1 Route</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+
+                                        @foreach (var customer in path.Customers)
+                                        {
+                                            <tr>
+
+                                                <td>
+                                                    <div class="fw-semibold">
+                                                        @customer.CustomerName
+                                                    </div>
+
+                                                    @if (!string.IsNullOrWhiteSpace(
+                                                        customer.StartSiteId) &&
+                                                        !string.IsNullOrWhiteSpace(
+                                                        customer.DestinationSiteId))
+                                                    {
+                                                        <small class="text-muted d-block">
+                                                            Uses:
+                                                            @customer.StartSiteId
+                                                            →
+                                                            @customer.DestinationSiteId
+                                                        </small>
+                                                    }
+
+                                                    @if (!string.IsNullOrWhiteSpace(
+                                                        customer.Description))
+                                                    {
+                                                        <small class="text-muted d-block">
+                                                            @customer.Description
+                                                        </small>
+                                                    }
+                                                </td>
+
+
+                                                <td>
+
+                                                    @if (!customer.E1s.Any())
+                                                    {
+                                                        <span class="text-muted">
+                                                            No E1 assignments
+                                                        </span>
+                                                    }
+                                                    else
+                                                    {
+                                                        @foreach (var e1 in customer.E1s)
+                                                        {
+                                                            <div>
+                                                                <strong>
+                                                                    @e1.SiteFrom
+                                                                    →
+                                                                    @e1.SiteTo
+                                                                </strong>
+
+                                                                <span class="text-muted">
+                                                                    —
+                                                                </span>
+
+                                                                STM @e1.StmNumber / E1 @e1.E1Number
+                                                            </div>
+                                                        }
+                                                    }
+
+                                                </td>
+
+
+                                                <td>
+
+                                                    @if (customer.OperationalStatus.HasValue)
+                                                    {
+                                                        switch (customer.OperationalStatus.Value)
+                                                        {
+                                                            case E1OperationalStatus.Connected:
+                                                                <span class="badge bg-success">
+                                                                    Connected
+                                                                </span>
+                                                                break;
+
+                                                            case E1OperationalStatus.Wrong:
+                                                                <span class="badge bg-warning text-dark">
+                                                                    Wrong
+                                                                </span>
+                                                                break;
+
+                                                            case E1OperationalStatus.Damaged:
+                                                                <span class="badge bg-danger">
+                                                                    Damaged
+                                                                </span>
+                                                                break;
+
+                                                            case E1OperationalStatus.Available:
+                                                                <span class="badge bg-secondary">
+                                                                    Available
+                                                                </span>
+                                                                break;
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary">
+                                                            Unknown
+                                                        </span>
+                                                    }
+                                                    @if (customer.ManageE1Id.HasValue)
+                                                    {
+                                                        <a asp-controller="E1s"
+                                                               asp-action="ChangeStatus"
+                                                               asp-route-id="@customer.ManageE1Id"
+                                                               class="btn btn-sm btn-outline-secondary ms-2">
+                                                            Manage Connection
+                                                        </a>
+                                                    }
+
+                                                </td>
+
+                                            </tr>
+                                        }
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+                        }
+
+                    </div>
                 </div>
 
             </article>
@@ -494,7 +703,8 @@
                             <a asp-action="Index"
                                    asp-route-description="@Model.Description"
                                    asp-route-linkName="@Model.LinkName"
-                                   asp-route-sourceSiteId="@Model.SourceSiteId"
+                                   asp-route-siteId="@Model.SiteId"
+                                   asp-route-sitePosition="@Model.SitePosition"
                                    asp-route-pageNumber="@(Model.PageNumber - 1)"
                                    class="path-page-link">
                                 ‹
@@ -537,7 +747,8 @@
                         <a asp-action="Index"
                                asp-route-description="@Model.Description"
                                asp-route-linkName="@Model.LinkName"
-                               asp-route-sourceSiteId="@Model.SourceSiteId"
+                               asp-route-siteId="@Model.SiteId"
+                               asp-route-sitePosition="@Model.SitePosition"
                                asp-route-pageNumber="1"
                                class="path-page-link
                             @(currentPage == 1
@@ -568,7 +779,8 @@
                             <a asp-action="Index"
                                    asp-route-description="@Model.Description"
                                    asp-route-linkName="@Model.LinkName"
-                                   asp-route-sourceSiteId="@Model.SourceSiteId"
+                                   asp-route-siteId="@Model.SiteId"
+                                   asp-route-sitePosition="@Model.SitePosition"
                                    asp-route-pageNumber="@i"
                                    class="path-page-link
                                 @(currentPage == i
@@ -598,7 +810,8 @@
                             <a asp-action="Index"
                                    asp-route-description="@Model.Description"
                                    asp-route-linkName="@Model.LinkName"
-                                   asp-route-sourceSiteId="@Model.SourceSiteId"
+                                   asp-route-siteId="@Model.SiteId"
+                                   asp-route-sitePosition="@Model.SitePosition"
                                    asp-route-pageNumber="@totalPages"
                                    class="path-page-link
                                 @(currentPage == totalPages
@@ -619,7 +832,8 @@
                             <a asp-action="Index"
                                    asp-route-description="@Model.Description"
                                    asp-route-linkName="@Model.LinkName"
-                                   asp-route-sourceSiteId="@Model.SourceSiteId"
+                                   asp-route-siteId="@Model.SiteId"
+                                   asp-route-sitePosition="@Model.SitePosition"
                                    asp-route-pageNumber="@(Model.PageNumber + 1)"
                                    class="path-page-link">
                                 ›

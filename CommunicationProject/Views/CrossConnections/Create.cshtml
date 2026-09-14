@@ -14,7 +14,7 @@
         nextSiteId = Model.NextSiteId,
         outgoingStmId = Model.OutgoingStmId?.ToString(),
         outgoingE1Id = Model.OutgoingE1Id?.ToString(),
-        description = Model.Description
+        customerName = Model.CustomerName
     });
 }
 
@@ -241,30 +241,26 @@
                     </div>
 
 
-                    <!-- Description -->
+                    <!-- Customer -->
                     <div class="cross-description-box">
 
                         <div class="cross-field">
 
-                            <label asp-for="Description"
-                                   class="cross-label">
-                                Connection description
+                            <label asp-for="CustomerName" class="form-label">
+                                Customer
                             </label>
 
-                            <input asp-for="Description"
-                                   id="descriptionInput"
+                            <input asp-for="CustomerName"
+                                   id="customerNameInput"
                                    class="cross-control"
-                                   placeholder="Enter path description" />
+                                   placeholder="Enter customer name" />
 
-                            <span asp-validation-for="Description"
+                            <span asp-validation-for="CustomerName"
                                   class="cross-validation">
                             </span>
 
-
                             <div class="cross-hint">
-                                For a new path, enter its description.
-                                When extending an existing path, its
-                                existing description is reused automatically.
+                                Enter the customer that will use this E1 connection.
                             </div>
 
                         </div>
@@ -532,8 +528,8 @@
             const outgoingE1Select =
                 document.getElementById("outgoingE1Select");
 
-                    const descriptionInput =
-        document.getElementById("descriptionInput");
+        const customerNameInput =
+            document.getElementById("customerNameInput");
 
             const saveButton =
                 document.getElementById("saveButton");
@@ -594,8 +590,8 @@
         option.dataset.state =
             item.state ?? "";
 
-        option.dataset.description =
-            item.description ?? "";
+        option.dataset.customerName =
+            item.customerName ?? "";
 
         option.dataset.pathId =
             item.pathId ?? "";
@@ -647,8 +643,6 @@
             resetSelect(
                 previousSiteSelect,
                 "-- Select previous site --");
-                        descriptionInput.value = "";
-        descriptionInput.readOnly = false;
 
             resetSelect(
                 incomingStmSelect,
@@ -658,8 +652,8 @@
                 incomingE1Select,
                 "-- Select incoming E1 --");
 
-            descriptionInput.value = "";
-            descriptionInput.readOnly = false;
+            customerNameInput.value = "";
+            customerNameInput.readOnly = false;
         }
 
             function resetOutgoingSide() {
@@ -699,7 +693,8 @@
                         option.value === previousValue;
                 }
             }
-                    function updateDescription() {
+                    function updateCustomerName() {
+
             const selectedOption =
                 incomingE1Select.options[
                     incomingE1Select.selectedIndex
@@ -708,8 +703,8 @@
             if (!selectedOption ||
                 !selectedOption.value) {
 
-                descriptionInput.value = "";
-                descriptionInput.readOnly = false;
+                customerNameInput.value = "";
+                customerNameInput.readOnly = false;
 
                 updateSaveButton();
                 return;
@@ -718,26 +713,20 @@
             const state =
                 selectedOption.dataset.state ?? "";
 
-            const existingDescription =
-                selectedOption.dataset.description ?? "";
+            const existingCustomerName =
+                selectedOption.dataset.customerName ?? "";
 
             if (state === "ExtendExistingPath") {
-                /*
-                 * Existing path:
-                 * display and reuse its description.
-                 */
-                descriptionInput.value =
-                    existingDescription;
 
-                descriptionInput.readOnly = true;
+                customerNameInput.value =
+                    existingCustomerName;
+
+                customerNameInput.readOnly = true;
             }
             else {
-                /*
-                 * Available E1:
-                 * the user is creating a new path.
-                 */
-                descriptionInput.value = "";
-                descriptionInput.readOnly = false;
+
+                customerNameInput.value = "";
+                customerNameInput.readOnly = false;
             }
 
             updateSaveButton();
@@ -751,7 +740,7 @@
                 nextSiteSelect.value !== "" &&
                 outgoingStmSelect.value !== "" &&
                 outgoingE1Select.value !== "" &&
-                descriptionInput.value.trim() !== "";
+                customerNameInput.value.trim() !== "";
 
             saveButton.disabled = !isComplete;
 
@@ -908,14 +897,14 @@
                 isIncoming: isIncoming
             });
 
-                populateSelect(
-                    e1Select,
-                    items,
-                    "-- Select E1 --",
-                    selectedE1Id);
+        populateSelect(
+            e1Select,
+            items,
+            "-- Select E1 --",
+            selectedE1Id);
 
         if (isIncoming) {
-            updateDescription();
+            updateCustomerName();
         }
         else {
             updateSaveButton();
@@ -1009,12 +998,12 @@
                     outgoingE1Select,
                     false);
             });
-                descriptionInput.addEventListener(
-        "input",
-        updateSaveButton);
+        customerNameInput.addEventListener(
+            "input",
+            updateSaveButton);
         incomingE1Select.addEventListener(
             "change",
-            updateDescription);
+            updateCustomerName);
 
 
             outgoingE1Select.addEventListener(
@@ -1053,28 +1042,9 @@
                 initialValues.outgoingE1Id);
         }
 
-        updateDescription();
-
-        /*
-         * Preserve the submitted description when server-side
-         * validation returns the page.
-         *
-         * For ExtendExistingPath, updateDescription already
-         * loads the database description and makes it readonly.
-         */
-        const selectedIncomingOption =
-            incomingE1Select.options[
-                incomingE1Select.selectedIndex
-            ];
-
-        const selectedState =
-            selectedIncomingOption?.dataset.state ?? "";
-
-        if (selectedState !== "ExtendExistingPath" &&
-            initialValues.description) {
-
-            descriptionInput.value =
-                initialValues.description;
+        if (initialValues.customerName) {
+            customerNameInput.value =
+                initialValues.customerName;
         }
 
         updateSiteRestrictions();

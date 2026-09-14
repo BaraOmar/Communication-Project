@@ -4,6 +4,7 @@ using CommunicationProject.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CommunicationProject.Migrations
 {
     [DbContext(typeof(CommunicationDbContext))]
-    partial class CommunicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260913084012_AddCustomerConnectionSegments")]
+    partial class AddCustomerConnectionSegments
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -360,6 +363,12 @@ namespace CommunicationProject.Migrations
                     b.Property<Guid?>("JoinE1Id")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("PathId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("PathOrder")
+                        .HasColumnType("int");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -384,6 +393,10 @@ namespace CommunicationProject.Migrations
                         .HasFilter("[ConnectedE1Id] IS NOT NULL");
 
                     b.HasIndex("ConnectionGroupId");
+
+                    b.HasIndex("PathId", "PathOrder")
+                        .IsUnique()
+                        .HasFilter("[PathId] IS NOT NULL AND [PathOrder] IS NOT NULL");
 
                     b.HasIndex("StmId", "E1Number")
                         .IsUnique();

@@ -57,20 +57,20 @@
                            name="search"
                            value="@Model.Search"
                            class="e1-input"
-                           placeholder="E1, STM, link or site..." />
+                           placeholder="E1 or STM..." />
 
                 </div>
 
 
-                <!-- Site -->
+                <!-- Site From -->
                 <div class="e1-field">
 
-                    <label for="siteId">
-                        Site
+                    <label for="siteFromId">
+                        Site From
                     </label>
 
-                    <select id="siteId"
-                            name="siteId"
+                    <select id="siteFromId"
+                            name="siteFromId"
                             class="e1-select">
 
                         <option value="">
@@ -79,22 +79,56 @@
 
                         @foreach (var site in Model.Sites)
                         {
-                            if (site.Id == Model.SiteId)
-                            {
-                                <option value="@site.Id"
-                                        selected>
-                                    @site.Name
-                                </option>
-                            }
-                            else
-                            {
-                                <option value="@site.Id">
-                                    @site.Name
-                                </option>
-                            }
+                            <option value="@site.Id"
+                                    selected="@(site.Id == Model.SiteFromId)">
+                                @site.Name
+                            </option>
                         }
 
                     </select>
+
+                </div>
+
+
+                <!-- Site To -->
+                <div class="e1-field">
+
+                    <label for="siteToId">
+                        Site To
+                    </label>
+
+                    <select id="siteToId"
+                            name="siteToId"
+                            class="e1-select">
+
+                        <option value="">
+                            All sites
+                        </option>
+
+                        @foreach (var site in Model.Sites)
+                        {
+                            <option value="@site.Id"
+                                    selected="@(site.Id == Model.SiteToId)">
+                                @site.Name
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+                <!-- Description -->
+                <div class="e1-field">
+
+                    <label for="description">
+                        Description
+                    </label>
+
+                    <input id="description"
+                           name="description"
+                           value="@Model.Description"
+                           class="e1-input"
+                           placeholder="Search description..." />
 
                 </div>
 
@@ -162,8 +196,71 @@
                     </select>
 
                 </div>
+                <!-- Operational Status -->
+                <div class="e1-field">
 
+                    <label for="operationalStatus">
+                        Operational Status
+                    </label>
 
+                    <select id="operationalStatus"
+                            name="operationalStatus"
+                            class="e1-select">
+
+                        <option value="">
+                            All statuses
+                        </option>
+
+                        <option value="Available"
+                                selected="@(Model.OperationalStatus == "Available")">
+                            Available
+                        </option>
+
+                        <option value="Connected"
+                                selected="@(Model.OperationalStatus == "Connected")">
+                            Connected
+                        </option>
+
+                        <option value="Wrong"
+                                selected="@(Model.OperationalStatus == "Wrong")">
+                            Wrong
+                        </option>
+
+                        <option value="Damaged"
+                                selected="@(Model.OperationalStatus == "Damaged")">
+                            Damaged
+                        </option>
+
+                    </select>
+
+                </div>
+                <div class="e1-field">
+
+                    <label for="connectionType">
+                        Connection Type
+                    </label>
+
+                    <select id="connectionType"
+                            name="connectionType"
+                            class="e1-select">
+
+                        <option value="">
+                            All types
+                        </option>
+
+                        <option value="Physical"
+                                selected="@(Model.ConnectionType == "Physical")">
+                            Physical
+                        </option>
+
+                        <option value="Logical"
+                                selected="@(Model.ConnectionType == "Logical")">
+                            Logical
+                        </option>
+
+                    </select>
+
+                </div>
                 <div class="e1-filter-actions">
 
                     <button type="submit"
@@ -212,7 +309,9 @@
                         <th>STM</th>
                         <th>Route</th>
                         <th>Connected E1</th>
-                        <th>State</th>
+                        <th>Cross Connection State</th>
+                        <th>Status</th>
+                        <th>Type</th>
                         <th>Description</th>
                         <th class="text-end">Action</th>
                     </tr>
@@ -347,8 +446,16 @@
                                     </span>
 
                                 </td>
+                                <td>
 
+                                    <span class="e1-state">
+                                        @item.Status
+                                    </span>
 
+                                </td>
+                                <td>
+                                    @item.ConnectionType
+                                </td>
                                 <!-- Description -->
                                 <td>
 
@@ -386,7 +493,7 @@
                     {
                         <tr>
 
-                            <td colspan="7"
+                            <td colspan="9"
                                 class="e1-empty">
 
                                 <div class="e1-empty-title">
@@ -428,9 +535,13 @@
                         {
                             <a asp-action="Index"
                                    asp-route-search="@Model.Search"
-                                   asp-route-siteId="@Model.SiteId"
+                                   asp-route-siteFromId="@Model.SiteFromId"
+                                   asp-route-siteToId="@Model.SiteToId"
+                                   asp-route-description="@Model.Description"
                                    asp-route-connectionStatus="@Model.ConnectionStatus"
                                    asp-route-state="@Model.State"
+                                   asp-route-operationalStatus="@Model.OperationalStatus"
+                                   asp-route-connectionType="@Model.ConnectionType"
                                    asp-route-pageNumber="@(Model.PageNumber - 1)"
                                    class="e1-page-link">
                                 ‹
@@ -465,9 +576,13 @@
 
                         <a asp-action="Index"
                                asp-route-search="@Model.Search"
-                               asp-route-siteId="@Model.SiteId"
+                               asp-route-siteFromId="@Model.SiteFromId"
+                               asp-route-siteToId="@Model.SiteToId"
+                               asp-route-description="@Model.Description"
                                asp-route-connectionStatus="@Model.ConnectionStatus"
                                asp-route-state="@Model.State"
+                               asp-route-operationalStatus="@Model.OperationalStatus"
+                               asp-route-connectionType="@Model.ConnectionType"
                                asp-route-pageNumber="1"
                                class="e1-page-link
                             @(currentPage == 1 ? "active" : "")">
@@ -497,9 +612,13 @@
 
                             <a asp-action="Index"
                                    asp-route-search="@Model.Search"
-                                   asp-route-siteId="@Model.SiteId"
+                                   asp-route-siteFromId="@Model.SiteFromId"
+                                   asp-route-siteToId="@Model.SiteToId"
+                                   asp-route-description="@Model.Description"
                                    asp-route-connectionStatus="@Model.ConnectionStatus"
                                    asp-route-state="@Model.State"
+                                   asp-route-operationalStatus="@Model.OperationalStatus"
+                                   asp-route-connectionType="@Model.ConnectionType"
                                    asp-route-pageNumber="@i"
                                    class="e1-page-link
                                 @(currentPage == i ? "active" : "")">
@@ -528,9 +647,13 @@
 
                             <a asp-action="Index"
                                    asp-route-search="@Model.Search"
-                                   asp-route-siteId="@Model.SiteId"
+                                   asp-route-siteFromId="@Model.SiteFromId"
+                                   asp-route-siteToId="@Model.SiteToId"
+                                   asp-route-description="@Model.Description"
                                    asp-route-connectionStatus="@Model.ConnectionStatus"
                                    asp-route-state="@Model.State"
+                                   asp-route-operationalStatus="@Model.OperationalStatus"
+                                   asp-route-connectionType="@Model.ConnectionType"
                                    asp-route-pageNumber="@totalPages"
                                    class="e1-page-link
                                 @(currentPage == totalPages ? "active" : "")">
@@ -549,9 +672,13 @@
                         {
                             <a asp-action="Index"
                                    asp-route-search="@Model.Search"
-                                   asp-route-siteId="@Model.SiteId"
+                                   asp-route-siteFromId="@Model.SiteFromId"
+                                   asp-route-siteToId="@Model.SiteToId"
+                                   asp-route-description="@Model.Description"
                                    asp-route-connectionStatus="@Model.ConnectionStatus"
                                    asp-route-state="@Model.State"
+                                   asp-route-operationalStatus="@Model.OperationalStatus"
+                                   asp-route-connectionType="@Model.ConnectionType"
                                    asp-route-pageNumber="@(Model.PageNumber + 1)"
                                    class="e1-page-link">
                                 ›

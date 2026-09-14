@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
+using static CommunicationProject.Models.E1;
 
 namespace CommunicationProject.ViewModels
 {
@@ -11,8 +12,11 @@ namespace CommunicationProject.ViewModels
         [Display(Name = "Link")]
         public string? LinkName { get; set; }
 
-        [Display(Name = "Source Site")]
-        public string? SourceSiteId { get; set; }
+        [Display(Name = "Site")]
+        public string? SiteId { get; set; }
+
+        [Display(Name = "Site Position")]
+        public string SitePosition { get; set; } = "anywhere";
 
 
         public List<SelectListItem> LinkOptions { get; set; } =
@@ -52,5 +56,48 @@ namespace CommunicationProject.ViewModels
             Math.Min(
                 PageNumber * PageSize,
                 TotalItems);
+
+        public List<CustomerPathUsageViewModel> Customers { get; set; } =
+    new();
+    }
+    public class CustomerPathUsageViewModel
+    {
+        public Guid CustomerConnectionId { get; set; }
+        public Guid? ManageE1Id { get; set; }
+
+        public string CustomerName { get; set; } =
+            string.Empty;
+
+        public string? Description { get; set; }
+
+        public bool IsActive { get; set; }
+
+        public E1OperationalStatus? OperationalStatus { get; set; }
+
+        public List<CustomerPathE1ViewModel> E1s { get; set; } =
+            new();
+
+        public string StartSiteId { get; set; } =
+    string.Empty;
+
+        public string DestinationSiteId { get; set; } =
+            string.Empty;
+    }
+
+
+    public class CustomerPathE1ViewModel
+    {
+        public int SegmentOrder { get; set; }
+
+        public string SiteFrom { get; set; } =
+            string.Empty;
+
+        public string SiteTo { get; set; } =
+            string.Empty;
+
+        public string StmNumber { get; set; } =
+            string.Empty;
+        public string E1Number { get; set; } =
+            string.Empty;
     }
 }

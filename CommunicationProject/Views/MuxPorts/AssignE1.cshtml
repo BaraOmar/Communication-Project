@@ -1,0 +1,93 @@
+﻿@model CommunicationProject.ViewModels.AssignE1ToMuxPortViewModel
+
+@{
+    ViewData["Title"] = "Assign E1";
+}
+
+<div class="container py-4">
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+
+            <div class="mb-4">
+
+                <h2 class="mb-1">
+                    Assign Physical E1
+                </h2>
+
+                <p class="text-muted mb-0">
+                    @Model.MuxName · @Model.CardTypeName · Port @Model.PortNumber
+                </p>
+
+            </div>
+
+
+            <form asp-action="AssignE1"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <input asp-for="MuxPortId"
+                       type="hidden" />
+
+
+                <div asp-validation-summary="ModelOnly"
+                     class="alert alert-danger">
+                </div>
+
+
+                <div class="mb-4">
+
+                    <label asp-for="E1Id"
+                           class="form-label">
+                    </label>
+
+                    <select asp-for="E1Id"
+                            asp-items="Model.E1Options"
+                            class="form-select">
+
+                        <option value="">
+                            Select Physical E1
+                        </option>
+
+                    </select>
+
+                    <span asp-validation-for="E1Id"
+                          class="text-danger">
+                    </span>
+
+                    <div class="form-text">
+                        Only Physical E1 channels from this
+                        MUX site's communication link are shown.
+                    </div>
+
+                </div>
+
+
+                <div class="d-flex gap-2">
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Assign E1
+                    </button>
+
+                    <a asp-controller="MuxCards"
+                           asp-action="Details"
+                           asp-route-id="@Model.MuxCardId"
+                           class="btn btn-outline-secondary">
+                        Cancel
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,206 @@
+﻿@model CommunicationProject.Models.MuxCard
+
+@{
+    ViewData["Title"] = "MUX Card Details";
+}
+
+<div class="container py-4">
+
+    <div class="mb-4">
+
+        <a asp-controller="Muxes"
+               asp-action="Details"
+               asp-route-id="@Model.MuxId"
+               class="text-decoration-none">
+            ← @Model.Mux.Name
+        </a>
+
+        <h1 class="mt-3 mb-1">
+            Slot @Model.SlotNumber
+        </h1>
+
+        <p class="text-muted mb-0">
+            @Model.CardType.Name · @Model.CardType.Category
+        </p>
+
+    </div>
+
+
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-body p-4">
+
+            <div class="row g-4">
+
+                <div class="col-md-3">
+                    <div class="text-muted small">
+                        MUX
+                    </div>
+
+                    <div class="fw-semibold">
+                        @Model.Mux.Name
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="text-muted small">
+                        Site
+                    </div>
+
+                    <div class="fw-semibold">
+                        @Model.Mux.Site.Name
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="text-muted small">
+                        Card Type
+                    </div>
+
+                    <div class="fw-semibold">
+                        @Model.CardType.Name
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="text-muted small">
+                        Ports
+                    </div>
+
+                    <div class="fw-semibold">
+                        @Model.Ports.Count
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-body p-4">
+
+            <h3 class="mb-3">
+                Ports
+            </h3>
+
+            <div class="table-responsive">
+
+                <table class="table align-middle">
+
+                    <thead>
+                        <tr>
+                            <th>Port</th>
+                            <th>Status</th>
+                            <th>E1</th>
+                            <th>STM</th>
+                            <th class="text-end">
+                                Action
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var port in Model.Ports
+                            .OrderBy(port => port.PortNumber))
+                        {
+                            <tr>
+
+                                <td>
+                                    Port @port.PortNumber
+                                </td>
+
+                                <td>
+                                    @port.Status
+                                </td>
+
+                                <td>
+                                    @if (port.E1 != null)
+                                    {
+                                        <a asp-controller="E1s"
+                                               asp-action="Details"
+                                               asp-route-id="@port.E1.Id">
+                                            E1 @port.E1.E1Number
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            Available
+                                        </span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (port.E1 != null)
+                                    {
+                                        <span>
+                                            STM @port.E1.Stm.Number
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            —
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-end">
+
+                                    @if (Model.CardType.Category ==
+                                         CommunicationProject.Models.CardCategory.E1)
+                                    {
+                                        if (port.E1 == null)
+                                        {
+                                            <a asp-controller="MuxPorts"
+                                                   asp-action="AssignE1"
+                                                   asp-route-id="@port.Id"
+                                                   class="btn btn-sm btn-outline-primary">
+                                                Assign E1
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <form asp-controller="MuxPorts"
+                                                  asp-action="ReleaseE1"
+                                                  asp-route-id="@port.Id"
+                                                  method="post"
+                                                  class="d-inline">
+
+                                                @Html.AntiForgeryToken()
+
+                                                <button type="submit"
+                                                        class="btn btn-sm btn-outline-danger"
+                                                        onclick="return confirm('Release this E1 from the MUX port?');">
+                                                    Release E1
+                                                </button>
+
+                                            </form>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            —
+                                        </span>
+                                    }
+
+                                </td>
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

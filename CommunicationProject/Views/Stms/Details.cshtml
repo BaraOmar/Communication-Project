@@ -263,21 +263,120 @@
                 E1 channels
             </h3>
 
-            <div class="stm-e1-summary">
+<div class="stm-e1-summary d-flex justify-content-between align-items-center">
 
-                <div>
+    <div>
+        <div class="stm-e1-count">
+            @Model.E1Channels.Count channels
+        </div>
 
-                    <div class="stm-e1-count">
-                        @Model.E1Channels.Count channels
-                    </div>
+        <div class="stm-e1-caption">
+            Physical and logical E1 channels assigned to this STM.
+        </div>
+    </div>
 
-                    <div class="stm-e1-caption">
-                        E1 channels assigned to this STM.
+
+    @if (Model.E1Channels.Any())
+    {
+        <button type="button"
+                class="btn btn-sm btn-outline-secondary"
+                data-bs-toggle="collapse"
+                data-bs-target="#stmE1Channels"
+                aria-expanded="false"
+                aria-controls="stmE1Channels">
+            Show channels
+        </button>
+    }
+
+</div>
+
+
+@if (Model.E1Channels.Any())
+{
+    <div id="stmE1Channels"
+         class="collapse">
+
+        <div class="table-responsive mt-3">
+
+                    <table class="table align-middle">
+
+                        <thead>
+                            <tr>
+                                <th>E1</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Description</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var e1 in Model.E1Channels
+                                .OrderBy(e1 => e1.E1Number))
+                            {
+                                <tr>
+
+                                    <td>
+                                        <strong>
+                                            E1 @e1.E1Number
+                                        </strong>
+                                    </td>
+
+                                    <td>
+                                        @e1.ConnectionType
+                                    </td>
+
+                                    <td>
+                                        @e1.Status
+                                    </td>
+
+                                    <td>
+                                        @(string.IsNullOrWhiteSpace(e1.Description)
+                                            ? "—"
+                                            : e1.Description)
+                                    </td>
+
+                                    <td class="text-end">
+
+                                        <a asp-controller="E1s"
+                                               asp-action="Details"
+                                               asp-route-id="@e1.Id"
+                                               class="stm-connected-link">
+                                            View E1
+                                        </a>
+
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
                     </div>
 
                 </div>
+            }
+            else
+            {
+                <div class="stm-connected-card mt-3">
 
-            </div>
+                    <div class="stm-connected-main">
+
+                        <div class="stm-connected-title">
+                            No E1 channels
+                        </div>
+
+                        <div class="stm-connected-description">
+                            This STM currently has no E1 channels.
+                        </div>
+
+                    </div>
+
+                </div>
+            }
 
         </div>
 

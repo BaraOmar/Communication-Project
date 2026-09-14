@@ -41,9 +41,12 @@ public class CreateCrossConnectionViewModel
     [Required(ErrorMessage = "Select the outgoing E1.")]
     [Display(Name = "Outgoing E1")]
     public Guid? OutgoingE1Id { get; set; }
-    [Required(ErrorMessage = "Enter the connection description.")]
-    [Display(Name = "Connection Description")]
-    public string Description { get; set; } = string.Empty;
+
+
+    [Required]
+    [Display(Name = "Customer")]
+    public string CustomerName { get; set; } =
+    string.Empty;
 
     /*
      * Only the main Site dropdown is loaded when the page opens.
