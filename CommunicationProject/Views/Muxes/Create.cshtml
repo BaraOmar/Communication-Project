@@ -1,185 +1,174 @@
 ﻿@model CommunicationProject.ViewModels.CreateMuxViewModel
+@using System.Text.Json
 
 @{
-    ViewData["Title"] = "Add MUX";
+    ViewData["Title"] = "Create MUX";
+
+    var shelfSupportJson =
+        JsonSerializer.Serialize(Model.MuxTypeShelfSupport);
 }
 
-<div class="container py-4">
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h4 class="mb-0">Create MUX</h4>
+        </div>
 
-    <div class="card border-0 shadow-sm">
-        <div class="card-body p-4">
-
-            <div class="mb-4">
-                <h2 class="mb-1">
-                    Add MUX
-                </h2>
-
-                <p class="text-muted mb-0">
-                    Assign a MUX to a communication link and one of its endpoint sites.
-                </p>
-            </div>
-
-
-            <form asp-action="Create"
-                  method="post">
-
+        <div class="card-body">
+            <form asp-action="Create" method="post">
                 @Html.AntiForgeryToken()
 
                 <div asp-validation-summary="ModelOnly"
-                     class="alert alert-danger"></div>
-
+                     class="text-danger mb-3">
+                </div>
 
                 <div class="mb-3">
-
                     <label asp-for="Name"
                            class="form-label"></label>
 
                     <input asp-for="Name"
-                           class="form-control"
-                           autocomplete="off" />
+                           class="form-control" />
 
                     <span asp-validation-for="Name"
                           class="text-danger"></span>
-
                 </div>
-
 
                 <div class="mb-3">
-
-                    <label asp-for="CommunicationLinkId"
-                           class="form-label"></label>
-
-                    <select asp-for="CommunicationLinkId"
-                            asp-items="Model.CommunicationLinkOptions"
-                            class="form-select"
-                            id="communicationLinkSelect">
-
-                        <option value="">
-                            Select communication link
-                        </option>
-
-                    </select>
-
-                    <span asp-validation-for="CommunicationLinkId"
-                          class="text-danger"></span>
-
-                </div>
-
-
-                <div class="mb-4">
-
                     <label asp-for="SiteId"
                            class="form-label"></label>
 
                     <select asp-for="SiteId"
-                            class="form-select"
-                            id="siteSelect"
-                            disabled>
-
-                        <option value="">
-                            Select communication link first
-                        </option>
-
+                            asp-items="Model.SiteOptions"
+                            class="form-select">
+                        <option value="">-- Select Site --</option>
                     </select>
 
                     <span asp-validation-for="SiteId"
                           class="text-danger"></span>
-
                 </div>
 
+                <div class="mb-3">
+                    <label asp-for="MuxTypeId"
+                           class="form-label"></label>
+
+                    <select asp-for="MuxTypeId"
+                            asp-items="Model.MuxTypeOptions"
+                            class="form-select"
+                            id="muxTypeSelect">
+                        <option value="">-- Select MUX Type --</option>
+                    </select>
+
+                    <span asp-validation-for="MuxTypeId"
+                          class="text-danger"></span>
+                </div>
+
+                <div class="mb-3"
+                     id="shelfCountContainer"
+                     style="display:none;">
+
+                    <label asp-for="ShelfCount"
+                           class="form-label"></label>
+
+                    <input asp-for="ShelfCount"
+                           class="form-control"
+                           type="number"
+                           min="1" />
+
+                    <span asp-validation-for="ShelfCount"
+                          class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="CardSlotCount"
+                           class="form-label"
+                           id="cardSlotLabel">
+                        Card Slots
+                    </label>
+
+                    <input asp-for="CardSlotCount"
+                           class="form-control"
+                           type="number"
+                           min="1" />
+
+                    <span asp-validation-for="CardSlotCount"
+                          class="text-danger"></span>
+
+                    <div class="form-text"
+                         id="cardSlotHelp">
+                        Enter the number of card slots available in this MUX.
+                    </div>
+                </div>
 
                 <div class="d-flex gap-2">
-
                     <button type="submit"
                             class="btn btn-primary">
                         Create MUX
                     </button>
 
                     <a asp-action="Index"
-                           class="btn btn-outline-secondary">
+                           class="btn btn-secondary">
                         Cancel
                     </a>
-
                 </div>
-
             </form>
-
         </div>
     </div>
-
 </div>
 
-
 @section Scripts {
-
     <partial name="_ValidationScriptsPartial" />
 
     <script>
+        const shelfSupport = @Html.Raw(shelfSupportJson);
 
-        const linkSelect =
-            document.getElementById(
-                "communicationLinkSelect");
+        const muxTypeSelect =
+            document.getElementById("muxTypeSelect");
 
-        const siteSelect =
-            document.getElementById(
-                "siteSelect");
+        const shelfCountContainer =
+            document.getElementById("shelfCountContainer");
 
+        const shelfCountInput =
+            document.getElementById("ShelfCount");
 
-        async function loadSites() {
+        const cardSlotLabel =
+            document.getElementById("cardSlotLabel");
 
-            const linkId =
-                linkSelect.value;
+        const cardSlotHelp =
+            document.getElementById("cardSlotHelp");
 
-            siteSelect.innerHTML = "";
+        function updateMuxCapacityFields() {
+            const selectedTypeId =
+                muxTypeSelect.value;
 
-            if (!linkId) {
+            const hasShelves =
+                shelfSupport[selectedTypeId] === true;
 
-                siteSelect.disabled = true;
+            if (hasShelves) {
+                shelfCountContainer.style.display = "block";
 
-                siteSelect.innerHTML =
-                    '<option value="">Select communication link first</option>';
+                cardSlotLabel.textContent =
+                    "Cards Per Shelf";
 
-                return;
+                cardSlotHelp.textContent =
+                    "Enter the number of card slots available in each shelf.";
             }
+            else {
+                shelfCountContainer.style.display = "none";
 
+                shelfCountInput.value = "";
 
-            const response =
-                await fetch(
-                    '@Url.Action("GetLinkSites", "Muxes")' +
-                    '?communicationLinkId=' +
-                    encodeURIComponent(linkId));
+                cardSlotLabel.textContent =
+                    "Card Slots";
 
-
-            const sites =
-                await response.json();
-
-
-            siteSelect.innerHTML =
-                '<option value="">Select site</option>';
-
-
-            for (const site of sites) {
-
-                const option =
-                    document.createElement("option");
-
-                option.value =
-                    site.value;
-
-                option.textContent =
-                    site.text;
-
-                siteSelect.appendChild(option);
+                cardSlotHelp.textContent =
+                    "Enter the total number of card slots available in this MUX.";
             }
-
-
-            siteSelect.disabled = false;
         }
 
-
-        linkSelect.addEventListener(
+        muxTypeSelect.addEventListener(
             "change",
-            loadSites);
+            updateMuxCapacityFields);
 
+        updateMuxCapacityFields();
     </script>
 }

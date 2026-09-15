@@ -1,0 +1,180 @@
+﻿@model CommunicationProject.ViewModels.AssignStmToMuxPortViewModel
+
+@{
+    ViewData["Title"] = "Assign STM";
+}
+
+<div class="container py-4">
+
+    <div class="mb-4">
+
+        <a asp-controller="MuxCards"
+               asp-action="Details"
+               asp-route-id="@Model.MuxCardId"
+               class="text-decoration-none">
+            ← Back to Card
+        </a>
+
+        <h1 class="mt-3 mb-1">
+            Assign STM
+        </h1>
+
+        <p class="text-muted mb-0">
+            Connect an STM to this MUX port.
+        </p>
+
+    </div>
+
+
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-body p-4">
+
+            <h4 class="mb-4">
+                Port Information
+            </h4>
+
+            <div class="row g-4">
+
+                <div class="col-md-3">
+                    <div class="text-muted small">
+                        MUX
+                    </div>
+
+                    <div class="fw-semibold">
+                        @Model.MuxName
+                    </div>
+                </div>
+
+
+                <div class="col-md-3">
+                    <div class="text-muted small">
+                        Site
+                    </div>
+
+                    <div class="fw-semibold">
+                        @Model.SiteName
+                    </div>
+                </div>
+
+
+                @if (Model.HasShelves)
+                {
+                    <div class="col-md-2">
+                        <div class="text-muted small">
+                            Shelf
+                        </div>
+
+                        <div class="fw-semibold">
+                            @Model.ShelfNumber
+                        </div>
+                    </div>
+                }
+
+
+                <div class="col-md-2">
+                    <div class="text-muted small">
+                        Card
+                    </div>
+
+                    <div class="fw-semibold">
+                        @Model.SlotNumber
+                    </div>
+                </div>
+
+
+                <div class="col-md-2">
+                    <div class="text-muted small">
+                        Port
+                    </div>
+
+                    <div class="fw-semibold">
+                        @Model.PortNumber
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-body p-4">
+
+            <form asp-action="AssignStm"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <input asp-for="MuxPortId"
+                       type="hidden" />
+
+                <input asp-for="MuxCardId"
+                       type="hidden" />
+
+                <div asp-validation-summary="ModelOnly"
+                     class="text-danger mb-3">
+                </div>
+
+
+                <div class="mb-4">
+
+                    <label asp-for="StmId"
+                           class="form-label">
+                    </label>
+
+                    <select asp-for="StmId"
+                            asp-items="Model.StmOptions"
+                            class="form-select">
+
+                        <option value="">
+                            -- Select STM --
+                        </option>
+
+                    </select>
+
+                    <span asp-validation-for="StmId"
+                          class="text-danger">
+                    </span>
+
+                    @if (!Model.StmOptions.Any())
+                    {
+                        <div class="form-text text-warning mt-2">
+                            There are no available STMs at this site.
+                        </div>
+                    }
+
+                </div>
+
+
+                <div class="d-flex gap-2">
+
+                    <button type="submit"
+                            class="btn btn-primary"
+                            disabled="@(!Model.StmOptions.Any())">
+                        Assign STM
+                    </button>
+
+                    <a asp-controller="MuxCards"
+                           asp-action="Details"
+                           asp-route-id="@Model.MuxCardId"
+                           class="btn btn-outline-secondary">
+                        Cancel
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

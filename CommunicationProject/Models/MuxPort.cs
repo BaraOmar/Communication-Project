@@ -32,6 +32,60 @@ public class MuxPort
     [Display(Name = "Status")]
     public MuxPortStatus Status { get; set; }
         = MuxPortStatus.Available;
+
+    [Display(Name = "STM")]
+    public Guid? StmId { get; set; }
+
+    [ForeignKey(nameof(StmId))]
+    public Stm? Stm { get; set; }
+
+    [NotMapped]
+    public string Location
+    {
+        get
+        {
+            if (MuxCard == null)
+            {
+                return string.Empty;
+            }
+
+            if (MuxCard.Mux?.MuxType?.HasShelves == true &&
+                MuxCard.ShelfNumber.HasValue)
+            {
+                return
+                    $"{MuxCard.ShelfNumber.Value}." +
+                    $"{MuxCard.SlotNumber}." +
+                    $"{PortNumber}";
+            }
+
+            return $"{MuxCard.SlotNumber}.{PortNumber}";
+        }
+    }
+    [NotMapped]
+    public string PhysicalPosition
+    {
+        get
+        {
+            if (MuxCard == null)
+            {
+                return string.Empty;
+            }
+
+            if (MuxCard.Mux?.MuxType?.HasShelves == true &&
+                MuxCard.ShelfNumber.HasValue)
+            {
+                return
+                    $"Shelf {MuxCard.ShelfNumber.Value} / " +
+                    $"Card {MuxCard.SlotNumber} / " +
+                    $"Port {PortNumber}";
+            }
+
+            return
+                $"Card {MuxCard.SlotNumber} / " +
+                $"Port {PortNumber}";
+        }
+    }
+
 }
 
 public enum MuxPortStatus
@@ -41,3 +95,4 @@ public enum MuxPortStatus
     Wrong,
     Damaged
 }
+

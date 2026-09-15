@@ -4,6 +4,7 @@ using CommunicationProject.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CommunicationProject.Migrations
 {
     [DbContext(typeof(CommunicationDbContext))]
-    partial class CommunicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260915065903_UpdateMuxStructureAndAddStmConnections")]
+    partial class UpdateMuxStructureAndAddStmConnections
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -419,9 +422,6 @@ namespace CommunicationProject.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("CardSlotCount")
-                        .HasColumnType("int");
-
                     b.Property<Guid?>("MuxTypeId")
                         .HasColumnType("uniqueidentifier");
 
@@ -429,9 +429,6 @@ namespace CommunicationProject.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
-
-                    b.Property<int?>("ShelfCount")
-                        .HasColumnType("int");
 
                     b.Property<string>("SiteId")
                         .IsRequired()

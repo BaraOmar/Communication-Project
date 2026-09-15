@@ -33,6 +33,7 @@ public class CommunicationDbContext
 
 
     public DbSet<Mux> Muxes { get; set; }
+    public DbSet<MuxType> MuxTypes { get; set; }
     public DbSet<CardType> CardTypes { get; set; }
     public DbSet<MuxCard> MuxCards { get; set; }
     public DbSet<MuxPort> MuxPorts { get; set; }
@@ -46,6 +47,7 @@ public class CommunicationDbContext
         ConfigureStm(modelBuilder);
         ConfigureE1(modelBuilder);
         ConfigureMux(modelBuilder);
+        ConfigureMuxType(modelBuilder);
         ConfigureCardType(modelBuilder);
         ConfigureMuxCard(modelBuilder);
         ConfigureMuxPort(modelBuilder);
@@ -277,20 +279,29 @@ public class CommunicationDbContext
             .HasForeignKey(mux => mux.SiteId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<Mux>()
-            .HasOne(mux => mux.CommunicationLink)
-            .WithMany()
-            .HasForeignKey(mux => mux.CommunicationLinkId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        modelBuilder.Entity<Mux>()
-            .HasIndex(mux => new
-            {
-                mux.CommunicationLinkId,
-                mux.SiteId,
-                mux.Name
-            })
+    }
+    private static void ConfigureMuxType(
+        ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<MuxType>()
+            .HasIndex(type => type.Name)
             .IsUnique();
+
+        modelBuilder.Entity<MuxType>()
+            .HasData(
+                new MuxType
+                {
+                    Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                    Name = "Ericsson",
+                    HasShelves = true
+                },
+                new MuxType
+                {
+                    Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                    Name = "OSP",
+                    HasShelves = false
+                }
+            );
     }
     private static void ConfigureCardType(
     ModelBuilder modelBuilder)
@@ -324,9 +335,20 @@ public class CommunicationDbContext
             .HasIndex(card => new
             {
                 card.MuxId,
+                card.ShelfNumber,
                 card.SlotNumber
             })
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("[ShelfNumber] IS NOT NULL");
+
+        modelBuilder.Entity<MuxCard>()
+            .HasIndex(card => new
+            {
+                card.MuxId,
+                card.SlotNumber
+            })
+            .IsUnique()
+            .HasFilter("[ShelfNumber] IS NULL");
     }
     private static void ConfigureMuxPort(
     ModelBuilder modelBuilder)
@@ -362,6 +384,16 @@ public class CommunicationDbContext
             .HasIndex(port => port.E1Id)
             .IsUnique()
             .HasFilter("[E1Id] IS NOT NULL");
+
+        modelBuilder.Entity<MuxPort>()
+    .HasOne(port => port.Stm)
+    .WithMany()
+    .HasForeignKey(port => port.StmId)
+    .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<MuxPort>()
+    .HasIndex(port => port.StmId)
+    .IsUnique()
+    .HasFilter("[StmId] IS NOT NULL");
     }
     private static void ConfigureCommunicationPath(
     ModelBuilder modelBuilder)

@@ -23,7 +23,12 @@ public class MuxCard
     [ForeignKey(nameof(CardTypeId))]
     public CardType CardType { get; set; } =
         null!;
-
+    [Range(
+    1,
+    1000,
+    ErrorMessage = "Shelf number must be at least 1.")]
+    [Display(Name = "Shelf Number")]
+    public int? ShelfNumber { get; set; }
     [Range(
         1,
         1000,

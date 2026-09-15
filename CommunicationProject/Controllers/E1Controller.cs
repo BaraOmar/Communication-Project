@@ -314,6 +314,16 @@ public class E1sController : Controller
             return NotFound();
         }
 
+        var muxPort = await _context.MuxPorts
+            .AsNoTracking()
+            .Include(port => port.MuxCard)
+                .ThenInclude(card => card.Mux)
+                    .ThenInclude(mux => mux.MuxType)
+            .FirstOrDefaultAsync(port =>
+                port.E1Id == e1.Id);
+
+        ViewBag.MuxPort = muxPort;
+
         return View(e1);
     }
     [HttpGet]

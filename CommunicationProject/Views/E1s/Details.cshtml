@@ -30,7 +30,9 @@
                 "available"
         };
 }
-
+@{
+    var muxPort = ViewBag.MuxPort as MuxPort;
+}
 @section Styles {
     <link rel="stylesheet"
           href="~/css/e1channels.css"
@@ -343,7 +345,62 @@
             </div>
 
         </div>
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4">
 
+                <h3 class="mb-4">
+                    MUX Connection
+                </h3>
+
+                @if (muxPort != null)
+                {
+                    <div class="row g-4">
+
+                        <div class="col-md-4">
+                            <div class="text-muted small">
+                                MUX
+                            </div>
+
+                            <div class="fw-semibold">
+                                @muxPort.MuxCard.Mux.Name
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="text-muted small">
+                                Location
+                            </div>
+
+                            <div class="fw-semibold">
+
+                                @muxPort.Location
+
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="text-muted small">
+                                Physical Position
+                            </div>
+
+                            <div class="fw-semibold">
+
+                                @muxPort.PhysicalPosition
+
+                            </div>
+                        </div>
+
+                    </div>
+                }
+                else
+                {
+                    <div class="text-muted">
+                        This E1 is not connected to a MUX port.
+                    </div>
+                }
+
+            </div>
+        </div>
 
         <!-- Footer -->
         <div class="e1-details-footer">

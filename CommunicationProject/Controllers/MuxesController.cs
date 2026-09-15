@@ -25,18 +25,14 @@ public class MuxesController : Controller
     }
 
     // GET: Muxes
+    // GET: Muxes
     public async Task<IActionResult> Index()
     {
         var muxes = await _context.Muxes
             .AsNoTracking()
 
             .Include(mux => mux.Site)
-
-            .Include(mux => mux.CommunicationLink)
-                .ThenInclude(link => link.SiteFrom)
-
-            .Include(mux => mux.CommunicationLink)
-                .ThenInclude(link => link.SiteTo)
+            .Include(mux => mux.MuxType)
 
             .OrderBy(mux => mux.Site.Name)
             .ThenBy(mux => mux.Name)
@@ -46,6 +42,8 @@ public class MuxesController : Controller
         return View(muxes);
     }
     // GET: Muxes/Create
+    // GET: Muxes/Create
+    // GET: Muxes/Create
     [HttpGet]
     [Authorize(
         Roles =
@@ -53,73 +51,40 @@ public class MuxesController : Controller
             AppRoles.Operator)]
     public async Task<IActionResult> Create()
     {
-        var model = new CreateMuxViewModel();
+        var muxTypes = await _context.MuxTypes
+            .AsNoTracking()
+            .OrderBy(type => type.Name)
+            .ToListAsync();
 
-        model.CommunicationLinkOptions =
-            await _context.CommunicationLinks
+        var model = new CreateMuxViewModel
+        {
+            SiteOptions = await _context.Sites
                 .AsNoTracking()
-                .Where(link => link.IsPrimary)
-                .OrderBy(link => link.Name)
-                .Select(link => new SelectListItem
+                .OrderBy(site => site.Name)
+                .Select(site => new SelectListItem
                 {
-                    Value = link.Id.ToString(),
-
-                    Text =
-                        link.Name + " — " +
-                        link.SiteFrom.Name + " ↔ " +
-                        link.SiteTo.Name
+                    Value = site.Id,
+                    Text = site.Id + " - " + site.Name
                 })
-                .ToListAsync();
+                .ToListAsync(),
+
+            MuxTypeOptions = muxTypes
+                .Select(type => new SelectListItem
+                {
+                    Value = type.Id.ToString(),
+                    Text = type.Name
+                })
+                .ToList(),
+
+            MuxTypeShelfSupport = muxTypes
+                .ToDictionary(
+                    type => type.Id,
+                    type => type.HasShelves)
+        };
 
         return View(model);
     }
-    [HttpGet]
-    [Authorize(
-    Roles =
-        AppRoles.Admin + "," +
-        AppRoles.Operator)]
-    public async Task<IActionResult> GetLinkSites(Guid? communicationLinkId)
-    {
-        if (!communicationLinkId.HasValue ||
-            communicationLinkId.Value == Guid.Empty)
-        {
-            return Json(Array.Empty<object>());
-        }
 
-        var link = await _context.CommunicationLinks
-            .AsNoTracking()
-            .Where(item =>
-                item.Id == communicationLinkId.Value)
-            .Select(item => new
-            {
-                siteFromId = item.SiteFromId,
-                siteFromName = item.SiteFrom.Name,
-
-                siteToId = item.SiteToId,
-                siteToName = item.SiteTo.Name
-            })
-            .FirstOrDefaultAsync();
-
-        if (link == null)
-        {
-            return Json(Array.Empty<object>());
-        }
-
-        return Json(new[]
-        {
-        new
-        {
-            value = link.siteFromId,
-            text = link.siteFromId + " - " + link.siteFromName
-        },
-
-        new
-        {
-            value = link.siteToId,
-            text = link.siteToId + " - " + link.siteToName
-        }
-    });
-    }
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(
@@ -135,124 +100,128 @@ public class MuxesController : Controller
         model.SiteId =
             model.SiteId?.Trim() ?? string.Empty;
 
-
-        CommunicationLink? link = null;
-
-        if (model.CommunicationLinkId.HasValue)
-        {
-            link = await _context.CommunicationLinks
+        bool siteExists =
+            await _context.Sites
                 .AsNoTracking()
-                .FirstOrDefaultAsync(item =>
-                    item.Id ==
-                        model.CommunicationLinkId.Value &&
-                    item.IsPrimary);
-        }
+                .AnyAsync(site =>
+                    site.Id == model.SiteId);
 
-
-        if (link == null)
+        if (!siteExists)
         {
             ModelState.AddModelError(
-                nameof(model.CommunicationLinkId),
-                "The selected communication link is invalid.");
+                nameof(model.SiteId),
+                "The selected site is invalid.");
+        }
+
+        MuxType? muxType = null;
+
+        if (model.MuxTypeId.HasValue)
+        {
+            muxType = await _context.MuxTypes
+                .AsNoTracking()
+                .FirstOrDefaultAsync(type =>
+                    type.Id == model.MuxTypeId.Value);
+        }
+
+        if (muxType == null)
+        {
+            ModelState.AddModelError(
+                nameof(model.MuxTypeId),
+                "The selected MUX type is invalid.");
         }
         else
         {
-            /*
-             * A MUX can only belong to one of the
-             * two endpoint sites of its link.
-             */
-            bool siteIsEndpoint =
-                string.Equals(
-                    model.SiteId,
-                    link.SiteFromId,
-                    StringComparison.OrdinalIgnoreCase)
-                ||
-                string.Equals(
-                    model.SiteId,
-                    link.SiteToId,
-                    StringComparison.OrdinalIgnoreCase);
-
-            if (!siteIsEndpoint)
+            if (muxType.HasShelves)
             {
-                ModelState.AddModelError(
-                    nameof(model.SiteId),
-                    "The selected site must be an endpoint " +
-                    "of the communication link.");
+                if (!model.ShelfCount.HasValue)
+                {
+                    ModelState.AddModelError(
+                        nameof(model.ShelfCount),
+                        "Number of shelves is required for this MUX type.");
+                }
+            }
+            else
+            {
+                // MUX types without shelves must not store a shelf count.
+                model.ShelfCount = null;
             }
         }
 
-
-        if (link != null)
+        if (!model.CardSlotCount.HasValue)
         {
-            bool duplicateExists =
-                await _context.Muxes
-                    .AnyAsync(mux =>
-                        mux.CommunicationLinkId ==
-                            link.Id &&
-                        mux.SiteId ==
-                            model.SiteId &&
-                        mux.Name ==
-                            model.Name);
-
-            if (duplicateExists)
-            {
-                ModelState.AddModelError(
-                    nameof(model.Name),
-                    "A MUX with this name already exists " +
-                    "at this site for the selected link.");
-            }
+            ModelState.AddModelError(
+                nameof(model.CardSlotCount),
+                "Card slot count is required.");
         }
 
+        bool duplicateExists =
+            await _context.Muxes
+                .AnyAsync(mux =>
+                    mux.SiteId == model.SiteId &&
+                    mux.Name == model.Name);
+
+        if (duplicateExists)
+        {
+            ModelState.AddModelError(
+                nameof(model.Name),
+                "A MUX with this name already exists at this site.");
+        }
 
         if (!ModelState.IsValid)
         {
-            model.CommunicationLinkOptions =
-                await _context.CommunicationLinks
-                    .AsNoTracking()
-                    .Where(item => item.IsPrimary)
-                    .OrderBy(item => item.Name)
-                    .Select(item =>
-                        new SelectListItem
-                        {
-                            Value =
-                                item.Id.ToString(),
+            var muxTypes = await _context.MuxTypes
+                .AsNoTracking()
+                .OrderBy(type => type.Name)
+                .ToListAsync();
 
-                            Text =
-                                item.Name + " — " +
-                                item.SiteFrom.Name + " ↔ " +
-                                item.SiteTo.Name
-                        })
-                    .ToListAsync();
+            model.SiteOptions = await _context.Sites
+                .AsNoTracking()
+                .OrderBy(site => site.Name)
+                .Select(site => new SelectListItem
+                {
+                    Value = site.Id,
+                    Text = site.Id + " - " + site.Name
+                })
+                .ToListAsync();
+
+            model.MuxTypeOptions = muxTypes
+                .Select(type => new SelectListItem
+                {
+                    Value = type.Id.ToString(),
+                    Text = type.Name
+                })
+                .ToList();
+
+            model.MuxTypeShelfSupport = muxTypes
+                .ToDictionary(
+                    type => type.Id,
+                    type => type.HasShelves);
 
             return View(model);
         }
 
-
         var mux = new Mux
         {
             Id = Guid.NewGuid(),
-
             Name = model.Name,
-
             SiteId = model.SiteId,
-
-            CommunicationLinkId =
-                model.CommunicationLinkId!.Value
+            MuxTypeId = model.MuxTypeId,
+            ShelfCount = model.ShelfCount,
+            CardSlotCount = model.CardSlotCount!.Value
         };
-
 
         _context.Muxes.Add(mux);
 
         await _context.SaveChangesAsync();
 
-
         TempData["SuccessMessage"] =
             $"MUX '{mux.Name}' was created successfully.";
 
-
         return RedirectToAction(
-            nameof(Index));
+            nameof(Details),
+            new { id = mux.Id });
     }
+    // GET: Muxes/Details/{id}
     // GET: Muxes/Details/{id}
     public async Task<IActionResult> Details(Guid? id)
     {
@@ -267,11 +236,7 @@ public class MuxesController : Controller
 
             .Include(item => item.Site)
 
-            .Include(item => item.CommunicationLink)
-                .ThenInclude(link => link.SiteFrom)
-
-            .Include(item => item.CommunicationLink)
-                .ThenInclude(link => link.SiteTo)
+            .Include(item => item.MuxType)
 
             .Include(item => item.Cards)
                 .ThenInclude(card => card.CardType)
@@ -289,6 +254,7 @@ public class MuxesController : Controller
 
         return View(mux);
     }
+
 
 
 

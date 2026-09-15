@@ -1,0 +1,98 @@
+﻿@model IEnumerable<CommunicationProject.Models.MuxType>
+@using CommunicationProject.Security
+
+@{
+    ViewData["Title"] = "MUX Types";
+}
+
+<div class="container py-4">
+
+    <div class="d-flex justify-content-between align-items-start mb-4">
+
+        <div>
+            <h1 class="mb-1">
+                MUX Types
+            </h1>
+
+            <p class="text-muted mb-0">
+                Manage the available MUX types and whether they use shelves.
+            </p>
+        </div>
+
+        @if (User.IsInRole(AppRoles.Admin) ||
+             User.IsInRole(AppRoles.Operator))
+        {
+            <a asp-action="Create"
+                   class="btn btn-primary">
+                Add MUX Type
+            </a>
+        }
+
+    </div>
+
+
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-body p-4">
+
+            @if (Model.Any())
+            {
+                <div class="table-responsive">
+
+                    <table class="table align-middle">
+
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Uses Shelves</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var type in Model)
+                            {
+                                <tr>
+
+                                    <td>
+                                        <strong>
+                                            @type.Name
+                                        </strong>
+                                    </td>
+
+                                    <td>
+                                        @if (type.HasShelves)
+                                        {
+                                            <span class="badge bg-success">
+                                                Yes
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">
+                                                No
+                                            </span>
+                                        }
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+            }
+            else
+            {
+                <div class="text-muted">
+                    No MUX types have been created yet.
+                </div>
+            }
+
+        </div>
+
+    </div>
+
+</div>

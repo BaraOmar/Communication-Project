@@ -162,6 +162,16 @@ public class StmsController : Controller
             return NotFound();
         }
 
+        var muxPort = await _context.MuxPorts
+            .AsNoTracking()
+            .Include(port => port.MuxCard)
+                .ThenInclude(card => card.Mux)
+                    .ThenInclude(mux => mux.MuxType)
+            .FirstOrDefaultAsync(port =>
+                port.StmId == stm.Id);
+
+        ViewBag.MuxPort = muxPort;
+
         return View(stm);
     }
 

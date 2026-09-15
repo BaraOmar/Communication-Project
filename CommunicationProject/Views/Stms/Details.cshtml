@@ -1,9 +1,13 @@
 ﻿@model CommunicationProject.Models.Stm
+@using CommunicationProject.Models
 
 @{
     ViewData["Title"] = "STM Details";
 
     bool isConnected = Model.ConnectedStm != null;
+}
+@{
+    var muxPort = ViewBag.MuxPort as MuxPort;
 }
 
 @section Styles {
@@ -192,7 +196,75 @@
             </div>
 
         </div>
+        <!-- MUX Connection -->
+        <div class="stm-details-section">
 
+            <h3 class="stm-section-title">
+                MUX connection
+            </h3>
+
+            @if (muxPort != null)
+            {
+                <div class="stm-details-grid">
+
+                    <div>
+                        <div class="stm-detail-label">
+                            MUX
+                        </div>
+
+                        <div class="stm-detail-value">
+                            @muxPort.MuxCard.Mux.Name
+                        </div>
+                    </div>
+
+
+                    <div>
+                        <div class="stm-detail-label">
+                            Location
+                        </div>
+
+                        <div class="stm-detail-value">
+
+                            @muxPort.Location
+
+                        </div>
+                    </div>
+
+
+                    <div>
+                        <div class="stm-detail-label">
+                            Physical Position
+                        </div>
+
+                        <div class="stm-detail-value">
+
+                            @muxPort.PhysicalPosition
+
+                        </div>
+                    </div>
+
+                </div>
+            }
+            else
+            {
+                <div class="stm-connected-card">
+
+                    <div class="stm-connected-main">
+
+                        <div class="stm-connected-title">
+                            No MUX connection
+                        </div>
+
+                        <div class="stm-connected-description">
+                            This STM is not connected to a MUX port.
+                        </div>
+
+                    </div>
+
+                </div>
+            }
+
+        </div>
 
         <!-- Connected STM -->
         <div class="stm-details-section">
