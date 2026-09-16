@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 
@@ -102,6 +103,8 @@ builder.Services.AddScoped<
 builder.Services.AddScoped<
     ICommunicationLinkImportService,
     CommunicationLinkImportService>();
+
+builder.Services.AddScoped<ExcelCommunicationLinkImportService>();
 
 
 var app = builder.Build();

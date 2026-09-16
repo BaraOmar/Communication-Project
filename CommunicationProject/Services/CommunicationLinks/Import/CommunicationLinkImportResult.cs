@@ -17,45 +17,41 @@ public sealed record CommunicationLinkImportResult(
         int directionalRecords =
             insertedLogicalLinks * 2;
 
-        string message =
+        return new CommunicationLinkImportResult(
+            true,
+            createdSites,
+            insertedLogicalLinks,
+            directionalRecords,
+            skippedLogicalLinks,
             $"Import completed. " +
             $"{createdSites} missing sites created. " +
             $"{insertedLogicalLinks} logical links " +
             $"({directionalRecords} directional records) inserted. " +
-            $"{skippedLogicalLinks} existing or invalid links skipped.";
-
-        return new CommunicationLinkImportResult(
-            Succeeded: true,
-            CreatedSites: createdSites,
-            InsertedLogicalLinks: insertedLogicalLinks,
-            InsertedDirectionalRecords: directionalRecords,
-            SkippedLogicalLinks: skippedLogicalLinks,
-            Message: message);
+            $"{skippedLogicalLinks} existing or invalid links skipped.");
     }
 
     public static CommunicationLinkImportResult NoChanges(
         int skippedLogicalLinks)
     {
         return new CommunicationLinkImportResult(
-            Succeeded: true,
-            CreatedSites: 0,
-            InsertedLogicalLinks: 0,
-            InsertedDirectionalRecords: 0,
-            SkippedLogicalLinks: skippedLogicalLinks,
-            Message:
-                "No data was inserted. All uploaded sites " +
-                "and links already exist.");
+            true,
+            0,
+            0,
+            0,
+            skippedLogicalLinks,
+            "No data was inserted. All uploaded sites " +
+            "and links already exist.");
     }
 
     public static CommunicationLinkImportResult Failure(
         string message)
     {
         return new CommunicationLinkImportResult(
-            Succeeded: false,
-            CreatedSites: 0,
-            InsertedLogicalLinks: 0,
-            InsertedDirectionalRecords: 0,
-            SkippedLogicalLinks: 0,
-            Message: message);
+            false,
+            0,
+            0,
+            0,
+            0,
+            message);
     }
 }

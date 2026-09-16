@@ -12,147 +12,313 @@
         </h1>
 
         <p class="text-muted mb-0">
-            Upload an Excel file and preview its contents.
+            Select one or more Excel files and preview their contents.
         </p>
     </div>
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success mt-3">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger mt-3">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <form asp-controller="ExcelViewer"
+          asp-action="Index"
+          method="post"
+          enctype="multipart/form-data">
+
+        @Html.AntiForgeryToken()
 
 
-    <div class="card border-0 shadow-sm mb-4">
-
-        <div class="card-body">
-
-            <form asp-controller="ExcelViewer"
-                  asp-action="Index"
-                  method="post"
-                  enctype="multipart/form-data">
-
-                @Html.AntiForgeryToken()
-
-                <div asp-validation-summary="ModelOnly"
-                     class="text-danger mb-3">
-                </div>
+        <div asp-validation-summary="ModelOnly"
+             class="alert alert-danger">
+        </div>
 
 
-                <div class="row g-3 align-items-end">
+        <div class="row g-4">
 
-                    <div class="col-md-8">
+            @for (int i = 0; i < Model.Files.Count; i++)
+            {
+                var fileItem = Model.Files[i];
 
-                        <label asp-for="ExcelFile"
-                               class="form-label">
-                        </label>
+                var profile =
+                    Model.Profiles.FirstOrDefault(
+                        p => p.Key == fileItem.ProfileKey);
 
-                        <input asp-for="ExcelFile"
-                               type="file"
-                               accept=".xlsx"
-                               class="form-control" />
 
-                        <span asp-validation-for="ExcelFile"
-                              class="text-danger">
-                        </span>
+                <div class="col-lg-6 col-xl-4">
 
-                        <div class="form-text">
-                            Supported format: .xlsx.
-                            Maximum file size: 10 MB.
+                    <div class="card border-0 shadow-sm h-100">
+
+                        <div class="card-body">
+
+                            <input asp-for="Files[i].ProfileKey"
+                                   type="hidden" />
+
+
+                            <h5 class="card-title mb-1">
+                                @fileItem.ProfileName
+                            </h5>
+
+
+                            @if (profile != null)
+                            {
+                                <p class="text-muted small">
+                                    @profile.Description
+                                </p>
+
+
+                                @if (profile.RequiredColumns.Count > 0)
+                                {
+                                    <div class="mb-3">
+
+                                        <div class="small fw-semibold mb-2">
+                                            Required columns
+                                        </div>
+
+                                        <div class="d-flex flex-wrap gap-1">
+
+                                            @foreach (var column
+                                                      in profile.RequiredColumns)
+                                            {
+                                                <span class="badge
+                                                    bg-light
+                                                    text-dark
+                                                    border">
+                                                    @column
+                                                </span>
+                                            }
+
+                                        </div>
+
+                                    </div>
+                                }
+                            }
+
+
+                            <div class="mt-3">
+
+                                <label asp-for="Files[i].ExcelFile"
+                                       class="form-label">
+                                    Excel File
+                                </label>
+
+                                <input asp-for="Files[i].ExcelFile"
+                                       type="file"
+                                       accept=".xlsx"
+                                       class="form-control" />
+
+                                <span asp-validation-for="Files[i].ExcelFile"
+                                      class="text-danger small">
+                                </span>
+
+                                <div class="form-text">
+                                    .xlsx only · Maximum 10 MB
+                                </div>
+
+                            </div>
+
                         </div>
 
                     </div>
 
-
-                    <div class="col-md-4">
-
-                        <button type="submit"
-                                class="btn btn-primary w-100">
-                            Upload and Display
-                        </button>
-
-                    </div>
-
                 </div>
-
-            </form>
+            }
 
         </div>
 
-    </div>
+
+        <div class="d-flex justify-content-end mt-4">
+
+            <button type="submit"
+                    class="btn btn-primary px-5">
+
+                Upload All Files
+
+            </button>
+
+        </div>
+
+    </form>
+
 
 
     @if (Model.HasData)
     {
-        <div class="card border-0 shadow-sm">
+        <hr class="my-5" />
 
-            <div class="card-header bg-white py-3">
 
-                <div class="d-flex flex-wrap
-                    justify-content-between
-                    align-items-center gap-2">
+        <div class="mb-4">
 
-                    <div>
-                        <strong>
-                            @Model.FileName
-                        </strong>
+            <h2 class="h4 mb-1">
+                Uploaded Files
+            </h2>
+
+            <p class="text-muted mb-0">
+                Preview of the successfully uploaded Excel files.
+            </p>
+
+        </div>
+
+
+        @foreach (var fileItem in Model.Files.Where(x => x.HasData))
+        {
+            <div class="card border-0 shadow-sm mb-4">
+
+                <div class="card-header bg-white py-3">
+
+                    <div class="d-flex flex-wrap
+                        justify-content-between
+                        align-items-center
+                        gap-3">
+
+                        <div>
+
+                            <span class="badge bg-primary mb-2">
+                                @fileItem.ProfileName
+                            </span>
+
+                            <div>
+                                <strong>
+                                    @fileItem.FileName
+                                </strong>
+                            </div>
+
+                            <div class="small text-muted">
+
+                                Worksheet:
+                                @fileItem.WorksheetName
+
+                            </div>
+
+                        </div>
+
 
                         <div class="small text-muted">
-                            Worksheet:
-                            @Model.WorksheetName
-                        </div>
-                    </div>
 
-                    <div class="small text-muted">
-                        @Model.Rows.Count rows
-                        ·
-                        @Model.Headers.Count columns
+                            @fileItem.Rows.Count rows
+                            ·
+                            @fileItem.Headers.Count columns
+
+                        </div>
+
                     </div>
 
                 </div>
 
-            </div>
 
+                <div class="table-responsive">
 
-            <div class="table-responsive">
+                    <table class="table
+                        table-hover
+                        table-bordered
+                        align-middle
+                        mb-0">
 
-                <table class="table table-hover
-                    table-bordered
-                    align-middle mb-0">
+                        <thead class="table-light">
 
-                    <thead class="table-light">
-
-                        <tr>
-
-                            @foreach (string header
-                                      in Model.Headers)
-                            {
-                                <th>
-                                    @header
-                                </th>
-                            }
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody>
-
-                        @foreach (var row in Model.Rows)
-                        {
                             <tr>
 
-                                @foreach (string value in row)
+                                @foreach (var header
+                                          in fileItem.Headers)
                                 {
-                                    <td>
-                                        @value
-                                    </td>
+                                    <th>
+                                        @header
+                                    </th>
                                 }
 
                             </tr>
-                        }
 
-                    </tbody>
+                        </thead>
 
-                </table>
 
+                        <tbody>
+
+                            @foreach (var row
+                                      in fileItem.Rows)
+                            {
+                                <tr>
+
+                                    @foreach (var value in row)
+                                    {
+                                        <td>
+                                            @value
+                                        </td>
+                                    }
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+                @if (fileItem.ProfileKey == "communication-links")
+                {
+                    <div class="card-footer bg-white py-3">
+
+                        <form asp-controller="ExcelViewer"
+                              asp-action="ImportCommunicationLinks"
+                              method="post">
+
+                            @Html.AntiForgeryToken()
+
+                            <input type="hidden"
+                                   name="ProfileKey"
+                                   value="@fileItem.ProfileKey" />
+
+                            <input type="hidden"
+                                   name="ProfileName"
+                                   value="@fileItem.ProfileName" />
+
+                            @for (int h = 0;
+                                  h < fileItem.Headers.Count;
+                                  h++)
+                            {
+                                <input type="hidden"
+                                       name="Headers[@h]"
+                                       value="@fileItem.Headers[h]" />
+                            }
+
+                            @for (int r = 0;
+                                  r < fileItem.Rows.Count;
+                                  r++)
+                            {
+                                @for (int c = 0;
+                                      c < fileItem.Rows[r].Count;
+                                      c++)
+                                {
+                                    <input type="hidden"
+                                           name="Rows[@r][@c]"
+                                           value="@fileItem.Rows[r][c]" />
+                                }
+                            }
+
+                            <div class="d-flex justify-content-end">
+
+                                <button type="submit"
+                                        class="btn btn-success px-4">
+
+                                    Import to Database
+
+                                </button>
+
+                            </div>
+
+                        </form>
+
+                    </div>
+                }
             </div>
-
-        </div>
+        }
     }
 
 </div>
