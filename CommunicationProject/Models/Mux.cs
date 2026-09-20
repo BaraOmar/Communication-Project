@@ -24,20 +24,7 @@ public class Mux
 
     [ForeignKey(nameof(MuxTypeId))]
     public MuxType? MuxType { get; set; }
-    [Range(
-    1,
-    100,
-    ErrorMessage = "Shelf count must be at least 1.")]
-    [Display(Name = "Number of Shelves")]
-    public int? ShelfCount { get; set; }
 
-
-    [Range(
-        1,
-        1000,
-        ErrorMessage = "Card slot count must be at least 1.")]
-    [Display(Name = "Card Slots")]
-    public int? CardSlotCount { get; set; }
     public ICollection<MuxCard> Cards { get; set; }
         = new List<MuxCard>();
 }

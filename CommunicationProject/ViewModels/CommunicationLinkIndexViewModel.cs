@@ -65,4 +65,24 @@ public sealed class CommunicationLinkListItemViewModel
     public int StmCount { get; set; }
 
     public int ReverseStmCount { get; set; }
+
+    public int SdhCardCount { get; set; }
+
+    public int ReverseSdhCardCount { get; set; }
+
+    public int E1Count { get; set; }
+
+    public int ReverseE1Count { get; set; }
+
+    public bool IsSdh =>
+        string.Equals(
+            LinkTypeName,
+            "SDH",
+            StringComparison.OrdinalIgnoreCase);
+
+    public bool IsPdh =>
+        string.Equals(
+            LinkTypeName,
+            "PDH",
+            StringComparison.OrdinalIgnoreCase);
 }

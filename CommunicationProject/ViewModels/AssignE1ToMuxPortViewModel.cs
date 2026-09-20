@@ -14,8 +14,8 @@ public class AssignE1ToMuxPortViewModel
     public string MuxName { get; set; } =
         string.Empty;
 
-    public string CardTypeName { get; set; } =
-        string.Empty;
+    public string CardCategoryName { get; set; }
+        = string.Empty;
 
     [Required]
     [Display(Name = "Physical E1")]

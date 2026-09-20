@@ -4,6 +4,7 @@ using CommunicationProject.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CommunicationProject.Migrations
 {
     [DbContext(typeof(CommunicationDbContext))]
-    partial class CommunicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260920070008_SimplifyMuxInventoryAndRemoveCardTypes")]
+    partial class SimplifyMuxInventoryAndRemoveCardTypes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -312,7 +315,7 @@ namespace CommunicationProject.Migrations
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(32)
                         .HasColumnType("nvarchar(32)")
-                        .HasDefaultValue("Unassigned");
+                        .HasDefaultValue("Physical");
 
                     b.Property<string>("CrossConnectionState")
                         .IsRequired()
@@ -327,13 +330,10 @@ namespace CommunicationProject.Migrations
 
                     b.Property<string>("E1Number")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
 
                     b.Property<Guid?>("JoinE1Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("LinkId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Status")
@@ -343,7 +343,7 @@ namespace CommunicationProject.Migrations
                         .HasColumnType("nvarchar(32)")
                         .HasDefaultValue("Available");
 
-                    b.Property<Guid?>("StmId")
+                    b.Property<Guid>("StmId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("VisitDate")
@@ -361,13 +361,8 @@ namespace CommunicationProject.Migrations
 
                     b.HasIndex("ConnectionGroupId");
 
-                    b.HasIndex("LinkId", "E1Number")
-                        .IsUnique()
-                        .HasFilter("[StmId] IS NULL");
-
                     b.HasIndex("StmId", "E1Number")
-                        .IsUnique()
-                        .HasFilter("[StmId] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("E1s", t =>
                         {
@@ -548,26 +543,6 @@ namespace CommunicationProject.Migrations
                         });
                 });
 
-            modelBuilder.Entity("CommunicationProject.Models.SdhLinkCard", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("LinkId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Number")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LinkId", "Number")
-                        .IsUnique();
-
-                    b.ToTable("SdhLinkCards");
-                });
-
             modelBuilder.Entity("CommunicationProject.Models.Site", b =>
                 {
                     b.Property<string>("Id")
@@ -609,16 +584,11 @@ namespace CommunicationProject.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<Guid?>("SdhLinkCardId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
 
                     b.HasIndex("ConnectedStmId")
                         .IsUnique()
                         .HasFilter("[ConnectedStmId] IS NOT NULL");
-
-                    b.HasIndex("SdhLinkCardId");
 
                     b.HasIndex("LinkId", "Number")
                         .IsUnique();
@@ -869,20 +839,13 @@ namespace CommunicationProject.Migrations
                         .HasForeignKey("CommunicationProject.Models.E1", "ConnectedE1Id")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("CommunicationProject.Models.CommunicationLink", "Link")
-                        .WithMany("E1Channels")
-                        .HasForeignKey("LinkId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("CommunicationProject.Models.Stm", "Stm")
                         .WithMany("E1Channels")
                         .HasForeignKey("StmId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("ConnectedE1");
-
-                    b.Navigation("Link");
 
                     b.Navigation("Stm");
                 });
@@ -940,17 +903,6 @@ namespace CommunicationProject.Migrations
                     b.Navigation("Stm");
                 });
 
-            modelBuilder.Entity("CommunicationProject.Models.SdhLinkCard", b =>
-                {
-                    b.HasOne("CommunicationProject.Models.CommunicationLink", "Link")
-                        .WithMany("SdhCards")
-                        .HasForeignKey("LinkId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Link");
-                });
-
             modelBuilder.Entity("CommunicationProject.Models.Stm", b =>
                 {
                     b.HasOne("CommunicationProject.Models.Stm", "ConnectedStm")
@@ -964,16 +916,9 @@ namespace CommunicationProject.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("CommunicationProject.Models.SdhLinkCard", "SdhLinkCard")
-                        .WithMany("Stms")
-                        .HasForeignKey("SdhLinkCardId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.Navigation("ConnectedStm");
 
                     b.Navigation("Link");
-
-                    b.Navigation("SdhLinkCard");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -1029,10 +974,6 @@ namespace CommunicationProject.Migrations
 
             modelBuilder.Entity("CommunicationProject.Models.CommunicationLink", b =>
                 {
-                    b.Navigation("E1Channels");
-
-                    b.Navigation("SdhCards");
-
                     b.Navigation("Stms");
                 });
 
@@ -1071,11 +1012,6 @@ namespace CommunicationProject.Migrations
             modelBuilder.Entity("CommunicationProject.Models.MuxType", b =>
                 {
                     b.Navigation("Muxes");
-                });
-
-            modelBuilder.Entity("CommunicationProject.Models.SdhLinkCard", b =>
-                {
-                    b.Navigation("Stms");
                 });
 
             modelBuilder.Entity("CommunicationProject.Models.Site", b =>

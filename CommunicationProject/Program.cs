@@ -43,12 +43,13 @@ builder.Services.AddRazorPages(options =>
 // ==========================================================
 // Database
 // ==========================================================
-
 builder.Services.AddDbContext<CommunicationDbContext>(
     options =>
         options.UseSqlServer(
             builder.Configuration
-                .GetConnectionString("DefaultConnection")));
+                .GetConnectionString("DefaultConnection"),
+            sqlServerOptions =>
+                sqlServerOptions.CommandTimeout(600)));
 
 
 // ==========================================================

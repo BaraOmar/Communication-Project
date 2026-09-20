@@ -85,6 +85,7 @@ public class E1sController : Controller
                     normalizedSearch[4..].Trim();
 
                 query = query.Where(e1 =>
+                    e1.Stm != null &&
                     e1.Stm.Number.StartsWith(normalizedSearch));
             }
 
@@ -92,7 +93,10 @@ public class E1sController : Controller
             {
                 query = query.Where(e1 =>
                     e1.E1Number.StartsWith(normalizedSearch) ||
-                    e1.Stm.Number.StartsWith(normalizedSearch));
+                    (
+                        e1.Stm != null &&
+                        e1.Stm.Number.StartsWith(normalizedSearch)
+                    ));
             }
         }
 
@@ -102,15 +106,13 @@ public class E1sController : Controller
         if (!string.IsNullOrWhiteSpace(siteFromId))
         {
             query = query.Where(e1 =>
-                e1.Stm.Link.SiteFromId == siteFromId);
+                e1.Link.SiteFromId == siteFromId);
         }
 
-
-        // Site To
         if (!string.IsNullOrWhiteSpace(siteToId))
         {
             query = query.Where(e1 =>
-                e1.Stm.Link.SiteToId == siteToId);
+                e1.Link.SiteToId == siteToId);
         }
 
 
@@ -207,25 +209,29 @@ public class E1sController : Controller
             .Where(e1 =>
                 pageIds.Contains(e1.Id))
 
-            .Include(e1 => e1.Stm)
-                .ThenInclude(stm => stm.Link)
-                    .ThenInclude(link => link.SiteFrom)
+            .Include(e1 => e1.Link)
+                .ThenInclude(link => link.SiteFrom)
+
+            .Include(e1 => e1.Link)
+                .ThenInclude(link => link.SiteTo)
 
             .Include(e1 => e1.Stm)
-                .ThenInclude(stm => stm.Link)
-                    .ThenInclude(link => link.SiteTo)
+
+            .Include(e1 => e1.ConnectedE1)
+                .ThenInclude(connected =>
+                    connected!.Link)
+                        .ThenInclude(link =>
+                            link.SiteFrom)
+
+            .Include(e1 => e1.ConnectedE1)
+                .ThenInclude(connected =>
+                    connected!.Link)
+                        .ThenInclude(link =>
+                            link.SiteTo)
 
             .Include(e1 => e1.ConnectedE1)
                 .ThenInclude(connected =>
                     connected!.Stm)
-                        .ThenInclude(stm => stm.Link)
-                            .ThenInclude(link => link.SiteFrom)
-
-            .Include(e1 => e1.ConnectedE1)
-                .ThenInclude(connected =>
-                    connected!.Stm)
-                        .ThenInclude(stm => stm.Link)
-                            .ThenInclude(link => link.SiteTo)
 
             .ToListAsync();
 
@@ -289,25 +295,32 @@ public class E1sController : Controller
         var e1 = await _context.E1s
             .AsNoTracking()
 
-            .Include(item => item.Stm)
-                .ThenInclude(stm => stm.Link)
-                    .ThenInclude(link => link.SiteFrom)
+            .Include(item => item.Link)
+                .ThenInclude(link => link.SiteFrom)
+
+            .Include(item => item.Link)
+                .ThenInclude(link => link.SiteTo)
 
             .Include(item => item.Stm)
-                .ThenInclude(stm => stm.Link)
-                    .ThenInclude(link => link.SiteTo)
 
             .Include(item => item.ConnectedE1)
-                .ThenInclude(connected => connected!.Stm)
-                    .ThenInclude(stm => stm.Link)
-                        .ThenInclude(link => link.SiteFrom)
+                .ThenInclude(connected =>
+                    connected!.Link)
+                        .ThenInclude(link =>
+                            link.SiteFrom)
 
             .Include(item => item.ConnectedE1)
-                .ThenInclude(connected => connected!.Stm)
-                    .ThenInclude(stm => stm.Link)
-                        .ThenInclude(link => link.SiteTo)
+                .ThenInclude(connected =>
+                    connected!.Link)
+                        .ThenInclude(link =>
+                            link.SiteTo)
 
-            .FirstOrDefaultAsync(item => item.Id == id.Value);
+            .Include(item => item.ConnectedE1)
+                .ThenInclude(connected =>
+                    connected!.Stm)
+
+            .FirstOrDefaultAsync(item =>
+                item.Id == id.Value);
 
         if (e1 == null)
         {

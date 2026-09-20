@@ -1,0 +1,389 @@
+﻿@model CommunicationProject.ViewModels.InstallSdhLinkMuxViewModel
+
+@{
+    ViewData["Title"] = "Install MUX for SDH Link";
+}
+
+<div class="container py-4">
+
+    <div class="mb-4">
+
+        <a asp-controller="CommunicationLinks"
+               asp-action="Details"
+               asp-route-id="@Model.LinkId"
+               class="text-decoration-none">
+            ← Communication Link
+        </a>
+
+        <h1 class="mt-3 mb-1">
+            Install MUX and Connect STMs
+        </h1>
+
+        <p class="text-muted mb-0">
+            Install a MUX at site @Model.SiteId and assign
+            selected STMs from @Model.LinkName to STM ports.
+        </p>
+
+    </div>
+
+
+    <form asp-action="InstallForSdhLink"
+          method="post">
+
+        @Html.AntiForgeryToken()
+
+        <input asp-for="LinkId"
+               type="hidden" />
+
+        <input asp-for="SiteId"
+               type="hidden" />
+
+        <input asp-for="LinkName"
+               type="hidden" />
+
+
+        <div asp-validation-summary="ModelOnly"
+             class="alert alert-danger">
+        </div>
+
+
+        <div class="card border-0 shadow-sm mb-4">
+
+            <div class="card-body p-4">
+
+                <h5 class="mb-3">
+                    Installation
+                </h5>
+
+                <div class="row g-3">
+
+                    <div class="col-md-4">
+
+                        <label class="form-label">
+                            Site
+                        </label>
+
+                        <input value="@Model.SiteId"
+                               class="form-control"
+                               disabled />
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <label asp-for="MuxName"
+                               class="form-label">
+                        </label>
+
+                        <input asp-for="MuxName"
+                               class="form-control"
+                               placeholder="Enter installed MUX name" />
+
+                        <span asp-validation-for="MuxName"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <label asp-for="MuxTypeId"
+                               class="form-label">
+                        </label>
+
+                        <select asp-for="MuxTypeId"
+                                asp-items="Model.MuxTypeOptions"
+                                id="muxTypeSelect"
+                                class="form-select">
+
+                            <option value="">
+                                Select a MUX type
+                            </option>
+
+                        </select>
+
+                        <span asp-validation-for="MuxTypeId"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="card border-0 shadow-sm mb-4">
+
+            <div class="card-body p-4">
+
+                <div class="
+                    d-flex
+                    justify-content-between
+                    align-items-start
+                    mb-3">
+
+                    <div>
+                        <h5 class="mb-1">
+                            STM Port Assignments
+                        </h5>
+
+                        <p class="text-muted mb-0">
+                            Assign any required STMs. Unassigned STMs
+                            remain available for later connection.
+                        </p>
+                    </div>
+
+                    <span class="badge bg-primary">
+                        @Model.StmAssignments.Count STMs
+                    </span>
+
+                </div>
+
+
+                @if (Model.StmAssignments.Any())
+                {
+                    <div class="table-responsive">
+
+                        <table class="table align-middle">
+
+                            <thead>
+                                <tr>
+                                    <th>STM</th>
+                                    <th>MUX STM Port</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                @for (int index = 0;
+                                      index < Model.StmAssignments.Count;
+                                      index++)
+                                {
+                                    <tr>
+
+                                        <td>
+                                            <strong>
+                                                STM
+                                                @Model.StmAssignments[index]
+                                                .StmNumber
+                                            </strong>
+
+                                            <input asp-for="StmAssignments[index].StmId"
+                                                   type="hidden" />
+
+                                            <input asp-for="StmAssignments[index].StmNumber"
+                                                   type="hidden" />
+                                        </td>
+
+
+                                        <td>
+                                            <select asp-for="StmAssignments[index].PortKey"
+                                                    class="
+                                                form-select
+                                                stm-port-select"
+                                                    data-selected-port="@Model.StmAssignments[index].PortKey"
+                                                    disabled>
+
+                                                <option value="">
+                                                    Leave unassigned
+                                                </option>
+
+                                            </select>
+
+                                            <span asp-validation-for="StmAssignments[index].PortKey"
+                                                  class="text-danger">
+                                            </span>
+                                        </td>
+
+                                    </tr>
+                                }
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-warning mb-0">
+                        This directional SDH link does not contain
+                        any STM records.
+                    </div>
+                }
+
+            </div>
+
+        </div>
+
+
+        <div class="d-flex gap-2">
+
+            <button type="submit"
+                    class="btn btn-primary"
+                    disabled="@(!Model.StmAssignments.Any())">
+                Install MUX and Connect
+            </button>
+
+            <a asp-controller="CommunicationLinks"
+                   asp-action="Details"
+                   asp-route-id="@Model.LinkId"
+                   class="btn btn-outline-secondary">
+                Cancel
+            </a>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        const muxTypeSelect =
+            document.getElementById("muxTypeSelect");
+
+        const portSelects =
+            Array.from(
+                document.querySelectorAll(
+                    ".stm-port-select"));
+
+        const portsUrl =
+            '@Url.Action(
+                                    "GetMuxTypeStmPorts",
+                                    "Muxes")';
+
+
+        function resetPortSelect(
+            select) {
+
+            select.innerHTML = "";
+
+            const option =
+                document.createElement("option");
+
+            option.value = "";
+            option.textContent =
+                "Leave unassigned";
+
+            select.appendChild(option);
+            select.disabled = true;
+        }
+
+
+        function refreshUnavailablePorts() {
+            const selectedValues =
+                portSelects
+                    .map(select =>
+                        select.value)
+                    .filter(value =>
+                        value !== "");
+
+            for (const select of portSelects) {
+                for (const option
+                     of select.options) {
+
+                    if (!option.value) {
+                        option.disabled = false;
+                        continue;
+                    }
+
+                    option.disabled =
+                        option.value !== select.value &&
+                        selectedValues.includes(
+                            option.value);
+                }
+            }
+        }
+
+
+        async function loadPorts() {
+            const muxTypeId =
+                muxTypeSelect.value;
+
+            for (const select of portSelects) {
+                resetPortSelect(select);
+            }
+
+            if (!muxTypeId) {
+                return;
+            }
+
+            const response =
+                await fetch(
+                    portsUrl +
+                    "?muxTypeId=" +
+                    encodeURIComponent(
+                        muxTypeId));
+
+            if (!response.ok) {
+                return;
+            }
+
+            const ports =
+                await response.json();
+
+            for (const select of portSelects) {
+                const previousValue =
+                    select.dataset.selectedPort || "";
+
+                for (const port of ports) {
+                    const option =
+                        document.createElement(
+                            "option");
+
+                    option.value =
+                        port.value;
+
+                    option.textContent =
+                        port.text;
+
+                    select.appendChild(option);
+                }
+
+                select.disabled = false;
+
+                if (previousValue) {
+                    select.value =
+                        previousValue;
+                }
+            }
+
+            refreshUnavailablePorts();
+        }
+
+
+        muxTypeSelect.addEventListener(
+            "change",
+            async () => {
+
+                for (const select
+                     of portSelects) {
+
+                    select.dataset.selectedPort = "";
+                }
+
+                await loadPorts();
+            });
+
+
+        for (const select of portSelects) {
+            select.addEventListener(
+                "change",
+                refreshUnavailablePorts);
+        }
+
+
+        if (muxTypeSelect.value) {
+            loadPorts();
+        }
+    </script>
+}

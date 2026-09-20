@@ -306,7 +306,7 @@
 
                     <tr>
                         <th>E1</th>
-                        <th>STM</th>
+                        <th>Transport</th>
                         <th>Route</th>
                         <th>Connected E1</th>
                         <th>Cross Connection State</th>
@@ -363,11 +363,20 @@
                                 </td>
 
 
-                                <!-- STM -->
+                                <!-- Transport -->
                                 <td>
-                                    <span class="e1-stm">
-                                        STM @item.Stm.Number
-                                    </span>
+                                    @if (item.Stm is not null)
+                                    {
+                                        <span class="e1-stm">
+                                            STM @item.Stm.Number
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">
+                                            PDH · Direct
+                                        </span>
+                                    }
                                 </td>
 
 
@@ -379,11 +388,11 @@
                                         <div class="e1-route-site">
 
                                             <span class="e1-route-name">
-                                                @item.Stm.Link.SiteFrom.Name
+                                                @item.Link.SiteFrom.Name
                                             </span>
 
                                             <span class="e1-route-id">
-                                                @item.Stm.Link.SiteFrom.Id
+                                                @item.Link.SiteFrom.Id
                                             </span>
 
                                         </div>
@@ -397,11 +406,11 @@
                                         <div class="e1-route-site">
 
                                             <span class="e1-route-name">
-                                                @item.Stm.Link.SiteTo.Name
+                                                @item.Link.SiteTo.Name
                                             </span>
 
                                             <span class="e1-route-id">
-                                                @item.Stm.Link.SiteTo.Id
+                                                @item.Link.SiteTo.Id
                                             </span>
 
                                         </div>
@@ -423,7 +432,18 @@
                                             </span>
 
                                             <span class="e1-connected-stm">
-                                                STM @item.ConnectedE1.Stm.Number
+                                                @if (item.ConnectedE1.Stm is not null)
+                                                {
+                                                    <text>
+                                                        STM @item.ConnectedE1.Stm.Number
+                                                    </text>
+                                                }
+                                                else
+                                                {
+                                                    <text>
+                                                        PDH · Direct
+                                                    </text>
+                                                }
                                             </span>
 
                                         </div>

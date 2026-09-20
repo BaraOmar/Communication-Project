@@ -1,4 +1,5 @@
 ﻿@model CommunicationProject.Models.Site
+@using CommunicationProject.Security
 
 @{
     ViewData["Title"] = "Site Details";
@@ -45,7 +46,16 @@
                 </div>
 
             </div>
-
+            @if (User.IsInRole(AppRoles.Admin) ||
+     User.IsInRole(AppRoles.Operator))
+            {
+                <a asp-controller="CommunicationLinks"
+                       asp-action="Create"
+                       asp-route-siteFromId="@Model.Id"
+                       class="sites-primary-btn">
+                    Create Link
+                </a>
+            }
 
             <a asp-action="Edit"
                    asp-route-id="@Model.Id"

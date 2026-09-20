@@ -1,308 +1,375 @@
 ﻿@model CommunicationProject.ViewModels.CommunicationLinkCreateViewModel
+@using CommunicationProject.Models
+@using CommunicationProject.Security
 
 @{
     ViewData["Title"] = "Create Communication Link";
 }
 
-@section Styles {
-    <link rel="stylesheet"
-          href="~/css/links.css"
-          asp-append-version="true" />
-}
+<div class="container py-4">
 
-
-<div class="links-form-page">
-
-    <div class="links-form-top">
-
+    <div class="mb-4">
         <a asp-action="Index"
-               class="links-back-link">
+               class="text-decoration-none">
             ← Communication Links
         </a>
 
-        <h1 class="links-form-title">
-            Create communication link
+        <h1 class="mt-3 mb-1">
+            Create Communication Link
         </h1>
 
-        <p class="links-form-subtitle">
-            Define the route and initial STM inventory for a new link.
+        <p class="text-muted mb-0">
+            Create an SDH or PDH link between two sites.
         </p>
-
     </div>
 
 
-    <div class="links-card links-form-card">
+    <form asp-action="Create"
+          method="post">
 
-        <form asp-action="Create"
-              method="post">
+        @Html.AntiForgeryToken()
 
-            <div asp-validation-summary="ModelOnly"
-                 class="links-validation-summary">
-            </div>
-
-
-            <!-- Basic information -->
-            <section class="links-form-section">
-
-                <h2 class="links-form-section-title">
-                    Link information
-                </h2>
+        <div asp-validation-summary="ModelOnly"
+             class="alert alert-danger">
+        </div>
 
 
-                <div class="links-form-grid">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4">
 
-                    <div>
+                <h5 class="mb-3">
+                    Link Sites
+                </h5>
 
-                        <label asp-for="Name"
-                               class="links-form-label">
-                            Link name
+                <div class="row g-3">
+
+                    <div class="col-md-6">
+                        <label asp-for="SiteFromId"
+                               class="form-label">
                         </label>
 
-                        <input asp-for="Name"
-                               class="links-form-control"
-                               placeholder="Enter link name" />
+                        @if (Model.LockSiteFrom)
+                        {
+                            <input asp-for="SiteFromId"
+                                   type="hidden" />
 
-                        <span asp-validation-for="Name"
-                              class="links-validation">
+                            <input asp-for="LockSiteFrom"
+                                   type="hidden" />
+
+                            <input value="@Model.SiteFromId"
+                                   class="form-control"
+                                   disabled />
+
+                            <div class="form-text">
+                                The source site is fixed to the site you opened.
+                            </div>
+                        }
+                        else
+                        {
+                            <select asp-for="SiteFromId"
+                                    asp-items="Model.SiteOptions"
+                                    class="form-select">
+
+                                <option value="">
+                                    Select source site
+                                </option>
+
+                            </select>
+                        }
+
+                        <span asp-validation-for="SiteFromId"
+                              class="text-danger">
                         </span>
-
                     </div>
 
 
-                    <div>
-
-                        <label asp-for="LinkTypeId"
-                               class="links-form-label">
-                            Link type
+                    <div class="col-md-6">
+                        <label asp-for="SiteToId"
+                               class="form-label">
                         </label>
 
-                        <select asp-for="LinkTypeId"
-                                asp-items="Model.LinkTypeOptions"
-                                class="links-form-select">
+                        <select asp-for="SiteToId"
+                                asp-items="Model.SiteOptions"
+                                class="form-select">
 
                             <option value="">
-                                Select link type
+                                Select destination site
                             </option>
 
                         </select>
 
-                        <span asp-validation-for="LinkTypeId"
-                              class="links-validation">
+                        <span asp-validation-for="SiteToId"
+                              class="text-danger">
                         </span>
-
                     </div>
 
                 </div>
 
-            </section>
 
+                <div class="alert alert-light border mt-3 mb-0">
+                    <strong>Generated name:</strong>
 
-            <!-- Route -->
-            <section class="links-form-section">
-
-                <h2 class="links-form-section-title">
-                    Route
-                </h2>
-
-
-                <div class="links-route-form">
-
-                    <div class="links-route-form-grid">
-
-                        <div>
-
-                            <label asp-for="SiteFromId"
-                                   class="links-form-label">
-                                Source site
-                            </label>
-
-                            <select asp-for="SiteFromId"
-                                    asp-items="Model.SiteOptions"
-                                    class="links-form-select">
-
-                                <option value="">
-                                    Select source
-                                </option>
-
-                            </select>
-
-                            <span asp-validation-for="SiteFromId"
-                                  class="links-validation">
-                            </span>
-
-                        </div>
-
-
-                        <div class="links-route-divider">
-                            →
-                        </div>
-
-
-                        <div>
-
-                            <label asp-for="SiteToId"
-                                   class="links-form-label">
-                                Destination site
-                            </label>
-
-                            <select asp-for="SiteToId"
-                                    asp-items="Model.SiteOptions"
-                                    class="links-form-select">
-
-                                <option value="">
-                                    Select destination
-                                </option>
-
-                            </select>
-
-                            <span asp-validation-for="SiteToId"
-                                  class="links-validation">
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-
-            <!-- Inventory -->
-            <section class="links-form-section">
-
-                <h2 class="links-form-section-title">
-                    Initial inventory
-                </h2>
-
-
-                <div class="links-form-group">
-
-                    <label asp-for="StmCount"
-                           class="links-form-label">
-                        Number of STM pairs
-                    </label>
-
-                    <input asp-for="StmCount"
-                           type="number"
-                           min="1"
-                           max="100"
-                           class="links-form-control" />
-
-                    <span asp-validation-for="StmCount"
-                          class="links-validation">
+                    <span id="generatedLinkName"
+                          class="text-muted">
+                        Select both sites
                     </span>
-
                 </div>
-
-
-                <div class="links-inventory-note">
-
-                    <div class="links-inventory-note-icon">
-                        i
-                    </div>
-
-                    <div>
-
-                        <div class="links-inventory-note-title">
-                            Inventory is created automatically
-                        </div>
-
-                        <p class="links-inventory-note-text">
-                            Each STM pair creates one STM in each
-                            direction, with 63 matching E1 channels
-                            generated for every STM.
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-
-            <div class="links-form-actions">
-
-                <a asp-action="Index"
-                       class="links-form-cancel">
-                    Cancel
-                </a>
-
-                <button type="submit"
-                        class="links-form-submit">
-                    Create link
-                </button>
 
             </div>
+        </div>
 
-        </form>
 
-    </div>
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4">
+
+                <h5 class="mb-3">
+                    Link Technology
+                </h5>
+
+                <label asp-for="Technology"
+                       class="form-label">
+                </label>
+
+                <select asp-for="Technology"
+                        class="form-select"
+                        id="Technology">
+
+                    <option value="">
+                        Select link technology
+                    </option>
+
+                    <option value="SDH">
+                        SDH
+                    </option>
+
+                    <option value="PDH">
+                        PDH
+                    </option>
+
+                </select>
+
+                <span asp-validation-for="Technology"
+                      class="text-danger">
+                </span>
+
+            </div>
+        </div>
+
+
+        <div id="sdhConfiguration"
+             class="card border-0 shadow-sm mb-4">
+
+            <div class="card-body p-4">
+
+                <h5 class="mb-1">
+                    SDH Configuration
+                </h5>
+
+                <p class="text-muted">
+                    Each STM generates 63 E1 channels.
+                </p>
+
+                <div class="row g-3">
+
+                    <div class="col-md-6">
+                        <label asp-for="SdhCardCount"
+                               class="form-label">
+                        </label>
+
+                        <select asp-for="SdhCardCount"
+                                class="form-select">
+
+                            <option value="">
+                                Select number of cards
+                            </option>
+
+                            <option value="2">2 cards</option>
+                            <option value="6">6 cards</option>
+                            <option value="20">20 cards</option>
+
+                        </select>
+
+                        <span asp-validation-for="SdhCardCount"
+                              class="text-danger">
+                        </span>
+                    </div>
+
+
+                    <div class="col-md-6">
+                        <label asp-for="StmCount"
+                               class="form-label">
+                        </label>
+
+                        <select asp-for="StmCount"
+                                class="form-select">
+
+                            <option value="">
+                                Select number of STMs
+                            </option>
+
+                            @for (int number = 1;
+                                  number <= 9;
+                                  number++)
+                            {
+                                <option value="@number">
+                                    @number
+                                </option>
+                            }
+
+                        </select>
+
+                        <span asp-validation-for="StmCount"
+                              class="text-danger">
+                        </span>
+                    </div>
+
+                </div>
+
+
+                <div class="alert alert-info mt-3 mb-0">
+                    STMs are distributed across the selected cards
+                    in round-robin order.
+                </div>
+
+            </div>
+        </div>
+
+
+        <div id="pdhConfiguration"
+             class="card border-0 shadow-sm mb-4 d-none">
+
+            <div class="card-body p-4">
+
+                <h5 class="mb-1">
+                    PDH Configuration
+                </h5>
+
+                <p class="text-muted">
+                    PDH E1 channels are created directly without STMs.
+                </p>
+
+                <label asp-for="PdhE1Count"
+                       class="form-label">
+                </label>
+
+                <input asp-for="PdhE1Count"
+                       class="form-control"
+                       type="number"
+                       min="1"
+                       max="1000"
+                       placeholder="Enter number of E1 channels" />
+
+                <span asp-validation-for="PdhE1Count"
+                      class="text-danger">
+                </span>
+
+            </div>
+        </div>
+
+
+        <div class="d-flex gap-2">
+
+            <button type="submit"
+                    class="btn btn-primary">
+                Create Link
+            </button>
+
+            <a asp-action="Index"
+                   class="btn btn-outline-secondary">
+                Cancel
+            </a>
+
+        </div>
+
+    </form>
 
 </div>
 
 
 @section Scripts {
-
     <partial name="_ValidationScriptsPartial" />
 
     <script>
+        const technology =
+            document.getElementById("Technology");
 
-        document.addEventListener(
-            "DOMContentLoaded",
-            function () {
+        const sdhConfiguration =
+            document.getElementById("sdhConfiguration");
 
-                const siteFrom =
-                    document.getElementById("SiteFromId");
+        const pdhConfiguration =
+            document.getElementById("pdhConfiguration");
 
-                const siteTo =
-                    document.getElementById("SiteToId");
+        const sdhCardCount =
+            document.getElementById("SdhCardCount");
 
+        const stmCount =
+            document.getElementById("StmCount");
 
-                function updateSiteOptions() {
+        const pdhE1Count =
+            document.getElementById("PdhE1Count");
 
-                    const selectedFrom =
-                        siteFrom.value;
+        const siteFrom =
+            document.getElementById("SiteFromId");
 
-                    const selectedTo =
-                        siteTo.value;
+        const siteTo =
+            document.getElementById("SiteToId");
 
-
-                    for (const option of siteTo.options) {
-
-                        option.disabled =
-                            option.value !== "" &&
-                            option.value === selectedFrom;
-                    }
-
-
-                    for (const option of siteFrom.options) {
-
-                        option.disabled =
-                            option.value !== "" &&
-                            option.value === selectedTo;
-                    }
+        const generatedLinkName =
+            document.getElementById("generatedLinkName");
 
 
-                    if (
-                        selectedFrom !== "" &&
-                        selectedFrom === siteTo.value
-                    ) {
-                        siteTo.value = "";
-                    }
-                }
+        function updateTechnologyFields() {
+            const isSdh =
+                technology.value === "SDH";
+
+            const isPdh =
+                technology.value === "PDH";
+
+            sdhConfiguration.classList.toggle(
+                "d-none",
+                !isSdh);
+
+            pdhConfiguration.classList.toggle(
+                "d-none",
+                !isPdh);
+
+            sdhCardCount.disabled = !isSdh;
+            stmCount.disabled = !isSdh;
+            pdhE1Count.disabled = !isPdh;
+        }
 
 
-                siteFrom.addEventListener(
-                    "change",
-                    updateSiteOptions);
+        function updateGeneratedName() {
+            if (!siteFrom.value ||
+                !siteTo.value) {
+                generatedLinkName.textContent =
+                    "Select both sites";
 
-                siteTo.addEventListener(
-                    "change",
-                    updateSiteOptions);
+                return;
+            }
 
-                updateSiteOptions();
-            });
+            generatedLinkName.textContent =
+                siteFrom.value +
+                " - " +
+                siteTo.value +
+                " - automatic sequence";
+        }
 
+
+        technology.addEventListener(
+            "change",
+            updateTechnologyFields);
+
+        siteFrom.addEventListener(
+            "change",
+            updateGeneratedName);
+
+        siteTo.addEventListener(
+            "change",
+            updateGeneratedName);
+
+
+        updateTechnologyFields();
+        updateGeneratedName();
     </script>
 }

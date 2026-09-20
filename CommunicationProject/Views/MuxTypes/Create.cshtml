@@ -1,4 +1,4 @@
-﻿@model CommunicationProject.Models.MuxType
+﻿@model CommunicationProject.ViewModels.CreateMuxTypeViewModel
 
 @{
     ViewData["Title"] = "Add MUX Type";
@@ -17,74 +17,235 @@
         </h1>
 
         <p class="text-muted mb-0">
-            Define a new MUX type and whether it uses shelves.
+            Define the number of cards and ports for this reusable MUX type.
         </p>
     </div>
 
 
-    <div class="card border-0 shadow-sm">
-        <div class="card-body p-4">
+    <form asp-action="Create"
+          method="post">
 
-            <form asp-action="Create"
-                  method="post">
+        @Html.AntiForgeryToken()
 
-                @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly"
+             class="alert alert-danger">
+        </div>
 
-                <div asp-validation-summary="ModelOnly"
-                     class="text-danger mb-3">
+
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4">
+
+                <label asp-for="Name"
+                       class="form-label">
+                </label>
+
+                <input asp-for="Name"
+                       class="form-control"
+                       placeholder="Enter the MUX type name" />
+
+                <span asp-validation-for="Name"
+                      class="text-danger">
+                </span>
+
+            </div>
+        </div>
+
+
+        <div class="row g-4">
+
+            <!-- Power cards -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
+
+                        <h5 class="mb-3">
+                            Power Cards
+                        </h5>
+
+                        <div class="mb-3">
+                            <label asp-for="PowerCardCount"
+                                   class="form-label">
+                            </label>
+
+                            <input asp-for="PowerCardCount"
+                                   class="form-control"
+                                   min="0"
+                                   max="100" />
+
+                            <span asp-validation-for="PowerCardCount"
+                                  class="text-danger">
+                            </span>
+                        </div>
+
+                        <div>
+                            <label asp-for="PowerPortsPerCard"
+                                   class="form-label">
+                            </label>
+
+                            <input asp-for="PowerPortsPerCard"
+                                   class="form-control"
+                                   min="0"
+                                   max="1000" />
+
+                            <span asp-validation-for="PowerPortsPerCard"
+                                  class="text-danger">
+                            </span>
+                        </div>
+
+                    </div>
                 </div>
+            </div>
 
 
-                <div class="mb-3">
+            <!-- STM cards -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
 
-                    <label asp-for="Name"
-                           class="form-label">
-                    </label>
+                        <h5 class="mb-3">
+                            STM Cards
+                        </h5>
 
-                    <input asp-for="Name"
-                           class="form-control" />
+                        <div class="mb-3">
+                            <label asp-for="StmCardCount"
+                                   class="form-label">
+                            </label>
 
-                    <span asp-validation-for="Name"
-                          class="text-danger">
-                    </span>
+                            <input asp-for="StmCardCount"
+                                   class="form-control"
+                                   min="0"
+                                   max="100" />
 
+                            <span asp-validation-for="StmCardCount"
+                                  class="text-danger">
+                            </span>
+                        </div>
+
+                        <div>
+                            <label asp-for="StmPortsPerCard"
+                                   class="form-label">
+                            </label>
+
+                            <input asp-for="StmPortsPerCard"
+                                   class="form-control"
+                                   min="0"
+                                   max="1000" />
+
+                            <span asp-validation-for="StmPortsPerCard"
+                                  class="text-danger">
+                            </span>
+                        </div>
+
+                    </div>
                 </div>
+            </div>
 
 
-                <div class="form-check mb-4">
+            <!-- E1 cards -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
 
-                    <input asp-for="HasShelves"
-                           class="form-check-input" />
+                        <h5 class="mb-3">
+                            E1 Cards
+                        </h5>
 
-                    <label asp-for="HasShelves"
-                           class="form-check-label">
-                        Uses Shelves
-                    </label>
+                        <div class="mb-3">
+                            <label asp-for="E1CardCount"
+                                   class="form-label">
+                            </label>
 
+                            <input asp-for="E1CardCount"
+                                   class="form-control"
+                                   min="0"
+                                   max="100" />
+
+                            <span asp-validation-for="E1CardCount"
+                                  class="text-danger">
+                            </span>
+                        </div>
+
+                        <div>
+                            <label asp-for="E1PortsPerCard"
+                                   class="form-label">
+                            </label>
+
+                            <input asp-for="E1PortsPerCard"
+                                   class="form-control"
+                                   min="0"
+                                   max="1000" />
+
+                            <span asp-validation-for="E1PortsPerCard"
+                                  class="text-danger">
+                            </span>
+                        </div>
+
+                    </div>
                 </div>
-
-
-                <div class="d-flex gap-2">
-
-                    <button type="submit"
-                            class="btn btn-primary">
-                        Add MUX Type
-                    </button>
-
-                    <a asp-action="Index"
-                           class="btn btn-outline-secondary">
-                        Cancel
-                    </a>
-
-                </div>
-
-            </form>
+            </div>
 
         </div>
-    </div>
+
+
+        <div class="d-flex gap-2 mt-4">
+
+            <button type="submit"
+                    class="btn btn-primary">
+                Add MUX Type
+            </button>
+
+            <a asp-action="Index"
+                   class="btn btn-outline-secondary">
+                Cancel
+            </a>
+
+        </div>
+
+    </form>
 
 </div>
 
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        function configurePortsInput(countId, portsId) {
+            const countInput =
+                document.getElementById(countId);
+
+            const portsInput =
+                document.getElementById(portsId);
+
+            function updatePortsState() {
+                const hasCards =
+                    Number(countInput.value) > 0;
+
+                portsInput.disabled =
+                    !hasCards;
+
+                if (!hasCards) {
+                    portsInput.value = 0;
+                }
+            }
+
+            countInput.addEventListener(
+                "input",
+                updatePortsState);
+
+            updatePortsState();
+        }
+
+        configurePortsInput(
+            "PowerCardCount",
+            "PowerPortsPerCard");
+
+        configurePortsInput(
+            "StmCardCount",
+            "StmPortsPerCard");
+
+        configurePortsInput(
+            "E1CardCount",
+            "E1PortsPerCard");
+    </script>
 }

@@ -40,51 +40,16 @@ public class MuxPort
     public Stm? Stm { get; set; }
 
     [NotMapped]
-    public string Location
-    {
-        get
-        {
-            if (MuxCard == null)
-            {
-                return string.Empty;
-            }
+    public string Location =>
+        MuxCard == null
+            ? string.Empty
+            : $"{MuxCard.SlotNumber}.{PortNumber}";
 
-            if (MuxCard.Mux?.MuxType?.HasShelves == true &&
-                MuxCard.ShelfNumber.HasValue)
-            {
-                return
-                    $"{MuxCard.ShelfNumber.Value}." +
-                    $"{MuxCard.SlotNumber}." +
-                    $"{PortNumber}";
-            }
-
-            return $"{MuxCard.SlotNumber}.{PortNumber}";
-        }
-    }
     [NotMapped]
-    public string PhysicalPosition
-    {
-        get
-        {
-            if (MuxCard == null)
-            {
-                return string.Empty;
-            }
-
-            if (MuxCard.Mux?.MuxType?.HasShelves == true &&
-                MuxCard.ShelfNumber.HasValue)
-            {
-                return
-                    $"Shelf {MuxCard.ShelfNumber.Value} / " +
-                    $"Card {MuxCard.SlotNumber} / " +
-                    $"Port {PortNumber}";
-            }
-
-            return
-                $"Card {MuxCard.SlotNumber} / " +
-                $"Port {PortNumber}";
-        }
-    }
+    public string PhysicalPosition =>
+        MuxCard == null
+            ? string.Empty
+            : $"Card {MuxCard.SlotNumber} / Port {PortNumber}";
 
 }
 

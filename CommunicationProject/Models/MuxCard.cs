@@ -17,18 +17,10 @@ public class MuxCard
         null!;
 
     [Required]
-    [Display(Name = "Card Type")]
-    public Guid CardTypeId { get; set; }
+    [Display(Name = "Card Category")]
+    public CardCategory Category { get; set; }
 
-    [ForeignKey(nameof(CardTypeId))]
-    public CardType CardType { get; set; } =
-        null!;
-    [Range(
-    1,
-    1000,
-    ErrorMessage = "Shelf number must be at least 1.")]
-    [Display(Name = "Shelf Number")]
-    public int? ShelfNumber { get; set; }
+
     [Range(
         1,
         1000,

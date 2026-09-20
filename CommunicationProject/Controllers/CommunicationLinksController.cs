@@ -96,16 +96,20 @@ public class CommunicationLinksController : Controller
 
 
         // STM inventory
-        if (inventoryStatus == "generated")
-        {
-            query = query.Where(link =>
-                link.Stms.Any());
-        }
-        else if (inventoryStatus == "not-generated")
-        {
-            query = query.Where(link =>
-                !link.Stms.Any());
-        }
+if (inventoryStatus == "generated")
+{
+    query = query.Where(link =>
+        link.Stms.Any() ||
+        link.E1Channels.Any(e1 =>
+            e1.StmId == null));
+}
+else if (inventoryStatus == "not-generated")
+{
+    query = query.Where(link =>
+        !link.Stms.Any() &&
+        !link.E1Channels.Any(e1 =>
+            e1.StmId == null));
+}
 
 
         int totalItems =
@@ -167,12 +171,16 @@ public class CommunicationLinksController : Controller
                         link.Capacity,
 
                     StmCount =
-                        link.Stms.Count,
+    link.Stms.Count,
 
-                    ReverseStmCount =
-                        link.ConnectedLink != null
-                            ? link.ConnectedLink.Stms.Count
-                            : 0
+                    SdhCardCount =
+    link.SdhCards.Count,
+
+                    E1Count =
+    link.LinkType.Name == "SDH"
+        ? link.Stms.Count * 63
+        : link.E1Channels.Count(e1 =>
+            e1.StmId == null)
                 })
 
             .ToListAsync();
@@ -355,21 +363,79 @@ public class CommunicationLinksController : Controller
         {
             return NotFound();
         }
+        bool isSdh =
+    string.Equals(
+        link.LinkType.Name,
+        "SDH",
+        StringComparison.OrdinalIgnoreCase);
+
+        int primaryE1Count;
+        int reverseE1Count;
+
+        if (isSdh)
+        {
+            primaryE1Count =
+                link.Stms.Count * 63;
+
+            reverseE1Count =
+                (link.ConnectedLink?.Stms.Count ?? 0) * 63;
+        }
+        else
+        {
+            primaryE1Count =
+                await _context.E1s
+                    .AsNoTracking()
+                    .CountAsync(e1 =>
+                        e1.LinkId == link.Id &&
+                        e1.StmId == null);
+
+            reverseE1Count =
+                link.ConnectedLinkId.HasValue
+                    ? await _context.E1s
+                        .AsNoTracking()
+                        .CountAsync(e1 =>
+                            e1.LinkId ==
+                                link.ConnectedLinkId.Value &&
+                            e1.StmId == null)
+                    : 0;
+        }
+
+        ViewData["PrimaryE1Count"] =
+            primaryE1Count;
+
+        ViewData["ReverseE1Count"] =
+            reverseE1Count;
 
         return View(link);
     }
 
     // GET: CommunicationLinks/Create
-    public async Task<IActionResult> Create()
+    [HttpGet]
+    public async Task<IActionResult> Create(
+        string? siteFromId)
     {
-        var model = new CommunicationLinkCreateViewModel
-        {
-            StmCount = 1
-        };
+        string normalizedSiteFromId =
+            siteFromId?.Trim() ?? string.Empty;
+
+        var model =
+            new CommunicationLinkCreateViewModel
+            {
+                SiteFromId = normalizedSiteFromId,
+
+                LockSiteFrom =
+                    !string.IsNullOrWhiteSpace(
+                        normalizedSiteFromId),
+
+                Technology = LinkTechnology.SDH,
+                SdhCardCount = 2,
+                StmCount = 1
+            };
 
         await LoadCreateDropdownsAsync(model);
+
         return View(model);
     }
+
 
     // POST: CommunicationLinks/Create
     [HttpPost]
@@ -382,47 +448,12 @@ public class CommunicationLinksController : Controller
         ModelState.Clear();
         TryValidateModel(model);
 
-        if (!model.LinkTypeId.HasValue ||
-            model.LinkTypeId.Value == Guid.Empty)
-        {
-            ModelState.AddModelError(
-                nameof(model.LinkTypeId),
-                "Link type is required.");
-        }
-
-        if (!string.IsNullOrWhiteSpace(model.SiteFromId) &&
-            string.Equals(
-                model.SiteFromId,
-                model.SiteToId,
-                StringComparison.OrdinalIgnoreCase))
-        {
-            ModelState.AddModelError(
-                nameof(model.SiteToId),
-                "A communication link cannot connect a site to itself.");
-        }
-
-        if (model.StmCount < 1 || model.StmCount > 100)
-        {
-            ModelState.AddModelError(
-                nameof(model.StmCount),
-                "STM count must be between 1 and 100.");
-        }
+        await ValidateCreateSitesAsync(model);
 
         if (!ModelState.IsValid)
         {
             await LoadCreateDropdownsAsync(model);
-            return View(model);
-        }
 
-        Guid linkTypeId = model.LinkTypeId!.Value;
-
-        await ValidateCreateReferencesAsync(model, linkTypeId);
-        await ValidateLogicalDuplicateAsync(
-    model.Name);
-
-        if (!ModelState.IsValid)
-        {
-            await LoadCreateDropdownsAsync(model);
             return View(model);
         }
 
@@ -431,195 +462,98 @@ public class CommunicationLinksController : Controller
 
         try
         {
-            var primaryLink = new CommunicationLink
-            {
-                Id = Guid.NewGuid(),
-                Name = model.Name,
-                LinkTypeId = linkTypeId,
-                SiteFromId = model.SiteFromId,
-                SiteToId = model.SiteToId,
-                IsPrimary = true,
-                ConnectedLinkId = null
-            };
+            LinkTechnology technology =
+                model.Technology!.Value;
 
-            var reverseLink = new CommunicationLink
-            {
-                Id = Guid.NewGuid(),
-                Name = model.Name,
-                LinkTypeId = linkTypeId,
-                SiteFromId = model.SiteToId,
-                SiteToId = model.SiteFromId,
-                IsPrimary = false,
-                ConnectedLinkId = null
-            };
+            LinkType linkType =
+                await GetOrCreateTechnologyLinkTypeAsync(
+                    technology);
 
-            // Insert both directional link records before assigning their
-            // reciprocal self-referencing foreign keys.
+            string linkName =
+                await GenerateLinkNameAsync(
+                    model.SiteFromId,
+                    model.SiteToId);
+
+            var primaryLink =
+                new CommunicationLink
+                {
+                    Id = Guid.NewGuid(),
+                    Name = linkName,
+                    LinkTypeId = linkType.Id,
+                    SiteFromId = model.SiteFromId,
+                    SiteToId = model.SiteToId,
+                    IsPrimary = true
+                };
+
+            var reverseLink =
+                new CommunicationLink
+                {
+                    Id = Guid.NewGuid(),
+                    Name = linkName,
+                    LinkTypeId = linkType.Id,
+                    SiteFromId = model.SiteToId,
+                    SiteToId = model.SiteFromId,
+                    IsPrimary = false
+                };
+
             _context.CommunicationLinks.AddRange(
                 primaryLink,
                 reverseLink);
 
             await _context.SaveChangesAsync();
 
-            primaryLink.ConnectedLinkId = reverseLink.Id;
-            reverseLink.ConnectedLinkId = primaryLink.Id;
+            primaryLink.ConnectedLinkId =
+                reverseLink.Id;
 
-            var stmPairs =
-                new List<(Stm Primary, Stm Reverse,
-                    List<(E1 Primary, E1 Reverse)> E1Pairs)>();
-
-            for (int stmNumber = 1;
-                 stmNumber <= model.StmCount;
-                 stmNumber++)
-            {
-                string number = stmNumber.ToString();
-
-                var primaryStm = new Stm
-                {
-                    Id = Guid.NewGuid(),
-                    Number = number,
-                    LinkId = primaryLink.Id,
-                    ConnectedStmId = null
-                };
-
-                var reverseStm = new Stm
-                {
-                    Id = Guid.NewGuid(),
-                    Number = number,
-                    LinkId = reverseLink.Id,
-                    ConnectedStmId = null
-                };
-
-                var e1Pairs = new List<(E1 Primary, E1 Reverse)>(63);
-
-                for (int firstPart = 1; firstPart <= 3; firstPart++)
-                {
-                    for (int secondPart = 1; secondPart <= 7; secondPart++)
-                    {
-                        for (int thirdPart = 1; thirdPart <= 3; thirdPart++)
-                        {
-                            string e1Number =
-                                $"{firstPart}.{secondPart}.{thirdPart}";
-
-                            var primaryE1 = new E1
-                            {
-                                Id = Guid.NewGuid(),
-                                E1Number = e1Number,
-                                StmId = primaryStm.Id,
-                                ConnectedE1Id = null,
-                                Description = null
-                            };
-
-                            var reverseE1 = new E1
-                            {
-                                Id = Guid.NewGuid(),
-                                E1Number = e1Number,
-                                StmId = reverseStm.Id,
-                                ConnectedE1Id = null,
-                                Description = null
-                            };
-
-                            primaryStm.E1Channels.Add(primaryE1);
-                            reverseStm.E1Channels.Add(reverseE1);
-                            e1Pairs.Add((primaryE1, reverseE1));
-                        }
-                    }
-                }
-
-                _context.Stms.AddRange(primaryStm, reverseStm);
-                stmPairs.Add((primaryStm, reverseStm, e1Pairs));
-            }
+            reverseLink.ConnectedLinkId =
+                primaryLink.Id;
 
             await _context.SaveChangesAsync();
 
-            foreach (var pair in stmPairs)
+            if (technology == LinkTechnology.SDH)
             {
-                pair.Primary.ConnectedStmId = pair.Reverse.Id;
-                pair.Reverse.ConnectedStmId = pair.Primary.Id;
-
-                foreach (var e1Pair in pair.E1Pairs)
-                {
-                    e1Pair.Primary.ConnectedE1Id = e1Pair.Reverse.Id;
-                    e1Pair.Reverse.ConnectedE1Id = e1Pair.Primary.Id;
-                }
+                await CreateSdhInventoryAsync(
+                    primaryLink,
+                    reverseLink,
+                    model.SdhCardCount!.Value,
+                    model.StmCount!.Value);
+            }
+            else
+            {
+                await CreatePdhInventoryAsync(
+                    primaryLink,
+                    reverseLink,
+                    model.PdhE1Count!.Value);
             }
 
-            await _context.SaveChangesAsync();
             await transaction.CommitAsync();
 
-            int totalLinkRecords = 2;
-            int totalStmRecords = model.StmCount * 2;
-            int totalE1Records = totalStmRecords * 63;
-
             TempData["SuccessMessage"] =
-                $"Communication link '{primaryLink.Name}' was created as " +
-                $"{totalLinkRecords} reciprocal link records, " +
-                $"{totalStmRecords} STM records, and " +
-                $"{totalE1Records} automatically connected E1 records.";
+                $"Link '{linkName}' was created successfully.";
 
-            return RedirectToAction(
-                nameof(Details),
-                new { id = primaryLink.Id });
+            return RedirectToAction(nameof(Index));
         }
-        catch (DbUpdateException exception)
-            when (IsDuplicateException(exception))
+        catch (DbUpdateException)
         {
             await transaction.RollbackAsync();
 
-            _logger.LogWarning(
-                exception,
-                "Duplicate data while creating logical communication link {Name}.",
-                model.Name);
-
             ModelState.AddModelError(
                 string.Empty,
-                "The link name, route, STM numbers, or E1 numbers conflict with existing data.");
+                "The link could not be created because of a database conflict.");
         }
-        catch (DbUpdateException exception)
-            when (IsForeignKeyException(exception))
+        catch (Exception)
         {
             await transaction.RollbackAsync();
 
-            _logger.LogWarning(
-                exception,
-                "Foreign-key error while creating logical communication link {Name}.",
-                model.Name);
-
             ModelState.AddModelError(
                 string.Empty,
-                "The selected Link Type or Site no longer exists.");
-        }
-        catch (DbUpdateException exception)
-        {
-            await transaction.RollbackAsync();
-
-            _logger.LogError(
-                exception,
-                "Database error while creating logical communication link {Name}.",
-                model.Name);
-
-            ModelState.AddModelError(
-                string.Empty,
-                "The communication link and its automatic STM/E1 records could not be saved.");
-        }
-        catch (Exception exception)
-        {
-            await transaction.RollbackAsync();
-
-            _logger.LogError(
-                exception,
-                "Unexpected error while creating logical communication link {Name}.",
-                model.Name);
-
-            ModelState.AddModelError(
-                string.Empty,
-                "An unexpected error occurred. No records were created.");
+                "An unexpected error occurred while creating the link.");
         }
 
         await LoadCreateDropdownsAsync(model);
+
         return View(model);
     }
-
     [HttpGet]
     public IActionResult ConfigureStms(Guid? id)
     {
@@ -918,12 +852,18 @@ public class CommunicationLinksController : Controller
                     stm.LinkId == reverseId)
                 .ToListAsync();
 
-            var stmIds = stms
-                .Select(stm => stm.Id)
-                .ToList();
+
+            var sdhLinkCards =
+    await _context.SdhLinkCards
+        .Where(card =>
+            card.LinkId == primaryId ||
+            card.LinkId == reverseId)
+        .ToListAsync();
 
             var e1Channels = await _context.E1s
-                .Where(e1 => stmIds.Contains(e1.StmId))
+                .Where(e1 =>
+                    e1.LinkId == primaryId ||
+                    e1.LinkId == reverseId)
                 .ToListAsync();
 
             // Break circular E1 relationships before deleting E1 rows.
@@ -946,6 +886,11 @@ public class CommunicationLinksController : Controller
             await _context.SaveChangesAsync();
 
             _context.Stms.RemoveRange(stms);
+            await _context.SaveChangesAsync();
+
+            _context.SdhLinkCards.RemoveRange(
+    sdhLinkCards);
+
             await _context.SaveChangesAsync();
 
             // Break circular link relationships before deleting both rows.
@@ -1006,9 +951,17 @@ public class CommunicationLinksController : Controller
             .Include(link => link.LinkType)
             .Include(link => link.SiteFrom)
             .Include(link => link.SiteTo)
-            .Include(link => link.Stms)
-            .Include(link => link.ConnectedLink)
-                .ThenInclude(reverse => reverse!.Stms)
+.Include(link => link.Stms)
+.Include(link => link.SdhCards)
+
+.Include(link => link.ConnectedLink)
+    .ThenInclude(reverse =>
+        reverse!.Stms)
+
+.Include(link => link.ConnectedLink)
+    .ThenInclude(reverse =>
+        reverse!.SdhCards)
+                    .AsSplitQuery()
             .FirstOrDefaultAsync(link => link.Id == id);
 
         if (requested == null)
@@ -1041,6 +994,7 @@ public class CommunicationLinksController : Controller
             .Include(link => link.Stms)
             .Include(link => link.ConnectedLink)
                 .ThenInclude(reverse => reverse!.Stms)
+                .AsSplitQuery()
             .FirstOrDefaultAsync(link =>
                 link.Id == requested.ConnectedLinkId.Value &&
                 link.IsPrimary);
@@ -1049,9 +1003,21 @@ public class CommunicationLinksController : Controller
     private static void NormalizeCreateModel(
         CommunicationLinkCreateViewModel model)
     {
-        model.Name = model.Name?.Trim() ?? string.Empty;
-        model.SiteFromId = model.SiteFromId?.Trim() ?? string.Empty;
-        model.SiteToId = model.SiteToId?.Trim() ?? string.Empty;
+        model.SiteFromId =
+            model.SiteFromId?.Trim() ?? string.Empty;
+
+        model.SiteToId =
+            model.SiteToId?.Trim() ?? string.Empty;
+
+        if (model.Technology == LinkTechnology.SDH)
+        {
+            model.PdhE1Count = null;
+        }
+        else if (model.Technology == LinkTechnology.PDH)
+        {
+            model.SdhCardCount = null;
+            model.StmCount = null;
+        }
     }
 
     private static void NormalizeLink(CommunicationLink link)
@@ -1061,37 +1027,25 @@ public class CommunicationLinksController : Controller
         link.SiteToId = link.SiteToId?.Trim() ?? string.Empty;
     }
 
-    private async Task ValidateCreateReferencesAsync(
-        CommunicationLinkCreateViewModel model,
-        Guid linkTypeId)
+    private async Task ValidateCreateSitesAsync(
+        CommunicationLinkCreateViewModel model)
     {
-        bool typeExists = await _context.LinkTypes
+        var siteIds = await _context.Sites
             .AsNoTracking()
-            .AnyAsync(type => type.Id == linkTypeId);
+            .Where(site =>
+                site.Id == model.SiteFromId ||
+                site.Id == model.SiteToId)
+            .Select(site => site.Id)
+            .ToListAsync();
 
-        if (!typeExists)
-        {
-            ModelState.AddModelError(
-                nameof(model.LinkTypeId),
-                "The selected link type does not exist.");
-        }
-
-        bool sourceSiteExists = await _context.Sites
-            .AsNoTracking()
-            .AnyAsync(site => site.Id == model.SiteFromId);
-
-        if (!sourceSiteExists)
+        if (!siteIds.Contains(model.SiteFromId))
         {
             ModelState.AddModelError(
                 nameof(model.SiteFromId),
                 "The selected source site does not exist.");
         }
 
-        bool destinationSiteExists = await _context.Sites
-            .AsNoTracking()
-            .AnyAsync(site => site.Id == model.SiteToId);
-
-        if (!destinationSiteExists)
+        if (!siteIds.Contains(model.SiteToId))
         {
             ModelState.AddModelError(
                 nameof(model.SiteToId),
@@ -1198,23 +1152,13 @@ public class CommunicationLinksController : Controller
     private async Task LoadCreateDropdownsAsync(
         CommunicationLinkCreateViewModel model)
     {
-        model.LinkTypeOptions = await _context.LinkTypes
-            .AsNoTracking()
-            .OrderBy(type => type.Name)
-            .Select(type => new SelectListItem
-            {
-                Value = type.Id.ToString(),
-                Text = type.Name
-            })
-            .ToListAsync();
-
         model.SiteOptions = await _context.Sites
             .AsNoTracking()
             .OrderBy(site => site.Id)
             .Select(site => new SelectListItem
             {
                 Value = site.Id,
-                Text = site.Id + " - " + site.Name
+                Text = site.Id
             })
             .ToListAsync();
     }
@@ -1499,5 +1443,270 @@ public class CommunicationLinksController : Controller
                         Text = linkType.Name
                     })
                 .ToListAsync();
+    }
+
+    private async Task<LinkType> GetOrCreateTechnologyLinkTypeAsync(
+    LinkTechnology technology)
+    {
+        string typeName = technology.ToString();
+
+        var linkType = await _context.LinkTypes
+            .FirstOrDefaultAsync(type =>
+                type.Name == typeName);
+
+        if (linkType is not null)
+        {
+            return linkType;
+        }
+
+        linkType = new LinkType
+        {
+            Id = Guid.NewGuid(),
+            Name = typeName
+        };
+
+        _context.LinkTypes.Add(linkType);
+
+        await _context.SaveChangesAsync();
+
+        return linkType;
+    }
+    private async Task<string> GenerateLinkNameAsync(
+    string siteFromId,
+    string siteToId)
+    {
+        var existingNames =
+            await _context.CommunicationLinks
+                .AsNoTracking()
+                .Where(link =>
+                    link.IsPrimary &&
+                    (
+                        link.SiteFromId == siteFromId &&
+                        link.SiteToId == siteToId
+                        ||
+                        link.SiteFromId == siteToId &&
+                        link.SiteToId == siteFromId
+                    ))
+                .Select(link => link.Name)
+                .ToListAsync();
+
+        int highestSequence = 0;
+
+        foreach (string existingName in existingNames)
+        {
+            string? lastPart = existingName
+                .Split(
+                    " - ",
+                    StringSplitOptions.RemoveEmptyEntries)
+                .LastOrDefault();
+
+            if (int.TryParse(lastPart, out int sequence) &&
+                sequence > highestSequence)
+            {
+                highestSequence = sequence;
+            }
+        }
+
+        return
+            $"{siteFromId} - {siteToId} - {highestSequence + 1}";
+    }
+
+    private async Task CreateSdhInventoryAsync(
+    CommunicationLink primaryLink,
+    CommunicationLink reverseLink,
+    int cardCount,
+    int stmCount)
+    {
+        var primaryCards = new List<SdhLinkCard>();
+        var reverseCards = new List<SdhLinkCard>();
+
+        for (int cardNumber = 1;
+             cardNumber <= cardCount;
+             cardNumber++)
+        {
+            primaryCards.Add(
+                new SdhLinkCard
+                {
+                    Id = Guid.NewGuid(),
+                    LinkId = primaryLink.Id,
+                    Number = cardNumber
+                });
+
+            reverseCards.Add(
+                new SdhLinkCard
+                {
+                    Id = Guid.NewGuid(),
+                    LinkId = reverseLink.Id,
+                    Number = cardNumber
+                });
+        }
+
+        _context.SdhLinkCards.AddRange(primaryCards);
+        _context.SdhLinkCards.AddRange(reverseCards);
+
+        var stmPairs =
+            new List<(Stm Primary, Stm Reverse)>();
+
+        var e1Pairs =
+            new List<(E1 Primary, E1 Reverse)>();
+
+        for (int stmNumber = 1;
+             stmNumber <= stmCount;
+             stmNumber++)
+        {
+            int cardIndex =
+                (stmNumber - 1) % cardCount;
+
+            var primaryStm =
+                new Stm
+                {
+                    Id = Guid.NewGuid(),
+                    LinkId = primaryLink.Id,
+                    Number = stmNumber.ToString(),
+                    SdhLinkCardId =
+                        primaryCards[cardIndex].Id
+                };
+
+            var reverseStm =
+                new Stm
+                {
+                    Id = Guid.NewGuid(),
+                    LinkId = reverseLink.Id,
+                    Number = stmNumber.ToString(),
+                    SdhLinkCardId =
+                        reverseCards[cardIndex].Id
+                };
+
+            stmPairs.Add(
+                (primaryStm, reverseStm));
+
+            _context.Stms.AddRange(
+                primaryStm,
+                reverseStm);
+
+            for (int channel = 1;
+                 channel <= 63;
+                 channel++)
+            {
+                string e1Number =
+                    FormatSdhE1Number(channel);
+
+                var primaryE1 =
+                    new E1
+                    {
+                        Id = Guid.NewGuid(),
+                        LinkId = primaryLink.Id,
+                        StmId = primaryStm.Id,
+                        E1Number = e1Number
+                    };
+
+                var reverseE1 =
+                    new E1
+                    {
+                        Id = Guid.NewGuid(),
+                        LinkId = reverseLink.Id,
+                        StmId = reverseStm.Id,
+                        E1Number = e1Number
+                    };
+
+                e1Pairs.Add(
+                    (primaryE1, reverseE1));
+
+                _context.E1s.AddRange(
+                    primaryE1,
+                    reverseE1);
+            }
+        }
+
+        await _context.SaveChangesAsync();
+
+        foreach (var pair in stmPairs)
+        {
+            pair.Primary.ConnectedStmId =
+                pair.Reverse.Id;
+
+            pair.Reverse.ConnectedStmId =
+                pair.Primary.Id;
+        }
+
+        foreach (var pair in e1Pairs)
+        {
+            pair.Primary.ConnectedE1Id =
+                pair.Reverse.Id;
+
+            pair.Reverse.ConnectedE1Id =
+                pair.Primary.Id;
+        }
+
+        await _context.SaveChangesAsync();
+    }
+
+    private async Task CreatePdhInventoryAsync(
+    CommunicationLink primaryLink,
+    CommunicationLink reverseLink,
+    int e1Count)
+    {
+        var e1Pairs =
+            new List<(E1 Primary, E1 Reverse)>();
+
+        for (int number = 1;
+             number <= e1Count;
+             number++)
+        {
+            string e1Number =
+                number.ToString();
+
+            var primaryE1 =
+                new E1
+                {
+                    Id = Guid.NewGuid(),
+                    LinkId = primaryLink.Id,
+                    StmId = null,
+                    E1Number = e1Number
+                };
+
+            var reverseE1 =
+                new E1
+                {
+                    Id = Guid.NewGuid(),
+                    LinkId = reverseLink.Id,
+                    StmId = null,
+                    E1Number = e1Number
+                };
+
+            e1Pairs.Add(
+                (primaryE1, reverseE1));
+
+            _context.E1s.AddRange(
+                primaryE1,
+                reverseE1);
+        }
+
+        await _context.SaveChangesAsync();
+
+        foreach (var pair in e1Pairs)
+        {
+            pair.Primary.ConnectedE1Id =
+                pair.Reverse.Id;
+
+            pair.Reverse.ConnectedE1Id =
+                pair.Primary.Id;
+        }
+
+        await _context.SaveChangesAsync();
+    }
+    private static string FormatSdhE1Number(
+    int channel)
+    {
+        int section =
+            ((channel - 1) / 21) + 1;
+
+        int group =
+            (((channel - 1) % 21) / 3) + 1;
+
+        int position =
+            ((channel - 1) % 3) + 1;
+
+        return $"{section}.{group}.{position}";
     }
 }

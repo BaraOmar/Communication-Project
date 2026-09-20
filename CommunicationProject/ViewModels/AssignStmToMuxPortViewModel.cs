@@ -17,9 +17,7 @@ public class AssignStmToMuxPortViewModel
 
     public int SlotNumber { get; set; }
 
-    public int? ShelfNumber { get; set; }
 
-    public bool HasShelves { get; set; }
 
     [Required]
     [Display(Name = "STM")]

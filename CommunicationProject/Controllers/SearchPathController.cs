@@ -301,8 +301,7 @@ namespace CommunicationProject.Controllers
                                                             .CommunicationLink
                                                             .SiteToId,
 
-                                                    StmNumber =
-    segment.E1.Stm.Number,
+                                                    StmNumber = segment.E1.Stm?.Number ?? "Direct (PDH)",
 
                                                     E1Number =
                                                         segment.E1.E1Number

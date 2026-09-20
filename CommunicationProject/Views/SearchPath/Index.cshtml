@@ -604,7 +604,7 @@
                                                                     —
                                                                 </span>
 
-                                                                STM @e1.StmNumber / E1 @e1.E1Number
+                                                                @(e1.StmNumber == "Direct (PDH)" ? $"Direct (PDH) / E1 {e1.E1Number}" : $"STM {e1.StmNumber} / E1 {e1.E1Number}")
                                                             </div>
                                                         }
                                                     }

@@ -1,21 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
-namespace CommunicationProject.Models;
+namespace CommunicationProject.ViewModels;
 
-public class MuxType
+public class CreateMuxTypeViewModel
 {
-    public Guid Id { get; set; }
-
     [Required]
     [StringLength(100)]
     [Display(Name = "MUX Type Name")]
     public string Name { get; set; } = string.Empty;
 
-
-
-    public ICollection<Mux> Muxes { get; set; } =
-        new List<Mux>();
 
     [Range(0, 100)]
     [Display(Name = "Number of Power Cards")]
@@ -25,6 +18,7 @@ public class MuxType
     [Display(Name = "Ports per Power Card")]
     public int PowerPortsPerCard { get; set; }
 
+
     [Range(0, 100)]
     [Display(Name = "Number of STM Cards")]
     public int StmCardCount { get; set; }
@@ -33,6 +27,7 @@ public class MuxType
     [Display(Name = "Ports per STM Card")]
     public int StmPortsPerCard { get; set; }
 
+
     [Range(0, 100)]
     [Display(Name = "Number of E1 Cards")]
     public int E1CardCount { get; set; }
@@ -40,6 +35,4 @@ public class MuxType
     [Range(0, 1000)]
     [Display(Name = "Ports per E1 Card")]
     public int E1PortsPerCard { get; set; }
-
-
 }

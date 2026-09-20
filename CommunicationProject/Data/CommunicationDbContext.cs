@@ -26,6 +26,8 @@ public class CommunicationDbContext
     public DbSet<CommunicationPath> CommunicationPaths { get; set; }
     public DbSet<CommunicationPathSegment> CommunicationPathSegments { get; set; }
 
+    public DbSet<SdhLinkCard> SdhLinkCards { get; set; }
+
 
     public DbSet<Customer> Customers { get; set; }
     public DbSet<CustomerConnection> CustomerConnections { get; set; }
@@ -34,9 +36,10 @@ public class CommunicationDbContext
 
     public DbSet<Mux> Muxes { get; set; }
     public DbSet<MuxType> MuxTypes { get; set; }
-    public DbSet<CardType> CardTypes { get; set; }
     public DbSet<MuxCard> MuxCards { get; set; }
     public DbSet<MuxPort> MuxPorts { get; set; }
+
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -44,11 +47,11 @@ public class CommunicationDbContext
 
         ConfigureSite(modelBuilder);
         ConfigureCommunicationLink(modelBuilder);
+        ConfigureSdhLinkCard(modelBuilder);
         ConfigureStm(modelBuilder);
         ConfigureE1(modelBuilder);
         ConfigureMux(modelBuilder);
         ConfigureMuxType(modelBuilder);
-        ConfigureCardType(modelBuilder);
         ConfigureMuxCard(modelBuilder);
         ConfigureMuxPort(modelBuilder);
         ConfigureCommunicationPath(modelBuilder);
@@ -192,26 +195,42 @@ public class CommunicationDbContext
                 stm.Number
             })
             .IsUnique();
+
+        modelBuilder.Entity<Stm>()
+    .HasOne(stm => stm.SdhLinkCard)
+    .WithMany(card => card.Stms)
+    .HasForeignKey(stm => stm.SdhLinkCardId)
+    .OnDelete(DeleteBehavior.Restrict);
     }
-   
+
     private static void ConfigureE1(
         ModelBuilder modelBuilder)
     {
         /*
-         * STM → E1 channels
+         * Every E1 belongs directly to a directional link.
+         *
+         * SDH E1:
+         * LinkId + StmId
+         *
+         * PDH E1:
+         * LinkId only
          */
+        modelBuilder.Entity<E1>()
+            .HasOne(e1 => e1.Link)
+            .WithMany(link => link.E1Channels)
+            .HasForeignKey(e1 => e1.LinkId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+
         modelBuilder.Entity<E1>()
             .HasOne(e1 => e1.Stm)
             .WithMany(stm => stm.E1Channels)
             .HasForeignKey(e1 => e1.StmId)
             .OnDelete(DeleteBehavior.Restrict);
 
+
         /*
-         * Reciprocal E1 relationship:
-         *
-         * Amman STM 1 / E1 1.1.1
-         *             ↕
-         * Zarqa STM 1 / E1 1.1.1
+         * Reciprocal endpoint E1 relationship.
          */
         modelBuilder.Entity<E1>()
             .HasOne(e1 => e1.ConnectedE1)
@@ -224,8 +243,9 @@ public class CommunicationDbContext
             .HasIndex(e1 => e1.ConnectedE1Id)
             .IsUnique();
 
+
         /*
-         * E1 number is unique inside its STM.
+         * SDH E1 numbers are unique inside an STM.
          */
         modelBuilder.Entity<E1>()
             .HasIndex(e1 => new
@@ -233,34 +253,60 @@ public class CommunicationDbContext
                 e1.StmId,
                 e1.E1Number
             })
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("[StmId] IS NOT NULL");
+
+
+        /*
+         * PDH E1 numbers are unique directly inside the link.
+         */
+        modelBuilder.Entity<E1>()
+            .HasIndex(e1 => new
+            {
+                e1.LinkId,
+                e1.E1Number
+            })
+            .IsUnique()
+            .HasFilter("[StmId] IS NULL");
 
 
         modelBuilder.Entity<E1>()
-    .Property(e1 => e1.CrossConnectionState)
-    .HasConversion<string>()
-    .HasMaxLength(32)
-    .HasDefaultValue(E1CrossConnectionState.Available)
-    .IsRequired();
+            .Property(e1 =>
+                e1.CrossConnectionState)
+            .HasConversion<string>()
+            .HasMaxLength(32)
+            .HasDefaultValue(
+                E1CrossConnectionState.Available)
+            .IsRequired();
+
 
         modelBuilder.Entity<E1>()
-    .ToTable(table =>
-        table.HasCheckConstraint(
-            "CK_E1s_CrossConnectionState",
-            "[CrossConnectionState] IN " +
-            "('Available', 'CrossConnected', 'ExtendExistingPath')"));
+            .ToTable(table =>
+                table.HasCheckConstraint(
+                    "CK_E1s_CrossConnectionState",
+                    "[CrossConnectionState] IN " +
+                    "('Available', " +
+                    "'CrossConnected', " +
+                    "'ExtendExistingPath')"));
+
+
         modelBuilder.Entity<E1>()
-    .Property(e1 => e1.Status)
-    .HasConversion<string>()
-    .HasMaxLength(32)
-    .HasDefaultValue(E1OperationalStatus.Available)
-    .IsRequired();
+            .Property(e1 => e1.Status)
+            .HasConversion<string>()
+            .HasMaxLength(32)
+            .HasDefaultValue(
+                E1OperationalStatus.Available)
+            .IsRequired();
+
+
         modelBuilder.Entity<E1>()
-    .Property(e1 => e1.ConnectionType)
-    .HasConversion<string>()
-    .HasMaxLength(32)
-    .HasDefaultValue(E1ConnectionType.Physical)
-    .IsRequired();
+            .Property(e1 =>
+                e1.ConnectionType)
+            .HasConversion<string>()
+            .HasMaxLength(32)
+            .HasDefaultValue(
+                E1ConnectionType.Unassigned)
+            .IsRequired();
     }
     private static void ConfigureSite(
     ModelBuilder modelBuilder)
@@ -291,33 +337,20 @@ public class CommunicationDbContext
             .HasData(
                 new MuxType
                 {
-                    Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-                    Name = "Ericsson",
-                    HasShelves = true
+                    Id = Guid.Parse(
+                        "11111111-1111-1111-1111-111111111111"),
+                    Name = "Ericsson"
                 },
                 new MuxType
                 {
-                    Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
-                    Name = "OSP",
-                    HasShelves = false
-                }
-            );
+                    Id = Guid.Parse(
+                        "22222222-2222-2222-2222-222222222222"),
+                    Name = "OSP"
+                });
     }
-    private static void ConfigureCardType(
-    ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<CardType>()
-            .Property(cardType => cardType.Category)
-            .HasConversion<string>()
-            .HasMaxLength(32)
-            .IsRequired();
 
-        modelBuilder.Entity<CardType>()
-            .HasIndex(cardType => cardType.Name)
-            .IsUnique();
-    }
     private static void ConfigureMuxCard(
-    ModelBuilder modelBuilder)
+        ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<MuxCard>()
             .HasOne(card => card.Mux)
@@ -326,20 +359,10 @@ public class CommunicationDbContext
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<MuxCard>()
-            .HasOne(card => card.CardType)
-            .WithMany(cardType => cardType.Cards)
-            .HasForeignKey(card => card.CardTypeId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        modelBuilder.Entity<MuxCard>()
-            .HasIndex(card => new
-            {
-                card.MuxId,
-                card.ShelfNumber,
-                card.SlotNumber
-            })
-            .IsUnique()
-            .HasFilter("[ShelfNumber] IS NOT NULL");
+            .Property(card => card.Category)
+            .HasConversion<string>()
+            .HasMaxLength(32)
+            .IsRequired();
 
         modelBuilder.Entity<MuxCard>()
             .HasIndex(card => new
@@ -347,8 +370,7 @@ public class CommunicationDbContext
                 card.MuxId,
                 card.SlotNumber
             })
-            .IsUnique()
-            .HasFilter("[ShelfNumber] IS NULL");
+            .IsUnique();
     }
     private static void ConfigureMuxPort(
     ModelBuilder modelBuilder)
@@ -494,6 +516,23 @@ public class CommunicationDbContext
 
         modelBuilder.Entity<CustomerConnectionSegment>()
             .HasIndex(segment => segment.E1Id)
+            .IsUnique();
+    }
+    private static void ConfigureSdhLinkCard(
+    ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<SdhLinkCard>()
+            .HasOne(card => card.Link)
+            .WithMany(link => link.SdhCards)
+            .HasForeignKey(card => card.LinkId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<SdhLinkCard>()
+            .HasIndex(card => new
+            {
+                card.LinkId,
+                card.Number
+            })
             .IsUnique();
     }
 }

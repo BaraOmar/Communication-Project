@@ -3,13 +3,39 @@
 @{
     ViewData["Title"] = "Communication Link Details";
 
-    int primaryStmCount = Model.Stms?.Count ?? 0;
+    bool isSdh =
+        string.Equals(
+            Model.LinkType.Name,
+            "SDH",
+            StringComparison.OrdinalIgnoreCase);
+
+    bool isPdh =
+        string.Equals(
+            Model.LinkType.Name,
+            "PDH",
+            StringComparison.OrdinalIgnoreCase);
+
+    int primaryStmCount =
+        Model.Stms?.Count ?? 0;
 
     int reverseStmCount =
         Model.ConnectedLink?.Stms?.Count ?? 0;
 
-    int totalStmCount =
-        primaryStmCount + reverseStmCount;
+    int primaryCardCount =
+        Model.SdhCards?.Count ?? 0;
+
+    int reverseCardCount =
+        Model.ConnectedLink?.SdhCards?.Count ?? 0;
+
+    int primaryE1Count =
+        ViewData["PrimaryE1Count"] is int primaryCount
+            ? primaryCount
+            : 0;
+
+    int reverseE1Count =
+        ViewData["ReverseE1Count"] is int reverseCount
+            ? reverseCount
+            : 0;
 }
 
 @section Styles {
@@ -224,10 +250,15 @@
 
 
         <!-- Inventory -->
+        <!-- Inventory -->
         <section class="link-details-section">
 
             <h3 class="link-details-section-title">
-                STM inventory
+                @(isSdh
+                    ? "SDH inventory"
+                    : isPdh
+                        ? "PDH inventory"
+                        : "Link inventory")
             </h3>
 
 
@@ -241,13 +272,37 @@
                         @Model.SiteTo.Name
                     </div>
 
-                    <div class="link-inventory-count">
-                        @primaryStmCount
-                    </div>
+                    @if (isSdh)
+                    {
+                        <div class="link-inventory-count">
+                            @primaryStmCount
+                        </div>
 
-                    <div class="link-inventory-caption">
-                        STM records
-                    </div>
+                        <div class="link-inventory-caption">
+                            STMs · @primaryCardCount link cards
+                            · @primaryE1Count E1 channels
+                        </div>
+                    }
+                    else if (isPdh)
+                    {
+                        <div class="link-inventory-count">
+                            @primaryE1Count
+                        </div>
+
+                        <div class="link-inventory-caption">
+                            Direct E1 channels
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="link-inventory-count">
+                            @primaryE1Count
+                        </div>
+
+                        <div class="link-inventory-caption">
+                            E1 channels
+                        </div>
+                    }
 
                 </div>
 
@@ -260,13 +315,37 @@
                         @Model.SiteFrom.Name
                     </div>
 
-                    <div class="link-inventory-count">
-                        @reverseStmCount
-                    </div>
+                    @if (isSdh)
+                    {
+                        <div class="link-inventory-count">
+                            @reverseStmCount
+                        </div>
 
-                    <div class="link-inventory-caption">
-                        STM records
-                    </div>
+                        <div class="link-inventory-caption">
+                            STMs · @reverseCardCount link cards
+                            · @reverseE1Count E1 channels
+                        </div>
+                    }
+                    else if (isPdh)
+                    {
+                        <div class="link-inventory-count">
+                            @reverseE1Count
+                        </div>
+
+                        <div class="link-inventory-caption">
+                            Direct E1 channels
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="link-inventory-count">
+                            @reverseE1Count
+                        </div>
+
+                        <div class="link-inventory-caption">
+                            E1 channels
+                        </div>
+                    }
 
                 </div>
 
@@ -274,13 +353,75 @@
 
 
             <div class="link-inventory-total">
-                @totalStmCount STM records exist across both
-                directional link records.
+
+                @if (isSdh)
+                {
+                    <text>
+                        @primaryCardCount cards,
+                        @primaryStmCount STMs and
+                        @primaryE1Count E1 channels exist per direction.
+                    </text>
+                }
+                else if (isPdh)
+                {
+                    <text>
+                        @primaryE1Count direct E1 channels exist per direction.
+                    </text>
+                }
+                else
+                {
+                    <text>
+                        @primaryE1Count E1 channels exist per direction.
+                    </text>
+                }
+
             </div>
 
         </section>
 
+        @if (isSdh)
+        {
+            <section class="link-details-section">
 
+                <h3 class="link-details-section-title">
+                    Install and connect MUX
+                </h3>
+
+                <p class="text-muted">
+                    Install a MUX at either endpoint and assign this
+                    endpoint’s STMs to its available STM ports.
+                </p>
+
+
+                <div class="d-flex flex-wrap gap-2">
+
+                    <a asp-controller="Muxes"
+                           asp-action="InstallForSdhLink"
+                           asp-route-linkId="@Model.Id"
+                           asp-route-siteId="@Model.SiteFromId"
+                           class="btn btn-primary">
+
+                        Install MUX at
+                        @Model.SiteFrom.Id
+
+                    </a>
+
+
+                    <a asp-controller="Muxes"
+                           asp-action="InstallForSdhLink"
+                           asp-route-linkId="@Model.Id"
+                           asp-route-siteId="@Model.SiteToId"
+                           class="btn btn-outline-primary">
+
+                        Install MUX at
+                        @Model.SiteTo.Id
+
+                    </a>
+
+                </div>
+
+            </section>
+        }
         <!-- Footer -->
         <div class="link-details-footer">
 

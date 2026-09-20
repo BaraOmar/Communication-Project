@@ -10,15 +10,15 @@ public class CreateCrossConnectionViewModel
     [Display(Name = "Cross Connection Site")]
     public string SiteId { get; set; } = string.Empty;
 
-    /*
-     * Previous side:
-     * the site from which the connection arrives.
-     */
+
     [Required(ErrorMessage = "Select the previous site.")]
     [Display(Name = "Previous Site")]
     public string PreviousSiteId { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Select the incoming STM.")]
+    [Required(ErrorMessage = "Select the incoming link.")]
+    [Display(Name = "Incoming Link")]
+    public Guid? IncomingLinkId { get; set; }
+
     [Display(Name = "Incoming STM")]
     public Guid? IncomingStmId { get; set; }
 
@@ -26,15 +26,15 @@ public class CreateCrossConnectionViewModel
     [Display(Name = "Incoming E1")]
     public Guid? IncomingE1Id { get; set; }
 
-    /*
-     * Next side:
-     * the site to which the connection leaves.
-     */
+
     [Required(ErrorMessage = "Select the next site.")]
     [Display(Name = "Next Site")]
     public string NextSiteId { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Select the outgoing STM.")]
+    [Required(ErrorMessage = "Select the outgoing link.")]
+    [Display(Name = "Outgoing Link")]
+    public Guid? OutgoingLinkId { get; set; }
+
     [Display(Name = "Outgoing STM")]
     public Guid? OutgoingStmId { get; set; }
 
@@ -46,12 +46,10 @@ public class CreateCrossConnectionViewModel
     [Required]
     [Display(Name = "Customer")]
     public string CustomerName { get; set; } =
-    string.Empty;
+        string.Empty;
 
-    /*
-     * Only the main Site dropdown is loaded when the page opens.
-     * Other dropdowns are loaded dynamically through AJAX.
-     */
+
     [ValidateNever]
-    public List<SelectListItem> SiteOptions { get; set; } = new();
+    public List<SelectListItem> SiteOptions
+    { get; set; } = new();
 }

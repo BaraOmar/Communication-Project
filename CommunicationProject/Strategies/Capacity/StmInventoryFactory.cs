@@ -1,4 +1,5 @@
 ﻿using CommunicationProject.Models;
+using static CommunicationProject.Models.E1;
 
 namespace CommunicationProject.Strategies.Capacity;
 
@@ -114,11 +115,13 @@ public sealed class StmInventoryFactory
 
                     E1 primaryE1 =
                         CreateE1(
+                            primaryStm.LinkId,
                             primaryStm.Id,
                             number);
 
                     E1 reverseE1 =
                         CreateE1(
+                            reverseStm.LinkId,
                             reverseStm.Id,
                             number);
 
@@ -133,16 +136,20 @@ public sealed class StmInventoryFactory
     }
 
     private static E1 CreateE1(
+        Guid linkId,
         Guid stmId,
         string number)
     {
         return new E1
         {
             Id = Guid.NewGuid(),
+            LinkId = linkId,
             E1Number = number,
             StmId = stmId,
             ConnectedE1Id = null,
             Description = null,
+            ConnectionType =
+                E1ConnectionType.Unassigned,
             CrossConnectionState =
                 E1CrossConnectionState.Available
         };

@@ -54,6 +54,12 @@ public class Stm : IValidatableObject
     [ForeignKey(nameof(LinkId))]
     public CommunicationLink Link { get; set; } = null!;
 
+    [Display(Name = "SDH Link Card")]
+    public Guid? SdhLinkCardId { get; set; }
+
+    [ForeignKey(nameof(SdhLinkCardId))]
+    public SdhLinkCard? SdhLinkCard { get; set; }
+
     /*
      * STM المقابل الموجود داخل سجل الرابط العكسي.
      *

@@ -76,11 +76,18 @@
                 <div>
 
                     <h2 class="e1-details-main-title">
-                        STM @Model.Stm.Number
+                        @if (Model.Stm is not null)
+                        {
+                            <text>STM @Model.Stm.Number</text>
+                        }
+                        else
+                        {
+                            <text>PDH · Direct E1</text>
+                        }
                     </h2>
 
                     <div class="e1-details-caption">
-                        @Model.Stm.Link.Name
+                        @Model.Link.Name
                     </div>
 
                 </div>
@@ -108,11 +115,11 @@
                 <div class="e1-details-route-site">
 
                     <div class="e1-details-route-name">
-                        @Model.Stm.Link.SiteFrom.Name
+                        @Model.Link.SiteFrom.Name
                     </div>
 
                     <div class="e1-details-route-id">
-                        @Model.Stm.Link.SiteFrom.Id
+                        @Model.Link.SiteFrom.Id
                     </div>
 
                 </div>
@@ -126,11 +133,11 @@
                 <div class="e1-details-route-site">
 
                     <div class="e1-details-route-name">
-                        @Model.Stm.Link.SiteTo.Name
+                        @Model.Link.SiteTo.Name
                     </div>
 
                     <div class="e1-details-route-id">
-                        @Model.Stm.Link.SiteTo.Id
+                        @Model.Link.SiteTo.Id
                     </div>
 
                 </div>
@@ -170,7 +177,14 @@
                     </div>
 
                     <div class="e1-detail-value">
-                        STM @Model.Stm.Number
+                        @if (Model.Stm is not null)
+                        {
+                            <text>STM @Model.Stm.Number</text>
+                        }
+                        else
+                        {
+                            <text>PDH · Direct</text>
+                        }
                     </div>
 
                 </div>
@@ -183,7 +197,7 @@
                     </div>
 
                     <div class="e1-detail-value">
-                        @Model.Stm.Link.Name
+                        @Model.Link.Name
                     </div>
 
                 </div>
@@ -273,17 +287,25 @@
 
                         <div class="e1-details-connected-title">
                             E1 @Model.ConnectedE1.E1Number
-                            · STM @Model.ConnectedE1.Stm.Number
+
+                            @if (Model.ConnectedE1.Stm is not null)
+                            {
+                                <text> · STM @Model.ConnectedE1.Stm.Number</text>
+                            }
+                            else
+                            {
+                                <text> · PDH Direct</text>
+                            }
                         </div>
 
 
-                        @if (Model.ConnectedE1.Stm.Link != null)
+                        @if (Model.ConnectedE1.Link != null)
                         {
                             <div class="e1-details-connected-route">
 
-                                @Model.ConnectedE1.Stm.Link.SiteFrom.Name
+                                @Model.ConnectedE1.Link.SiteFrom.Name
                                 →
-                                @Model.ConnectedE1.Stm.Link.SiteTo.Name
+                                @Model.ConnectedE1.Link.SiteTo.Name
 
                             </div>
                         }
@@ -434,12 +456,15 @@
                     </a>
                 }
 
-                <a asp-controller="Stms"
-                       asp-action="Details"
-                       asp-route-id="@Model.StmId"
-                       class="e1-details-primary">
-                    View STM
-                </a>
+                @if (Model.StmId.HasValue)
+                {
+                    <a asp-controller="Stms"
+                           asp-action="Details"
+                           asp-route-id="@Model.StmId.Value"
+                           class="e1-details-primary">
+                        View STM
+                    </a>
+                }
 
             </div>
 

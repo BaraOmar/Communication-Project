@@ -1,39 +1,46 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+﻿using CommunicationProject.Models;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 
 namespace CommunicationProject.ViewModels;
 
-public sealed class CommunicationLinkCreateViewModel : IValidatableObject
+public sealed class CommunicationLinkCreateViewModel
+    : IValidatableObject
 {
-    [Required(ErrorMessage = "Link name is required.")]
-    [StringLength(150)]
-    [Display(Name = "Link Name")]
-    public string Name { get; set; } = string.Empty;
+    [Required]
+    [Display(Name = "Link Technology")]
+    public LinkTechnology? Technology { get; set; }
 
-    [Required(ErrorMessage = "Link type is required.")]
-    [Display(Name = "Link Type")]
-    public Guid? LinkTypeId { get; set; }
 
     [Required(ErrorMessage = "Source site is required.")]
     [Display(Name = "Site From")]
     public string SiteFromId { get; set; } = string.Empty;
 
+
     [Required(ErrorMessage = "Destination site is required.")]
     [Display(Name = "Site To")]
     public string SiteToId { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "STM count is required.")]
-    [Range(1, 100, ErrorMessage = "STM count must be between 1 and 100.")]
-    [Display(Name = "Number of STM Pairs")]
-    public int StmCount { get; set; } = 1;
 
-    // These lists are used only to build the form.
-    [ValidateNever]
-    public List<SelectListItem> LinkTypeOptions { get; set; } = [];
+    [Display(Name = "Number of SDH Cards")]
+    public int? SdhCardCount { get; set; }
+
+
+    [Display(Name = "Number of STMs")]
+    public int? StmCount { get; set; }
+
+
+    [Display(Name = "Number of E1s")]
+    public int? PdhE1Count { get; set; }
+
+    public bool LockSiteFrom { get; set; }
+
 
     [ValidateNever]
-    public List<SelectListItem> SiteOptions { get; set; } = [];
+    public List<SelectListItem> SiteOptions
+    { get; set; } = new();
+
 
     public IEnumerable<ValidationResult> Validate(
         ValidationContext validationContext)
@@ -48,6 +55,41 @@ public sealed class CommunicationLinkCreateViewModel : IValidatableObject
             yield return new ValidationResult(
                 "A communication link cannot connect a site to itself.",
                 new[] { nameof(SiteToId) });
+        }
+
+
+        if (Technology == LinkTechnology.SDH)
+        {
+            if (!SdhCardCount.HasValue ||
+                !new[] { 2, 6, 20 }
+                    .Contains(SdhCardCount.Value))
+            {
+                yield return new ValidationResult(
+                    "Select 2, 6, or 20 SDH cards.",
+                    new[] { nameof(SdhCardCount) });
+            }
+
+            if (!StmCount.HasValue ||
+                StmCount.Value < 1 ||
+                StmCount.Value > 9)
+            {
+                yield return new ValidationResult(
+                    "STM count must be between 1 and 9.",
+                    new[] { nameof(StmCount) });
+            }
+        }
+
+
+        if (Technology == LinkTechnology.PDH)
+        {
+            if (!PdhE1Count.HasValue ||
+                PdhE1Count.Value < 1 ||
+                PdhE1Count.Value > 1000)
+            {
+                yield return new ValidationResult(
+                    "PDH E1 count must be between 1 and 1000.",
+                    new[] { nameof(PdhE1Count) });
+            }
         }
     }
 }

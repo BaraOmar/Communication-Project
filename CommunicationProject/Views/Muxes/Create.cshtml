@@ -1,174 +1,137 @@
 ﻿@model CommunicationProject.ViewModels.CreateMuxViewModel
-@using System.Text.Json
 
 @{
-    ViewData["Title"] = "Create MUX";
-
-    var shelfSupportJson =
-        JsonSerializer.Serialize(Model.MuxTypeShelfSupport);
+    ViewData["Title"] = "Install MUX";
 }
 
-<div class="container mt-4">
-    <div class="card shadow-sm">
-        <div class="card-header">
-            <h4 class="mb-0">Create MUX</h4>
-        </div>
+<div class="container py-4">
 
-        <div class="card-body">
-            <form asp-action="Create" method="post">
+    <div class="mb-4">
+        <a asp-action="Index"
+               class="text-decoration-none">
+            ← MUXes
+        </a>
+
+        <h1 class="mt-3 mb-1">
+            Install MUX
+        </h1>
+
+        <p class="text-muted mb-0">
+            Install a MUX at a site using a reusable MUX type.
+            Its cards and ports will be generated automatically.
+        </p>
+    </div>
+
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+
+            <form asp-action="Create"
+                  method="post">
+
                 @Html.AntiForgeryToken()
 
                 <div asp-validation-summary="ModelOnly"
-                     class="text-danger mb-3">
+                     class="alert alert-danger">
                 </div>
 
+
                 <div class="mb-3">
+
                     <label asp-for="Name"
-                           class="form-label"></label>
+                           class="form-label">
+                    </label>
 
                     <input asp-for="Name"
-                           class="form-control" />
+                           class="form-control"
+                           placeholder="Enter the installed MUX name" />
 
                     <span asp-validation-for="Name"
-                          class="text-danger"></span>
+                          class="text-danger">
+                    </span>
+
                 </div>
 
+
                 <div class="mb-3">
+
                     <label asp-for="SiteId"
-                           class="form-label"></label>
+                           class="form-label">
+                    </label>
 
                     <select asp-for="SiteId"
                             asp-items="Model.SiteOptions"
                             class="form-select">
-                        <option value="">-- Select Site --</option>
+
+                        <option value="">
+                            Select a site
+                        </option>
+
                     </select>
 
                     <span asp-validation-for="SiteId"
-                          class="text-danger"></span>
+                          class="text-danger">
+                    </span>
+
                 </div>
 
+
                 <div class="mb-3">
+
                     <label asp-for="MuxTypeId"
-                           class="form-label"></label>
+                           class="form-label">
+                    </label>
 
                     <select asp-for="MuxTypeId"
                             asp-items="Model.MuxTypeOptions"
-                            class="form-select"
-                            id="muxTypeSelect">
-                        <option value="">-- Select MUX Type --</option>
+                            class="form-select">
+
+                        <option value="">
+                            Select a MUX type
+                        </option>
+
                     </select>
 
                     <span asp-validation-for="MuxTypeId"
-                          class="text-danger"></span>
-                </div>
+                          class="text-danger">
+                    </span>
 
-                <div class="mb-3"
-                     id="shelfCountContainer"
-                     style="display:none;">
-
-                    <label asp-for="ShelfCount"
-                           class="form-label"></label>
-
-                    <input asp-for="ShelfCount"
-                           class="form-control"
-                           type="number"
-                           min="1" />
-
-                    <span asp-validation-for="ShelfCount"
-                          class="text-danger"></span>
-                </div>
-
-                <div class="mb-3">
-                    <label asp-for="CardSlotCount"
-                           class="form-label"
-                           id="cardSlotLabel">
-                        Card Slots
-                    </label>
-
-                    <input asp-for="CardSlotCount"
-                           class="form-control"
-                           type="number"
-                           min="1" />
-
-                    <span asp-validation-for="CardSlotCount"
-                          class="text-danger"></span>
-
-                    <div class="form-text"
-                         id="cardSlotHelp">
-                        Enter the number of card slots available in this MUX.
+                    <div class="form-text">
+                        The selected type determines all Power,
+                        STM, and E1 cards and their ports.
                     </div>
+
                 </div>
+
+
+                <div class="alert alert-info">
+                    Cards and ports are generated automatically.
+                    They do not need to be added manually.
+                </div>
+
 
                 <div class="d-flex gap-2">
+
                     <button type="submit"
                             class="btn btn-primary">
-                        Create MUX
+                        Install MUX
                     </button>
 
                     <a asp-action="Index"
-                           class="btn btn-secondary">
+                           class="btn btn-outline-secondary">
                         Cancel
                     </a>
+
                 </div>
+
             </form>
+
         </div>
     </div>
+
 </div>
+
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-
-    <script>
-        const shelfSupport = @Html.Raw(shelfSupportJson);
-
-        const muxTypeSelect =
-            document.getElementById("muxTypeSelect");
-
-        const shelfCountContainer =
-            document.getElementById("shelfCountContainer");
-
-        const shelfCountInput =
-            document.getElementById("ShelfCount");
-
-        const cardSlotLabel =
-            document.getElementById("cardSlotLabel");
-
-        const cardSlotHelp =
-            document.getElementById("cardSlotHelp");
-
-        function updateMuxCapacityFields() {
-            const selectedTypeId =
-                muxTypeSelect.value;
-
-            const hasShelves =
-                shelfSupport[selectedTypeId] === true;
-
-            if (hasShelves) {
-                shelfCountContainer.style.display = "block";
-
-                cardSlotLabel.textContent =
-                    "Cards Per Shelf";
-
-                cardSlotHelp.textContent =
-                    "Enter the number of card slots available in each shelf.";
-            }
-            else {
-                shelfCountContainer.style.display = "none";
-
-                shelfCountInput.value = "";
-
-                cardSlotLabel.textContent =
-                    "Card Slots";
-
-                cardSlotHelp.textContent =
-                    "Enter the total number of card slots available in this MUX.";
-            }
-        }
-
-        muxTypeSelect.addEventListener(
-            "change",
-            updateMuxCapacityFields);
-
-        updateMuxCapacityFields();
-    </script>
 }

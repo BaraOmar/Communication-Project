@@ -1,18 +1,14 @@
 ﻿@model CommunicationProject.Models.MuxCard
-@using CommunicationProject.Security
 @using CommunicationProject.Models
 
 @{
     ViewData["Title"] = "MUX Card Details";
 
-    bool hasShelves =
-        Model.Mux.MuxType?.HasShelves == true;
-
     bool isStmCard =
-        Model.CardType.Category == CardCategory.STM;
+        Model.Category == CardCategory.STM;
 
     bool isE1Card =
-        Model.CardType.Category == CardCategory.E1;
+        Model.Category == CardCategory.E1;
 }
 
 <div class="container py-4">
@@ -26,33 +22,24 @@
             ← @Model.Mux.Name
         </a>
 
-        @if (hasShelves)
-        {
-            <h1 class="mt-3 mb-1">
-                Shelf @Model.ShelfNumber / Card @Model.SlotNumber
-            </h1>
-        }
-        else
-        {
-            <h1 class="mt-3 mb-1">
-                Card @Model.SlotNumber
-            </h1>
-        }
+        <h1 class="mt-3 mb-1">
+            Card @Model.SlotNumber
+        </h1>
 
         <p class="text-muted mb-0">
-            @Model.CardType.Name · @Model.CardType.Category
+            @Model.Category Card
         </p>
 
     </div>
 
 
     <div class="card border-0 shadow-sm mb-4">
-
         <div class="card-body p-4">
 
             <div class="row g-4">
 
                 <div class="col-md-3">
+
                     <div class="text-muted small">
                         MUX
                     </div>
@@ -60,10 +47,12 @@
                     <div class="fw-semibold">
                         @Model.Mux.Name
                     </div>
+
                 </div>
 
 
                 <div class="col-md-3">
+
                     <div class="text-muted small">
                         Site
                     </div>
@@ -71,68 +60,56 @@
                     <div class="fw-semibold">
                         @Model.Mux.Site.Name
                     </div>
+
                 </div>
 
 
                 <div class="col-md-3">
+
                     <div class="text-muted small">
-                        Location
+                        Position
                     </div>
 
                     <div class="fw-semibold">
-                        @if (hasShelves)
-                        {
-                            <span>
-                                Shelf @Model.ShelfNumber /
-                                Card @Model.SlotNumber
-                            </span>
-                        }
-                        else
-                        {
-                            <span>
-                                Card @Model.SlotNumber
-                            </span>
-                        }
+                        Card @Model.SlotNumber
                     </div>
+
                 </div>
 
 
                 <div class="col-md-3">
+
                     <div class="text-muted small">
-                        Card Type
+                        Category
                     </div>
 
                     <div class="fw-semibold">
-                        @Model.CardType.Name
+                        @Model.Category
                     </div>
 
                     <div class="text-muted small">
-                        @Model.CardType.Category
+                        @Model.Ports.Count ports
                     </div>
+
                 </div>
 
             </div>
 
         </div>
-
     </div>
 
 
     <div class="card border-0 shadow-sm">
-
         <div class="card-body p-4">
 
-            <div class="d-flex justify-content-between
-                align-items-center mb-3">
+            <div class="mb-3">
 
-                <div>
-                    <h3 class="mb-1">
-                        Ports
-                    </h3>
+                <h3 class="mb-1">
+                    Ports
+                </h3>
 
-                    <div class="text-muted">
-                        @Model.Ports.Count ports
-                    </div>
+                <div class="text-muted">
+                    @Model.Ports.Count ports
                 </div>
 
             </div>
@@ -170,14 +147,14 @@
                     <tbody>
 
                         @foreach (var port in Model.Ports
-                            .OrderBy(port => port.PortNumber))
+                            .OrderBy(port =>
+                                port.PortNumber))
                         {
                             <tr>
 
                                 <td>
                                     Port @port.PortNumber
                                 </td>
-
 
                                 <td>
                                     @port.Status
@@ -205,14 +182,11 @@
 
                                     </td>
 
-
                                     <td>
 
                                         @if (port.Stm != null)
                                         {
-                                            <span>
-                                                @port.Stm.Link.Name
-                                            </span>
+                                            @port.Stm.Link.Name
                                         }
                                         else
                                         {
@@ -329,7 +303,6 @@
             </div>
 
         </div>
-
     </div>
 
 </div>

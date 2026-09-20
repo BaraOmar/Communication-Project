@@ -85,22 +85,10 @@ public class CrossConnectionsController : Controller
 
         return Json(connectedSites);
     }
-
-    /*
-     * Returns STMs physically located in the selected central site
-     * and belonging to the directional link toward the connected site.
-     *
-     * Example:
-     * central site = B
-     * connected site = A
-     *
-     * Uses the directional record:
-     * B -> A
-     */
     [HttpGet]
-    public async Task<IActionResult> GetStms(
-        string? siteId,
-        string? connectedSiteId)
+    public async Task<IActionResult> GetLinks(
+    string? siteId,
+    string? connectedSiteId)
     {
         siteId = siteId?.Trim();
         connectedSiteId = connectedSiteId?.Trim();
@@ -115,11 +103,53 @@ public class CrossConnectionsController : Controller
             return Json(Array.Empty<object>());
         }
 
+        var links = await _context.CommunicationLinks
+            .AsNoTracking()
+            .Where(link =>
+                link.SiteFromId == siteId &&
+                link.SiteToId == connectedSiteId)
+            .OrderBy(link => link.Name)
+            .Select(link => new
+            {
+                value = link.Id,
+
+                text =
+                    link.Name +
+                    " — " +
+                    link.LinkType.Name,
+
+                technology =
+                    link.LinkType.Name
+            })
+            .ToListAsync();
+
+        return Json(links);
+    }
+    /*
+     * Returns STMs physically located in the selected central site
+     * and belonging to the directional link toward the connected site.
+     *
+     * Example:
+     * central site = B
+     * connected site = A
+     *
+     * Uses the directional record:
+     * B -> A
+     */
+    [HttpGet]
+    public async Task<IActionResult> GetStms(
+        Guid? linkId)
+    {
+        if (!linkId.HasValue ||
+            linkId.Value == Guid.Empty)
+        {
+            return Json(Array.Empty<object>());
+        }
+
         var stms = await _context.Stms
             .AsNoTracking()
             .Where(stm =>
-                stm.Link.SiteFromId == siteId &&
-                stm.Link.SiteToId == connectedSiteId)
+                stm.LinkId == linkId.Value)
             .OrderBy(stm => stm.Number)
             .Select(stm => new
             {
@@ -142,10 +172,12 @@ public class CrossConnectionsController : Controller
      */
     [HttpGet]
     public async Task<IActionResult> GetAvailableE1s(
-        Guid? stmId,
-        bool isIncoming = false)
+    Guid? linkId,
+    Guid? stmId,
+    bool isIncoming = false)
     {
-        if (!stmId.HasValue || stmId.Value == Guid.Empty)
+        if (!linkId.HasValue ||
+            linkId.Value == Guid.Empty)
         {
             return Json(Array.Empty<object>());
         }
@@ -153,7 +185,12 @@ public class CrossConnectionsController : Controller
         var baseQuery = _context.E1s
             .AsNoTracking()
             .Where(e1 =>
-                e1.StmId == stmId.Value &&
+                e1.LinkId == linkId.Value &&
+                (
+                    stmId.HasValue
+                        ? e1.StmId == stmId.Value
+                        : e1.StmId == null
+                ) &&
                 e1.ConnectedE1Id != null);
 
         IQueryable<E1> query;
@@ -303,22 +340,35 @@ e1.ConnectedE1.ConnectionGroupId == null &&
         try
         {
             var incomingE1 = await _context.E1s
+                .Include(e1 => e1.Link)
                 .Include(e1 => e1.Stm)
-                    .ThenInclude(stm => stm.Link)
+
                 .Include(e1 => e1.ConnectedE1)
-                    .ThenInclude(connectedE1 => connectedE1!.Stm)
-                        .ThenInclude(stm => stm.Link)
+                    .ThenInclude(connectedE1 =>
+                        connectedE1!.Link)
+
+                .Include(e1 => e1.ConnectedE1)
+                    .ThenInclude(connectedE1 =>
+                        connectedE1!.Stm)
+
                 .FirstOrDefaultAsync(e1 =>
                     e1.Id == model.IncomingE1Id!.Value);
 
             var outgoingE1 = await _context.E1s
+                .Include(e1 => e1.Link)
                 .Include(e1 => e1.Stm)
-                    .ThenInclude(stm => stm.Link)
+
                 .Include(e1 => e1.ConnectedE1)
-                    .ThenInclude(connectedE1 => connectedE1!.Stm)
-                        .ThenInclude(stm => stm.Link)
+                    .ThenInclude(connectedE1 =>
+                        connectedE1!.Link)
+
+                .Include(e1 => e1.ConnectedE1)
+                    .ThenInclude(connectedE1 =>
+                        connectedE1!.Stm)
+
                 .FirstOrDefaultAsync(e1 =>
                     e1.Id == model.OutgoingE1Id!.Value);
+
 
             ValidateIncomingE1(model, incomingE1);
             ValidateOutgoingE1(model, outgoingE1);
@@ -550,7 +600,7 @@ e1.ConnectedE1.ConnectionGroupId == null &&
                         Id = Guid.NewGuid(),
                         CommunicationPathId = pathId,
                         CommunicationLinkId =
-                            outgoingE1.Stm.LinkId,
+                            outgoingE1.LinkId,
                         Order = maximumSegmentOrder + 1
                     };
 
@@ -589,7 +639,7 @@ e1.ConnectedE1.ConnectionGroupId == null &&
                         Id = Guid.NewGuid(),
                         CommunicationPathId = pathId,
                         CommunicationLinkId =
-                            incomingConnectedE1.Stm.LinkId,
+                            incomingConnectedE1.LinkId,
                         Order = 1
                     };
 
@@ -599,7 +649,7 @@ e1.ConnectedE1.ConnectionGroupId == null &&
                         Id = Guid.NewGuid(),
                         CommunicationPathId = pathId,
                         CommunicationLinkId =
-                            outgoingE1.Stm.LinkId,
+                            outgoingE1.LinkId,
                         Order = 2
                     };
 
@@ -773,13 +823,22 @@ e1.ConnectedE1.ConnectionGroupId == null &&
                 nameof(model.OutgoingE1Id),
                 "Incoming E1 and outgoing E1 must be different.");
         }
+        if (model.IncomingLinkId.HasValue &&
+    model.OutgoingLinkId.HasValue &&
+    model.IncomingLinkId.Value ==
+    model.OutgoingLinkId.Value)
+        {
+            ModelState.AddModelError(
+                nameof(model.OutgoingLinkId),
+                "Incoming and outgoing links must be different.");
+        }
     }
 
     private void ValidateIncomingE1(
-        CreateCrossConnectionViewModel model,
-        E1? incomingE1)
+    CreateCrossConnectionViewModel model,
+    E1? incomingE1)
     {
-        if (incomingE1 == null)
+        if (incomingE1 is null)
         {
             ModelState.AddModelError(
                 nameof(model.IncomingE1Id),
@@ -788,26 +847,30 @@ e1.ConnectedE1.ConnectionGroupId == null &&
             return;
         }
 
-        if (incomingE1.StmId != model.IncomingStmId)
+        if (incomingE1.LinkId !=
+            model.IncomingLinkId)
         {
             ModelState.AddModelError(
                 nameof(model.IncomingE1Id),
                 "The selected incoming E1 does not belong " +
-                "to the selected incoming STM.");
+                "to the selected incoming link.");
         }
 
-        /*
-         * Incoming E1 must be located at the central site
-         * on the link toward the previous site.
-         *
-         * B -> A
-         */
+        if (incomingE1.StmId !=
+            model.IncomingStmId)
+        {
+            ModelState.AddModelError(
+                nameof(model.IncomingE1Id),
+                "The selected incoming E1 does not belong " +
+                "to the selected STM or direct PDH link.");
+        }
+
         if (!string.Equals(
-                incomingE1.Stm.Link.SiteFromId,
+                incomingE1.Link.SiteFromId,
                 model.SiteId,
                 StringComparison.OrdinalIgnoreCase) ||
             !string.Equals(
-                incomingE1.Stm.Link.SiteToId,
+                incomingE1.Link.SiteToId,
                 model.PreviousSiteId,
                 StringComparison.OrdinalIgnoreCase))
         {
@@ -822,7 +885,7 @@ e1.ConnectedE1.ConnectionGroupId == null &&
         CreateCrossConnectionViewModel model,
         E1? outgoingE1)
     {
-        if (outgoingE1 == null)
+        if (outgoingE1 is null)
         {
             ModelState.AddModelError(
                 nameof(model.OutgoingE1Id),
@@ -831,26 +894,30 @@ e1.ConnectedE1.ConnectionGroupId == null &&
             return;
         }
 
-        if (outgoingE1.StmId != model.OutgoingStmId)
+        if (outgoingE1.LinkId !=
+            model.OutgoingLinkId)
         {
             ModelState.AddModelError(
                 nameof(model.OutgoingE1Id),
                 "The selected outgoing E1 does not belong " +
-                "to the selected outgoing STM.");
+                "to the selected outgoing link.");
         }
 
-        /*
-         * Outgoing E1 must be located at the central site
-         * on the link toward the next site.
-         *
-         * B -> C
-         */
+        if (outgoingE1.StmId !=
+            model.OutgoingStmId)
+        {
+            ModelState.AddModelError(
+                nameof(model.OutgoingE1Id),
+                "The selected outgoing E1 does not belong " +
+                "to the selected STM or direct PDH link.");
+        }
+
         if (!string.Equals(
-                outgoingE1.Stm.Link.SiteFromId,
+                outgoingE1.Link.SiteFromId,
                 model.SiteId,
                 StringComparison.OrdinalIgnoreCase) ||
             !string.Equals(
-                outgoingE1.Stm.Link.SiteToId,
+                outgoingE1.Link.SiteToId,
                 model.NextSiteId,
                 StringComparison.OrdinalIgnoreCase))
         {

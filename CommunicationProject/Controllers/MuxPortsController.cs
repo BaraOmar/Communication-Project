@@ -42,8 +42,6 @@ public class MuxPortsController : Controller
         var port = await _context.MuxPorts
             .AsNoTracking()
 
-            .Include(item => item.MuxCard)
-                .ThenInclude(card => card.CardType)
 
             .Include(item => item.MuxCard)
                 .ThenInclude(card => card.Mux)
@@ -64,7 +62,7 @@ public class MuxPortsController : Controller
         /*
          * Only STM-category cards can contain STMs.
          */
-        if (port.MuxCard.CardType.Category != CardCategory.STM)
+        if (port.MuxCard.Category != CardCategory.STM)
         {
             TempData["ErrorMessage"] =
                 "STMs can only be assigned to STM cards.";
@@ -105,10 +103,6 @@ public class MuxPortsController : Controller
             PortNumber = port.PortNumber,
 
             SlotNumber = port.MuxCard.SlotNumber,
-
-            ShelfNumber = port.MuxCard.ShelfNumber,
-
-            HasShelves = mux.MuxType.HasShelves,
 
             StmOptions = await _context.Stms
                 .AsNoTracking()
@@ -161,8 +155,6 @@ public class MuxPortsController : Controller
     {
         var port = await _context.MuxPorts
 
-            .Include(item => item.MuxCard)
-                .ThenInclude(card => card.CardType)
 
             .Include(item => item.MuxCard)
                 .ThenInclude(card => card.Mux)
@@ -179,7 +171,7 @@ public class MuxPortsController : Controller
         /*
          * Only STM cards may contain STMs.
          */
-        if (port.MuxCard.CardType.Category !=
+        if (port.MuxCard.Category !=
             CardCategory.STM)
         {
             ModelState.AddModelError(
@@ -291,8 +283,6 @@ public class MuxPortsController : Controller
         var port = await _context.MuxPorts
             .AsNoTracking()
 
-            .Include(item => item.MuxCard)
-                .ThenInclude(card => card.CardType)
 
             .Include(item => item.MuxCard)
                 .ThenInclude(card => card.Mux)
@@ -309,7 +299,7 @@ public class MuxPortsController : Controller
         /*
          * Only E1-category cards can contain E1 channels.
          */
-        if (port.MuxCard.CardType.Category != CardCategory.E1)
+        if (port.MuxCard.Category != CardCategory.E1)
         {
             TempData["ErrorMessage"] =
                 "E1 channels can only be assigned to E1 cards.";
@@ -347,8 +337,8 @@ public class MuxPortsController : Controller
 
             MuxName = mux.Name,
 
-            CardTypeName =
-                port.MuxCard.CardType.Name,
+            CardCategoryName =
+    port.MuxCard.Category.ToString(),
 
             E1Options = await _context.E1s
                 .AsNoTracking()
@@ -420,8 +410,6 @@ public class MuxPortsController : Controller
      AssignE1ToMuxPortViewModel model)
     {
         var port = await _context.MuxPorts
-            .Include(item => item.MuxCard)
-                .ThenInclude(card => card.CardType)
 
             .Include(item => item.MuxCard)
                 .ThenInclude(card => card.Mux)
@@ -437,7 +425,7 @@ public class MuxPortsController : Controller
         /*
          * Only E1 cards may contain E1 channels.
          */
-        if (port.MuxCard.CardType.Category !=
+        if (port.MuxCard.Category !=
             CardCategory.E1)
         {
             ModelState.AddModelError(

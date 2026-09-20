@@ -102,6 +102,12 @@ public class CommunicationLink : IValidatableObject
      */
     public ICollection<Stm> Stms { get; set; } = new List<Stm>();
 
+    public ICollection<SdhLinkCard> SdhCards { get; set; }
+    = new List<SdhLinkCard>();
+
+    public ICollection<E1> E1Channels { get; set; }
+    = new List<E1>();
+
     public IEnumerable<ValidationResult> Validate(
         ValidationContext validationContext)
     {

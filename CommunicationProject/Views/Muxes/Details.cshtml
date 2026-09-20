@@ -1,56 +1,42 @@
 ﻿@model CommunicationProject.Models.Mux
-@using CommunicationProject.Security
+@using CommunicationProject.Models
 
 @{
     ViewData["Title"] = "MUX Details";
-    bool hasShelves = Model.MuxType?.HasShelves == true;
+
+    var categoryOrder = new[]
+    {
+        CardCategory.Power,
+        CardCategory.STM,
+        CardCategory.E1
+    };
+
+    int totalPorts =
+        Model.Cards.Sum(card =>
+            card.Ports.Count);
 }
 
 <div class="container py-4">
 
-    <div class="d-flex justify-content-between align-items-start mb-4">
+    <div class="mb-4">
 
-        <div>
-            <a asp-action="Index"
-                   class="text-decoration-none">
-                ← MUXes
-            </a>
+        <a asp-action="Index"
+               class="text-decoration-none">
+            ← MUXes
+        </a>
 
-            <h1 class="mt-3 mb-1">
-                @Model.Name
-            </h1>
+        <h1 class="mt-3 mb-1">
+            @Model.Name
+        </h1>
 
-            <p class="text-muted mb-0">
-                MUX device details and installed cards.
-            </p>
-        </div>
-
-        @if (User.IsInRole(AppRoles.Admin) ||
-             User.IsInRole(AppRoles.Operator))
-        {
-            if (Model.MuxType != null)
-            {
-                <a asp-controller="MuxCards"
-                       asp-action="Create"
-                       asp-route-muxId="@Model.Id"
-                       class="btn btn-primary">
-                    Add Card
-                </a>
-            }
-            else
-            {
-                <button class="btn btn-secondary"
-                        disabled>
-                    Add Card
-                </button>
-            }
-        }
+        <p class="text-muted mb-0">
+            Installed MUX cards and ports.
+        </p>
 
     </div>
 
 
     <div class="card border-0 shadow-sm mb-4">
-
         <div class="card-body p-4">
 
             <h3 class="mb-4">
@@ -59,7 +45,8 @@
 
             <div class="row g-4">
 
-                <div class="col-md-4">
+                <div class="col-md-3">
+
                     <div class="text-muted small">
                         Name
                     </div>
@@ -67,10 +54,12 @@
                     <div class="fw-semibold">
                         @Model.Name
                     </div>
+
                 </div>
 
 
-                <div class="col-md-4">
+                <div class="col-md-3">
+
                     <div class="text-muted small">
                         Site
                     </div>
@@ -82,197 +71,82 @@
                     <div class="text-muted small">
                         @Model.Site.Id
                     </div>
+
                 </div>
 
 
-                <div class="col-md-4">
+                <div class="col-md-3">
+
                     <div class="text-muted small">
                         MUX Type
                     </div>
 
-                    @if (Model.MuxType != null)
-                    {
-                        <div class="fw-semibold">
-                            @Model.MuxType.Name
-                        </div>
+                    <div class="fw-semibold">
+                        @(Model.MuxType?.Name ?? "Not assigned")
+                    </div>
 
-                        <div class="text-muted small">
-                            @(hasShelves ? "Uses shelves" : "No shelves")
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="fw-semibold text-warning">
-                            Not assigned
-                        </div>
+                </div>
 
-                        <div class="text-muted small">
-                            MUX type not assigned.
-                        </div>
-                    }
+
+                <div class="col-md-3">
+
+                    <div class="text-muted small">
+                        Installed Capacity
+                    </div>
+
+                    <div class="fw-semibold">
+                        @Model.Cards.Count cards
+                    </div>
+
+                    <div class="text-muted small">
+                        @totalPorts ports
+                    </div>
+
                 </div>
 
             </div>
 
-
-            @if (Model.MuxType != null)
-            {
-                <hr class="my-4" />
-
-                <div class="row g-4">
-
-                    @if (hasShelves)
-                    {
-                        <div class="col-md-4">
-                            <div class="text-muted small">
-                                Number of Shelves
-                            </div>
-
-                            <div class="fw-semibold">
-                                @Model.ShelfCount
-                            </div>
-                        </div>
-
-                        <div class="col-md-4">
-                            <div class="text-muted small">
-                                Cards Per Shelf
-                            </div>
-
-                            <div class="fw-semibold">
-                                @Model.CardSlotCount
-                            </div>
-                        </div>
-
-                        <div class="col-md-4">
-                            <div class="text-muted small">
-                                Total Card Capacity
-                            </div>
-
-                            <div class="fw-semibold">
-                                @((Model.ShelfCount ?? 0) * Model.CardSlotCount)
-                            </div>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="col-md-4">
-                            <div class="text-muted small">
-                                Card Slots
-                            </div>
-
-                            <div class="fw-semibold">
-                                @Model.CardSlotCount
-                            </div>
-                        </div>
-                    }
-
-                </div>
-            }
-
         </div>
-
     </div>
 
 
-    <div class="card border-0 shadow-sm">
+    @foreach (var category in categoryOrder)
+    {
+        var cards = Model.Cards
+            .Where(card =>
+                card.Category == category)
+            .OrderBy(card =>
+                card.SlotNumber)
+            .ToList();
 
-        <div class="card-body p-4">
+        <div class="card border-0 shadow-sm mb-4">
 
-            <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="card-body p-4">
 
-                <div>
-                    <h3 class="mb-1">
-                        Cards
-                    </h3>
+                <div class="d-flex justify-content-between
+                    align-items-center mb-3">
 
-                    <div class="text-muted">
-                        @Model.Cards.Count installed cards
+                    <div>
+
+                        <h3 class="mb-1">
+                            @category Cards
+                        </h3>
+
+                        <div class="text-muted">
+                            @cards.Count cards ·
+                            @cards.Sum(card => card.Ports.Count) ports
+                        </div>
+
                     </div>
+
+                    <span class="badge bg-primary">
+                        @cards.Count
+                    </span>
+
                 </div>
 
-            </div>
 
-
-            @if (Model.Cards.Any())
-            {
-                @if (hasShelves)
-                {
-                    @foreach (var shelfGroup in Model.Cards
-                        .Where(card => card.ShelfNumber.HasValue)
-                        .GroupBy(card => card.ShelfNumber!.Value)
-                        .OrderBy(group => group.Key))
-                    {
-                        <div class="mb-4">
-
-                            <h5 class="mb-3">
-                                Shelf @shelfGroup.Key
-                            </h5>
-
-                            <div class="table-responsive">
-
-                                <table class="table align-middle">
-
-                                    <thead>
-                                        <tr>
-                                            <th>Card</th>
-                                            <th>Card Type</th>
-                                            <th>Category</th>
-                                            <th>Ports</th>
-                                            <th class="text-end">
-                                                Action
-                                            </th>
-                                        </tr>
-                                    </thead>
-
-                                    <tbody>
-
-                                        @foreach (var card in shelfGroup
-                                            .OrderBy(card => card.SlotNumber))
-                                        {
-                                            <tr>
-
-                                                <td>
-                                                    Card @card.SlotNumber
-                                                </td>
-
-                                                <td>
-                                                    <strong>
-                                                        @card.CardType.Name
-                                                    </strong>
-                                                </td>
-
-                                                <td>
-                                                    @card.CardType.Category
-                                                </td>
-
-                                                <td>
-                                                    @card.Ports.Count
-                                                </td>
-
-                                                <td class="text-end">
-
-                                                    <a asp-controller="MuxCards"
-                                                           asp-action="Details"
-                                                           asp-route-id="@card.Id"
-                                                           class="btn btn-sm btn-outline-secondary">
-                                                        View Card
-                                                    </a>
-
-                                                </td>
-
-                                            </tr>
-                                        }
-
-                                    </tbody>
-
-                                </table>
-
-                            </div>
-
-                        </div>
-                    }
-                }
-                else
+                @if (cards.Any())
                 {
                     <div class="table-responsive">
 
@@ -281,9 +155,9 @@
                             <thead>
                                 <tr>
                                     <th>Card</th>
-                                    <th>Card Type</th>
                                     <th>Category</th>
                                     <th>Ports</th>
+                                    <th>Available Ports</th>
                                     <th class="text-end">
                                         Action
                                     </th>
@@ -292,27 +166,31 @@
 
                             <tbody>
 
-                                @foreach (var card in Model.Cards
-                                    .OrderBy(card => card.SlotNumber))
+                                @foreach (var card in cards)
                                 {
+                                    int availablePorts =
+                                        card.Ports.Count(port =>
+                                            port.Status ==
+                                            MuxPortStatus.Available);
+
                                     <tr>
 
                                         <td>
-                                            Card @card.SlotNumber
-                                        </td>
-
-                                        <td>
                                             <strong>
-                                                @card.CardType.Name
+                                                Card @card.SlotNumber
                                             </strong>
                                         </td>
 
                                         <td>
-                                            @card.CardType.Category
+                                            @card.Category
                                         </td>
 
                                         <td>
                                             @card.Ports.Count
+                                        </td>
+
+                                        <td>
+                                            @availablePorts
                                         </td>
 
                                         <td class="text-end">
@@ -320,7 +198,8 @@
                                             <a asp-controller="MuxCards"
                                                    asp-action="Details"
                                                    asp-route-id="@card.Id"
-                                                   class="btn btn-sm btn-outline-secondary">
+                                                   class="btn btn-sm
+                                                btn-outline-secondary">
                                                 View Card
                                             </a>
 
@@ -335,16 +214,17 @@
 
                     </div>
                 }
-            }
-            else
-            {
-                <div class="text-muted py-3">
-                    No cards have been installed in this MUX yet.
-                </div>
-            }
+                else
+                {
+                    <div class="text-muted py-3">
+                        This MUX type does not contain
+                        @category cards.
+                    </div>
+                }
+
+            </div>
 
         </div>
-
-    </div>
+    }
 
 </div>

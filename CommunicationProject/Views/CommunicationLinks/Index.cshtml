@@ -360,16 +360,50 @@
 
 
                                 <!-- Inventory -->
+                                <!-- Inventory -->
                                 <td>
 
-                                    @if (link.StmCount > 0)
+                                    @if (link.IsSdh &&
+                                         link.StmCount > 0)
                                     {
                                         <span class="
                                             link-inventory
                                             link-inventory-generated">
 
+                                            @link.SdhCardCount
+                                            card@(link.SdhCardCount == 1 ? "" : "s")
+                                            ·
                                             @link.StmCount
                                             STM@(link.StmCount == 1 ? "" : "s")
+                                            ·
+                                            @link.E1Count E1s
+                                            / direction
+
+                                        </span>
+                                    }
+                                    else if (link.IsPdh &&
+                                             link.E1Count > 0)
+                                    {
+                                        <span class="
+                                            link-inventory
+                                            link-inventory-generated">
+
+                                            @link.E1Count
+                                            direct E1@(link.E1Count == 1 ? "" : "s")
+                                            / direction
+
+                                        </span>
+                                    }
+                                    else if (link.StmCount > 0 ||
+                                             link.E1Count > 0)
+                                    {
+                                        <span class="
+                                            link-inventory
+                                            link-inventory-generated">
+
+                                            @link.StmCount STMs
+                                            ·
+                                            @link.E1Count E1s
                                             / direction
 
                                         </span>
