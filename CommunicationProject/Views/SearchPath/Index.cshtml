@@ -593,18 +593,42 @@
                                                     {
                                                         @foreach (var e1 in customer.E1s)
                                                         {
-                                                            <div>
-                                                                <strong>
-                                                                    @e1.SiteFrom
-                                                                    →
-                                                                    @e1.SiteTo
-                                                                </strong>
+                                                            <div class="d-flex align-items-center gap-2 mb-1">
 
-                                                                <span class="text-muted">
-                                                                    —
-                                                                </span>
+                                                                <div>
+                                                                    <strong>
+                                                                        @e1.SiteFrom → @e1.SiteTo
+                                                                    </strong>
 
-                                                                @(e1.StmNumber == "Direct (PDH)" ? $"Direct (PDH) / E1 {e1.E1Number}" : $"STM {e1.StmNumber} / E1 {e1.E1Number}")
+                                                                    <span class="text-muted">—</span>
+
+                                                                    @(e1.StmNumber == "Direct (PDH)"
+                                                                        ? $"Direct (PDH) / E1 {e1.E1Number}"
+                                                                        : $"STM {e1.StmNumber} / E1 {e1.E1Number}")
+                                                                </div>
+
+                                                                @if (User.IsInRole("Admin") ||
+                                                                     User.IsInRole("Operator"))
+                                                                {
+                                                                    <form asp-action="ReleaseCustomerE1"
+                                                                          method="post"
+                                                                          class="d-inline"
+                                                                          onsubmit="return confirm('Release only this physical E1 pair?');">
+
+                                                                        @Html.AntiForgeryToken()
+
+                                                                        <input type="hidden"
+                                                                               name="customerConnectionSegmentId"
+                                                                               value="@e1.CustomerConnectionSegmentId" />
+
+                                                                        <button type="submit"
+                                                                                class="btn btn-sm btn-outline-danger">
+                                                                            Release E1
+                                                                        </button>
+
+                                                                    </form>
+                                                                }
+
                                                             </div>
                                                         }
                                                     }

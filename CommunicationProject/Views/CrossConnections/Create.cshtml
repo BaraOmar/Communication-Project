@@ -416,6 +416,11 @@
         const outgoingStmField =
             document.getElementById("outgoingStmField");
 
+                    const customerNameInput =
+            document.getElementById("CustomerName");
+
+        let customerWasAutoFilled = false;
+
 
         function resetSelect(
             select,
@@ -457,7 +462,15 @@
                     option.dataset.technology =
                         item.technology;
                 }
+                        if (item.state) {
+            option.dataset.state =
+                item.state;
+        }
 
+        if (item.customerName) {
+            option.dataset.customerName =
+                item.customerName;
+        }
                 select.appendChild(option);
             }
 
@@ -517,6 +530,8 @@
 
             incomingStmField.classList.remove(
                 "d-none");
+
+                updateCustomerFromIncomingE1();
         }
 
 
@@ -576,7 +591,9 @@
                 sites,
                 "Select next site",
                 nextValue);
-        }
+
+        updateSideSiteAvailability();
+    }
 
 
         async function loadLinks(
@@ -808,8 +825,65 @@
                     ? "Select incoming E1"
                     : "Select outgoing E1",
                 selectedE1Id);
+                        if (isIncoming) {
+            updateCustomerFromIncomingE1();
         }
 
+        }
+        function updateSideSiteAvailability() {
+            const previousSiteId = previousSiteSelect.value;
+            const nextSiteId = nextSiteSelect.value;
+
+            for (const option of previousSiteSelect.options) {
+                const unavailable =
+                    option.value !== "" &&
+                    option.value === nextSiteId;
+
+                option.hidden = unavailable;
+                option.disabled = unavailable;
+            }
+
+            for (const option of nextSiteSelect.options) {
+                const unavailable =
+                    option.value !== "" &&
+                    option.value === previousSiteId;
+
+                option.hidden = unavailable;
+                option.disabled = unavailable;
+            }
+        }
+        
+
+
+        function updateCustomerFromIncomingE1() {
+            const selectedOption =
+                incomingE1Select.options[
+                    incomingE1Select.selectedIndex];
+
+            const isExistingPath =
+                selectedOption?.dataset.state ===
+                "ExtendExistingPath";
+
+            const customerName =
+                selectedOption?.dataset.customerName || "";
+
+            if (isExistingPath && customerName) {
+                customerNameInput.value =
+                    customerName;
+
+                customerNameInput.readOnly = true;
+                customerWasAutoFilled = true;
+
+                return;
+            }
+
+            if (customerWasAutoFilled) {
+                customerNameInput.value = "";
+            }
+
+            customerNameInput.readOnly = false;
+            customerWasAutoFilled = false;
+        }
 
         siteSelect.addEventListener(
             "change",
@@ -821,13 +895,17 @@
         previousSiteSelect.addEventListener(
             "change",
             async () => {
+                updateSideSiteAvailability();
                 await loadLinks("incoming");
             });
-
+                incomingE1Select.addEventListener(
+        "change",
+        updateCustomerFromIncomingE1);
 
         nextSiteSelect.addEventListener(
             "change",
             async () => {
+                updateSideSiteAvailability();
                 await loadLinks("outgoing");
             });
 

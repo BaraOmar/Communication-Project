@@ -284,6 +284,11 @@ namespace CommunicationProject.Controllers
                                             .Select(segment =>
                                                 new CustomerPathE1ViewModel
                                                 {
+                                                    CustomerConnectionSegmentId =
+    segment.Id,
+
+                                                    E1Id =
+    segment.E1Id,
                                                     SegmentOrder =
                                                         segment
                                                             .CommunicationPathSegment
@@ -459,11 +464,8 @@ namespace CommunicationProject.Controllers
     await _context.E1s
         .AsNoTracking()
         .Where(e1 =>
-            e1.Stm.LinkId ==
-                segment.CommunicationLinkId &&
-
-            e1.ConnectionType ==
-                E1ConnectionType.Physical &&
+e1.LinkId ==
+    segment.CommunicationLinkId &&
 
             e1.ConnectedE1Id != null &&
 
@@ -492,7 +494,9 @@ namespace CommunicationProject.Controllers
     new SelectListItem
     {
         Value = e1.Id.ToString(),
-        Text = $"STM {e1.Stm.Number} — E1 {e1.E1Number}"
+        Text = e1.Stm == null
+    ? $"Direct (PDH) — E1 {e1.E1Number}"
+    : $"STM {e1.Stm.Number} — E1 {e1.E1Number}"
     })
         .ToListAsync();
 
@@ -686,7 +690,7 @@ namespace CommunicationProject.Controllers
                             "Invalid path segment or E1.");
                     }
 
-                    if (e1.Stm.LinkId !=
+                    if (e1.LinkId !=
                         pathSegment.CommunicationLinkId)
                     {
                         return BadRequest(
@@ -695,7 +699,7 @@ namespace CommunicationProject.Controllers
                     }
 
                     if (e1.ConnectionType !=
-                        E1ConnectionType.Physical ||
+                            E1ConnectionType.Physical ||
                         e1.ConnectedE1 == null)
                     {
                         return BadRequest(
@@ -790,8 +794,8 @@ namespace CommunicationProject.Controllers
                     connectedE1.Status =
                         E1OperationalStatus.Connected;
 
-                    if (pathSegment.Order ==
-    path.Segments.Max(segment => segment.Order))
+                    if (pathSegment.Id ==
+                        requiredPathSegments[^1].Id)
                     {
                         connectedE1.CrossConnectionState =
                             E1CrossConnectionState.ExtendExistingPath;
@@ -849,6 +853,220 @@ namespace CommunicationProject.Controllers
                 throw;
             }
         }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,Operator")]
+        public async Task<IActionResult> ReleaseCustomerE1(
+    Guid customerConnectionSegmentId)
+        {
+            await using var transaction =
+                await _context.Database.BeginTransactionAsync(
+                    IsolationLevel.Serializable);
+
+            try
+            {
+                var targetSegment =
+                    await _context.CustomerConnectionSegments
+                        .Include(segment =>
+                            segment.CustomerConnection)
+                        .Include(segment =>
+                            segment.CommunicationPathSegment)
+                        .Include(segment =>
+                            segment.E1)
+                            .ThenInclude(e1 =>
+                                e1.ConnectedE1)
+                        .FirstOrDefaultAsync(segment =>
+                            segment.Id ==
+                            customerConnectionSegmentId);
+
+                if (targetSegment == null)
+                {
+                    await transaction.RollbackAsync();
+                    return NotFound();
+                }
+
+                var customerConnection =
+                    targetSegment.CustomerConnection;
+
+                var connectionSegments =
+                    await _context.CustomerConnectionSegments
+                        .Where(segment =>
+                            segment.CustomerConnectionId ==
+                            customerConnection.Id)
+                        .Include(segment =>
+                            segment.CommunicationPathSegment)
+                        .Include(segment =>
+                            segment.E1)
+                            .ThenInclude(e1 =>
+                                e1.ConnectedE1)
+                        .OrderBy(segment =>
+                            segment.CommunicationPathSegment.Order)
+                        .ToListAsync();
+
+                int targetIndex =
+                    connectionSegments.FindIndex(segment =>
+                        segment.Id ==
+                        customerConnectionSegmentId);
+
+                if (targetIndex < 0)
+                {
+                    await transaction.RollbackAsync();
+                    return NotFound();
+                }
+
+                var leftSegments =
+                    connectionSegments
+                        .Take(targetIndex)
+                        .ToList();
+
+                var rightSegments =
+                    connectionSegments
+                        .Skip(targetIndex + 1)
+                        .ToList();
+
+                var releasedE1 =
+                    targetSegment.E1;
+
+                var releasedConnectedE1 =
+                    releasedE1.ConnectedE1;
+
+                if (releasedConnectedE1 == null)
+                {
+                    await transaction.RollbackAsync();
+
+                    TempData["ErrorMessage"] =
+                        "The connected physical E1 could not be found.";
+
+                    return RedirectToAction(nameof(Index));
+                }
+
+                /*
+ * Find the E1 endpoints cross-connected to either
+ * side of the released physical E1 pair.
+ */
+                var releasedPairIdsForJoins =
+                    new[]
+                    {
+        releasedE1.Id,
+        releasedConnectedE1.Id
+                    };
+
+                var joinedEndpointIds =
+                    new List<Guid>();
+
+                if (releasedE1.JoinE1Id.HasValue)
+                {
+                    joinedEndpointIds.Add(
+                        releasedE1.JoinE1Id.Value);
+                }
+
+                if (releasedConnectedE1.JoinE1Id.HasValue)
+                {
+                    joinedEndpointIds.Add(
+                        releasedConnectedE1.JoinE1Id.Value);
+                }
+
+                var adjacentEndpoints =
+                    await _context.E1s
+                        .Where(e1 =>
+                            !releasedPairIdsForJoins.Contains(e1.Id) &&
+                            (
+                                joinedEndpointIds.Contains(e1.Id) ||
+                                (
+                                    e1.JoinE1Id.HasValue &&
+                                    releasedPairIdsForJoins.Contains(
+                                        e1.JoinE1Id.Value)
+                                )
+                            ))
+                        .ToListAsync();
+
+                foreach (var endpoint in adjacentEndpoints)
+                {
+                    endpoint.JoinE1Id = null;
+
+                    endpoint.CrossConnectionState =
+                        E1CrossConnectionState.ExtendExistingPath;
+                }
+
+
+
+                /*
+                 * Release only the selected physical pair.
+                 * ConnectedE1Id remains because it describes
+                 * the permanent physical pairing.
+                 */
+                releasedE1.Status =
+                    E1OperationalStatus.Available;
+
+                releasedE1.ConnectionGroupId = null;
+                releasedE1.JoinE1Id = null;
+
+                releasedE1.CrossConnectionState =
+                    E1CrossConnectionState.Available;
+
+
+                releasedConnectedE1.Status =
+                    E1OperationalStatus.Available;
+
+                releasedConnectedE1.ConnectionGroupId = null;
+                releasedConnectedE1.JoinE1Id = null;
+
+                releasedConnectedE1.CrossConnectionState =
+                    E1CrossConnectionState.Available;
+
+
+                var releasedE1Ids =
+                    new[]
+                    {
+                releasedE1.Id,
+                releasedConnectedE1.Id
+                    };
+
+                var muxPorts =
+                    await _context.MuxPorts
+                        .Where(port =>
+                            port.E1Id.HasValue &&
+                            releasedE1Ids.Contains(
+                                port.E1Id.Value))
+                        .ToListAsync();
+
+                foreach (var port in muxPorts)
+                {
+                    port.E1Id = null;
+
+                    port.Status =
+                        MuxPortStatus.Available;
+                }
+
+                if (leftSegments.Count == 0 &&
+                    rightSegments.Count == 0)
+                {
+                    _context.CustomerConnections.Remove(
+                        customerConnection);
+                }
+                else
+                {
+                    _context.CustomerConnectionSegments.Remove(
+                        targetSegment);
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                TempData["SuccessMessage"] =
+                    "Only the selected physical E1 pair was released.";
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+
+
+
         private static List<PathSearchResultViewModel>
     BuildCommunicationPathResults(
         List<CommunicationPath> paths)

@@ -191,7 +191,14 @@ public class CrossConnectionsController : Controller
                         ? e1.StmId == stmId.Value
                         : e1.StmId == null
                 ) &&
-                e1.ConnectedE1Id != null);
+                e1.ConnectedE1Id != null &&
+                e1.ConnectionType !=
+    E1ConnectionType.Logical &&
+
+e1.ConnectedE1!.ConnectionType !=
+    E1ConnectionType.Logical);
+
+
 
         IQueryable<E1> query;
 
@@ -205,81 +212,103 @@ public class CrossConnectionsController : Controller
              * CrossConnected        -> never displayed.
              */
             query = baseQuery.Where(e1 =>
+                /*
+                 * Normal available outgoing E1.
+                 */
                 (
-e1.CrossConnectionState ==
-    E1CrossConnectionState.Available &&
+                    e1.CrossConnectionState ==
+                        E1CrossConnectionState.Available &&
 
-e1.Status ==
-    E1OperationalStatus.Available &&
+                    e1.Status ==
+                        E1OperationalStatus.Available &&
 
-e1.ConnectionGroupId == null &&
+                    e1.ConnectionGroupId == null &&
+                    e1.JoinE1Id == null &&
 
-e1.JoinE1Id == null &&
+                    e1.ConnectedE1!.CrossConnectionState ==
+                        E1CrossConnectionState.Available &&
 
-e1.ConnectedE1!.CrossConnectionState ==
-    E1CrossConnectionState.Available &&
+                    e1.ConnectedE1.Status ==
+                        E1OperationalStatus.Available &&
 
-e1.ConnectedE1.Status ==
-    E1OperationalStatus.Available &&
-
-e1.ConnectedE1.ConnectionGroupId == null &&
-
-e1.ConnectedE1.JoinE1Id == null
+                    e1.ConnectedE1.ConnectionGroupId == null &&
+                    e1.ConnectedE1.JoinE1Id == null
                 )
                 ||
-(
-    e1.CrossConnectionState ==
-        E1CrossConnectionState.ExtendExistingPath &&
+                /*
+                 * Open endpoint of an existing customer path.
+                 */
+                (
+                    e1.CrossConnectionState ==
+                        E1CrossConnectionState.ExtendExistingPath &&
 
-    e1.ConnectionGroupId != null &&
-    e1.JoinE1Id == null &&
+                    e1.Status ==
+                        E1OperationalStatus.Connected &&
 
-    _context.CustomerConnectionSegments
-        .Any(customerSegment =>
-            customerSegment.CustomerConnection.ConnectionGroupId ==
-                e1.ConnectionGroupId &&
+                    e1.ConnectionGroupId != null &&
+                    e1.JoinE1Id == null &&
 
-            customerSegment.E1.ConnectedE1Id ==
-                e1.Id &&
+                    _context.CustomerConnectionSegments
+                        .Any(customerSegment =>
+                            customerSegment.CustomerConnection.ConnectionGroupId ==
+                                e1.ConnectionGroupId &&
 
-            customerSegment.CommunicationPathSegment.Order ==
-                _context.CommunicationPathSegments
-                    .Where(pathSegment =>
-                        pathSegment.CommunicationPathId ==
-                            customerSegment.CustomerConnection
-                                .CommunicationPathId)
-                    .Max(pathSegment =>
-                        pathSegment.Order))
-)
+                            (
+                                customerSegment.E1Id == e1.Id ||
+                                customerSegment.E1.ConnectedE1Id ==
+                                    e1.Id
+                            ))
+                )
             );
         }
         else
         {
             /*
              * Outgoing:
-             * only a completely available E1 pair.
+             * available physical E1s or open endpoints
+             * of existing customer paths.
              */
             query = baseQuery.Where(e1 =>
-                e1.CrossConnectionState ==
-                    E1CrossConnectionState.Available &&
+                (
+                    e1.CrossConnectionState ==
+                        E1CrossConnectionState.Available &&
+
                     e1.Status ==
-    E1OperationalStatus.Available &&
+                        E1OperationalStatus.Available &&
 
-e1.ConnectionGroupId == null &&
+                    e1.ConnectionGroupId == null &&
+                    e1.JoinE1Id == null &&
 
-e1.ConnectedE1!.Status ==
-    E1OperationalStatus.Available &&
+                    e1.ConnectedE1!.CrossConnectionState ==
+                        E1CrossConnectionState.Available &&
 
-e1.ConnectedE1.ConnectionGroupId == null &&
+                    e1.ConnectedE1.Status ==
+                        E1OperationalStatus.Available &&
 
+                    e1.ConnectedE1.ConnectionGroupId == null &&
+                    e1.ConnectedE1.JoinE1Id == null
+                )
+                ||
+                (
+                    e1.CrossConnectionState ==
+                        E1CrossConnectionState.ExtendExistingPath &&
 
-                e1.JoinE1Id == null &&
+                    e1.Status ==
+                        E1OperationalStatus.Connected &&
 
-                e1.ConnectedE1!.CrossConnectionState ==
-                    E1CrossConnectionState.Available &&
+                    e1.ConnectionGroupId != null &&
+                    e1.JoinE1Id == null &&
 
+                    _context.CustomerConnectionSegments
+                        .Any(customerSegment =>
+                            customerSegment.CustomerConnection.ConnectionGroupId ==
+                                e1.ConnectionGroupId &&
 
-                e1.ConnectedE1.JoinE1Id == null
+                            (
+                                customerSegment.E1Id == e1.Id ||
+                                customerSegment.E1.ConnectedE1Id == e1.Id
+                            ))
+                )
             );
         }
 
@@ -385,14 +414,18 @@ e1.ConnectedE1.ConnectionGroupId == null &&
 
             if (outgoingE1 != null &&
                 outgoingE1.CrossConnectionState !=
-                    E1CrossConnectionState.Available)
+                    E1CrossConnectionState.Available &&
+                outgoingE1.CrossConnectionState !=
+                    E1CrossConnectionState.ExtendExistingPath)
             {
                 ModelState.AddModelError(
                     nameof(model.OutgoingE1Id),
-                    "The outgoing E1 must be available.");
+                    "The outgoing E1 must be available or an existing path endpoint.");
             }
 
             if (outgoingE1?.ConnectedE1 != null &&
+                outgoingE1.CrossConnectionState ==
+                    E1CrossConnectionState.Available &&
                 outgoingE1.ConnectedE1.CrossConnectionState !=
                     E1CrossConnectionState.Available)
             {
@@ -434,7 +467,194 @@ e1.ConnectedE1.ConnectionGroupId == null &&
                     E1CrossConnectionState.ExtendExistingPath &&
                 incomingE1.ConnectionGroupId.HasValue;
 
+            bool outgoingIsExistingEndpoint =
+    outgoingE1 != null &&
+    outgoingE1.CrossConnectionState ==
+        E1CrossConnectionState.ExtendExistingPath &&
+    outgoingE1.ConnectionGroupId.HasValue;
+
+            bool isMergingExistingPaths =
+                isExtendingExistingPath &&
+                outgoingIsExistingEndpoint;
+
+            /*
+             * An existing outgoing endpoint can only be joined
+             * when the incoming side is also an existing endpoint.
+             */
+            if (outgoingIsExistingEndpoint &&
+                !isExtendingExistingPath)
+            {
+                ModelState.AddModelError(
+                    nameof(model.OutgoingE1Id),
+                    "To merge paths, both selected E1s must be existing path endpoints.");
+            }
+            Guid? incomingEndpointConnectionId = null;
+            Guid? outgoingEndpointConnectionId = null;
+            Guid? outgoingEndpointPathId = null;
+            Guid? outgoingEndpointGroupId = null;
+            if (isMergingExistingPaths)
+            {
+                var endpointOwners =
+                    await _context.CustomerConnections
+                        .AsNoTracking()
+                        .Where(connection =>
+                            connection.ConnectionGroupId ==
+                                incomingE1!.ConnectionGroupId!.Value ||
+
+                            connection.ConnectionGroupId ==
+                                outgoingE1!.ConnectionGroupId!.Value)
+.Select(connection => new
+{
+    connection.Id,
+    connection.CustomerId,
+    connection.ConnectionGroupId,
+    connection.CommunicationPathId
+})
+                        .ToListAsync();
+
+                var incomingOwner =
+                    endpointOwners.FirstOrDefault(connection =>
+                        connection.ConnectionGroupId ==
+                            incomingE1!.ConnectionGroupId!.Value);
+
+                var outgoingOwner =
+                    endpointOwners.FirstOrDefault(connection =>
+                        connection.ConnectionGroupId ==
+                            outgoingE1!.ConnectionGroupId!.Value);
+
+                if (incomingOwner == null ||
+                    outgoingOwner == null)
+                {
+                    ModelState.AddModelError(
+                        string.Empty,
+                        "One of the selected customer paths could not be found.");
+                }
+                else if (incomingOwner.CustomerId !=
+                         outgoingOwner.CustomerId)
+                {
+                    ModelState.AddModelError(
+                        string.Empty,
+                        "Paths belonging to different customers cannot be merged.");
+                }
+
+                else
+                {
+                    incomingEndpointConnectionId =
+                        incomingOwner.Id;
+
+                    outgoingEndpointConnectionId =
+                        outgoingOwner.Id;
+
+                    outgoingEndpointPathId =
+                        outgoingOwner.CommunicationPathId;
+
+                    outgoingEndpointGroupId =
+    outgoingOwner.ConnectionGroupId;
+
+                    if (incomingOwner.Id != outgoingOwner.Id)
+                    {
+                        var endpointPositions =
+                            await _context.CustomerConnectionSegments
+                                .Where(segment =>
+                                    segment.CustomerConnectionId ==
+                                        incomingOwner.Id ||
+
+                                    segment.CustomerConnectionId ==
+                                        outgoingOwner.Id)
+                                .Select(segment => new
+                                {
+                                    segment.CustomerConnectionId,
+                                    segment.E1Id,
+                                    ConnectedE1Id =
+                                        segment.E1.ConnectedE1Id,
+
+                                    Order =
+                                        segment.CommunicationPathSegment.Order
+                                })
+                                .ToListAsync();
+
+                        var incomingPositions =
+                            endpointPositions
+                                .Where(position =>
+                                    position.CustomerConnectionId ==
+                                        incomingOwner.Id)
+                                .ToList();
+
+                        var outgoingPositions =
+                            endpointPositions
+                                .Where(position =>
+                                    position.CustomerConnectionId ==
+                                        outgoingOwner.Id)
+                                .ToList();
+
+                        var incomingPosition =
+                            incomingPositions.FirstOrDefault(position =>
+                                position.E1Id == incomingE1!.Id ||
+                                position.ConnectedE1Id == incomingE1.Id);
+
+                        var outgoingPosition =
+                            outgoingPositions.FirstOrDefault(position =>
+                                position.E1Id == outgoingE1!.Id ||
+                                position.ConnectedE1Id == outgoingE1.Id);
+
+                        bool incomingIsEdge =
+                            incomingPosition != null &&
+                            (
+                                (
+                                    incomingPosition.ConnectedE1Id ==
+                                        incomingE1!.Id &&
+
+                                    incomingPosition.Order ==
+                                        incomingPositions.Max(position =>
+                                            position.Order)
+                                )
+                                ||
+                                (
+                                    incomingPosition.E1Id ==
+                                        incomingE1!.Id &&
+
+                                    incomingPosition.Order ==
+                                        incomingPositions.Min(position =>
+                                            position.Order)
+                                )
+                            );
+
+                        bool outgoingIsEdge =
+                            outgoingPosition != null &&
+                            (
+                                (
+                                    outgoingPosition.E1Id ==
+                                        outgoingE1!.Id &&
+
+                                    outgoingPosition.Order ==
+                                        outgoingPositions.Min(position =>
+                                            position.Order)
+                                )
+                                ||
+                                (
+                                    outgoingPosition.ConnectedE1Id ==
+                                        outgoingE1!.Id &&
+
+                                    outgoingPosition.Order ==
+                                        outgoingPositions.Max(position =>
+                                            position.Order)
+                                )
+                            );
+
+                        if (!incomingIsEdge ||
+                            !outgoingIsEdge)
+                        {
+                            ModelState.AddModelError(
+                                string.Empty,
+                                "Two separate customer paths can only be merged at their open end points.");
+                        }
+                    }
+                }
+
+            }
+
             Guid? existingCommunicationPathId = null;
+            Guid? existingCustomerConnectionId = null;
 
             string customerName =
                 model.CustomerName?.Trim() ?? string.Empty;
@@ -455,11 +675,12 @@ e1.ConnectedE1.ConnectionGroupId == null &&
                             .Where(connection =>
                                 connection.ConnectionGroupId ==
                                 incomingE1.ConnectionGroupId.Value)
-                            .Select(connection => new
-                            {
-                                CustomerName = connection.Customer.Name,
-                                connection.CommunicationPathId
-                            })
+.Select(connection => new
+{
+    CustomerConnectionId = connection.Id,
+    CustomerName = connection.Customer.Name,
+    connection.CommunicationPathId
+})
                             .FirstOrDefaultAsync();
 
                     if (existingConnection == null ||
@@ -476,6 +697,11 @@ e1.ConnectedE1.ConnectionGroupId == null &&
 
                         model.CustomerName =
                             existingConnection.CustomerName;
+
+                        existingCustomerConnectionId =
+                            existingConnection.CustomerConnectionId;
+
+
 
                         existingCommunicationPathId =
                             existingConnection.CommunicationPathId;
@@ -580,32 +806,225 @@ e1.ConnectedE1.ConnectionGroupId == null &&
 
             Guid pathId;
 
-            if (isExtendingExistingPath)
+            if (isMergingExistingPaths &&
+                incomingEndpointConnectionId ==
+                    outgoingEndpointConnectionId)
+            {
+                /*
+                 * Reconnect two sections of the same customer connection.
+                 * Their path segments already exist.
+                 */
+                pathId =
+                    existingCommunicationPathId!.Value;
+            }
+
+            else if (isMergingExistingPaths)
+            {
+                /*
+                 * Two separate CustomerConnections belonging
+                 * to the same customer are being joined.
+                 */
+                pathId =
+                    existingCommunicationPathId!.Value;
+
+                var outgoingConnectionToMerge =
+                    await _context.CustomerConnections
+                        .FirstAsync(connection =>
+                            connection.Id ==
+                                outgoingEndpointConnectionId!.Value);
+
+                var outgoingSegmentsToMerge =
+                    await _context.CustomerConnectionSegments
+                        .Where(segment =>
+                            segment.CustomerConnectionId ==
+                                outgoingEndpointConnectionId.Value)
+                        .Include(segment =>
+                            segment.CommunicationPathSegment)
+                        .Include(segment =>
+                            segment.E1)
+                            .ThenInclude(e1 =>
+                                e1.ConnectedE1)
+                        .OrderBy(segment =>
+                            segment.CommunicationPathSegment.Order)
+                        .ToListAsync();
+
+                int minimumOutgoingOrder =
+                    outgoingSegmentsToMerge.Min(segment =>
+                        segment.CommunicationPathSegment.Order);
+
+                bool mergeInOriginalDirection =
+                    outgoingSegmentsToMerge.Any(segment =>
+                        segment.CommunicationPathSegment.Order ==
+                            minimumOutgoingOrder &&
+
+                        segment.E1Id ==
+                            outgoingE1.Id);
+
+                IEnumerable<CustomerConnectionSegment>
+                    orderedOutgoingSegments =
+                        mergeInOriginalDirection
+                            ? outgoingSegmentsToMerge
+                                .OrderBy(segment =>
+                                    segment.CommunicationPathSegment.Order)
+
+                            : outgoingSegmentsToMerge
+                                .OrderByDescending(segment =>
+                                    segment.CommunicationPathSegment.Order);
+
+                int nextOrder =
+                    await _context.CommunicationPathSegments
+                        .Where(segment =>
+                            segment.CommunicationPathId == pathId)
+                        .MaxAsync(segment =>
+                            (int?)segment.Order)
+                    ?? 0;
+
+                foreach (var outgoingSegment in
+                         orderedOutgoingSegments)
+                {
+                    E1 mergedE1;
+
+                    if (mergeInOriginalDirection)
+                    {
+                        mergedE1 =
+                            outgoingSegment.E1;
+                    }
+                    else
+                    {
+                        mergedE1 =
+                            outgoingSegment.E1.ConnectedE1
+                            ?? throw new InvalidOperationException(
+                                "The reverse E1 endpoint could not be found.");
+                    }
+
+                    nextOrder++;
+
+                    var mergedPathSegment =
+                        new CommunicationPathSegment
+                        {
+                            Id = Guid.NewGuid(),
+                            CommunicationPathId = pathId,
+                            CommunicationLinkId = mergedE1.LinkId,
+                            Order = nextOrder
+                        };
+
+                    _context.CommunicationPathSegments.Add(
+                        mergedPathSegment);
+
+                    outgoingSegment.CustomerConnectionId =
+                        incomingEndpointConnectionId!.Value;
+
+                    outgoingSegment.CommunicationPathSegmentId =
+                        mergedPathSegment.Id;
+
+                    outgoingSegment.CommunicationPathSegment =
+                        mergedPathSegment;
+
+                    outgoingSegment.E1Id =
+                        mergedE1.Id;
+
+                    outgoingSegment.E1 =
+                        mergedE1;
+                }
+
+                /*
+                 * Move every E1 from the outgoing connection group
+                 * into the incoming connection group.
+                 */
+                var outgoingGroupE1s =
+                    await _context.E1s
+                        .Where(e1 =>
+                            e1.ConnectionGroupId ==
+                                outgoingEndpointGroupId!.Value)
+                        .ToListAsync();
+
+                foreach (var groupE1 in outgoingGroupE1s)
+                {
+                    groupE1.ConnectionGroupId =
+                        connectionGroupId;
+                }
+
+                _context.CustomerConnections.Remove(
+                    outgoingConnectionToMerge);
+            }
+
+
+            else if (isExtendingExistingPath)
             {
                 /*
                  * Only an existing path has a PathId.
                  */
                 pathId = existingCommunicationPathId!.Value;
 
-                int maximumSegmentOrder =
-    await _context.CommunicationPathSegments
-        .Where(segment =>
-            segment.CommunicationPathId == pathId)
-        .MaxAsync(segment => (int?)segment.Order)
-    ?? 0;
+                int? incomingSegmentOrder =
+    await _context.CustomerConnectionSegments
+        .Where(customerSegment =>
+            customerSegment.CustomerConnectionId ==
+                existingCustomerConnectionId!.Value &&
 
-                var extendedSegment =
-                    new CommunicationPathSegment
-                    {
-                        Id = Guid.NewGuid(),
-                        CommunicationPathId = pathId,
-                        CommunicationLinkId =
-                            outgoingE1.LinkId,
-                        Order = maximumSegmentOrder + 1
-                    };
+            customerSegment.E1.ConnectedE1Id ==
+                incomingE1.Id)
+        .Select(customerSegment =>
+            (int?)customerSegment
+                .CommunicationPathSegment
+                .Order)
+        .FirstOrDefaultAsync();
 
-                _context.CommunicationPathSegments.Add(
-                    extendedSegment);
+                CommunicationPathSegment? extendedSegment = null;
+
+                /*
+                 * If the next segment already exists in the path but was
+                 * released by this customer, reuse it in its original order.
+                 */
+                if (incomingSegmentOrder.HasValue)
+                {
+                    extendedSegment =
+                        await _context.CommunicationPathSegments
+                            .FirstOrDefaultAsync(segment =>
+                                segment.CommunicationPathId == pathId &&
+
+                                segment.Order ==
+                                    incomingSegmentOrder.Value + 1 &&
+
+                                segment.CommunicationLinkId ==
+                                    outgoingE1.LinkId &&
+
+                                !_context.CustomerConnectionSegments
+                                    .Any(customerSegment =>
+                                        customerSegment.CustomerConnectionId ==
+                                            existingCustomerConnectionId.Value &&
+
+                                        customerSegment.CommunicationPathSegmentId ==
+                                            segment.Id));
+                }
+
+                /*
+                 * No released segment was found, so this is a normal
+                 * extension at the end of the path.
+                 */
+                if (extendedSegment == null)
+                {
+                    int maximumSegmentOrder =
+                        await _context.CommunicationPathSegments
+                            .Where(segment =>
+                                segment.CommunicationPathId == pathId)
+                            .MaxAsync(segment =>
+                                (int?)segment.Order)
+                        ?? 0;
+
+                    extendedSegment =
+                        new CommunicationPathSegment
+                        {
+                            Id = Guid.NewGuid(),
+                            CommunicationPathId = pathId,
+                            CommunicationLinkId =
+                                outgoingE1.LinkId,
+                            Order = maximumSegmentOrder + 1
+                        };
+
+                    _context.CommunicationPathSegments.Add(
+                        extendedSegment);
+                }
 
                 customerSegmentAssignments.Add(
                     (extendedSegment, outgoingE1));
@@ -879,6 +1298,15 @@ e1.ConnectedE1.ConnectionGroupId == null &&
                 "The incoming E1 does not belong to the connection " +
                 "between the selected site and previous site.");
         }
+        if (incomingE1.ConnectionType ==
+        E1ConnectionType.Logical ||
+    incomingE1.ConnectedE1?.ConnectionType ==
+        E1ConnectionType.Logical)
+        {
+            ModelState.AddModelError(
+                nameof(model.IncomingE1Id),
+                "Logical E1s cannot be used in cross connections.");
+        }
     }
 
     private void ValidateOutgoingE1(
@@ -903,6 +1331,7 @@ e1.ConnectedE1.ConnectionGroupId == null &&
                 "to the selected outgoing link.");
         }
 
+
         if (outgoingE1.StmId !=
             model.OutgoingStmId)
         {
@@ -926,6 +1355,7 @@ e1.ConnectedE1.ConnectionGroupId == null &&
                 "The outgoing E1 does not belong to the connection " +
                 "between the selected site and next site.");
         }
+
     }
 
     private async Task ValidateCrossConnectionAvailabilityAsync(
@@ -1098,8 +1528,10 @@ e1.ConnectedE1.ConnectionGroupId == null &&
                 e1.JoinE1Id == outgoingE1.Id ||
                 e1.JoinE1Id == outgoingConnectedE1.Id);
 
-        if (outgoingPairHasStoredUsage ||
-            outgoingPairIsJoinTarget)
+        if (outgoingE1.CrossConnectionState ==
+                E1CrossConnectionState.Available &&
+            (outgoingPairHasStoredUsage ||
+             outgoingPairIsJoinTarget))
         {
             ModelState.AddModelError(
                 nameof(CreateCrossConnectionViewModel.OutgoingE1Id),
@@ -1182,29 +1614,29 @@ e1.ConnectedE1.ConnectionGroupId == null &&
              * The endpoint must belong to the final segment
              * of the reusable CommunicationPath.
              */
-            bool isFinalPathEndpoint =
+            /*
+             * The E1 must be an open endpoint belonging
+             * to this customer connection.
+             */
+            bool isReusablePathEndpoint =
                 await _context.CustomerConnectionSegments
                     .AnyAsync(customerSegment =>
                         customerSegment.CustomerConnection.ConnectionGroupId ==
                             incomingE1.ConnectionGroupId.Value &&
 
-                        customerSegment.E1.ConnectedE1Id ==
-                            incomingE1.Id &&
+                        (
+                            customerSegment.E1Id ==
+                                incomingE1.Id ||
 
-                        customerSegment.CommunicationPathSegment.Order ==
-                            _context.CommunicationPathSegments
-                                .Where(pathSegment =>
-                                    pathSegment.CommunicationPathId ==
-                                        customerSegment.CustomerConnection
-                                            .CommunicationPathId)
-                                .Max(pathSegment =>
-                                    pathSegment.Order));
+                            customerSegment.E1.ConnectedE1Id ==
+                                incomingE1.Id
+                        ));
 
-            if (!isFinalPathEndpoint)
+            if (!isReusablePathEndpoint)
             {
                 ModelState.AddModelError(
                     nameof(CreateCrossConnectionViewModel.IncomingE1Id),
-                    "The selected incoming E1 is not the final endpoint of the path.");
+                    "The selected incoming E1 is not an open endpoint of the path.");
             }
 
             return;

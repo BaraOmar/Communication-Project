@@ -87,6 +87,10 @@ namespace CommunicationProject.ViewModels
 
     public class CustomerPathE1ViewModel
     {
+        public Guid CustomerConnectionSegmentId { get; set; }
+
+        public Guid E1Id { get; set; }
+
         public int SegmentOrder { get; set; }
 
         public string SiteFrom { get; set; } =
