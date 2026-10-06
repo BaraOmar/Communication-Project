@@ -543,6 +543,7 @@
                                         <tr>
                                             <th>Customer</th>
                                             <th>E1 Route</th>
+                                            <th>Cross Connection</th>
                                             <th>Status</th>
                                         </tr>
                                     </thead>
@@ -634,7 +635,41 @@
                                                     }
 
                                                 </td>
+                                                <td>
 
+                                                    @if (!customer.CrossConnections.Any())
+                                                    {
+                                                        <span class="text-muted">
+                                                            No cross connections
+                                                        </span>
+                                                    }
+                                                    else
+                                                    {
+                                                        @foreach (var crossConnection
+                                                                  in customer.CrossConnections)
+                                                        {
+                                                            <div class="mb-2">
+
+                                                                <div class="fw-semibold">
+                                                                    Site @crossConnection.SiteId
+                                                                </div>
+
+                                                                <div>
+                                                                    @crossConnection.DisplayText
+                                                                </div>
+
+                                                                @if (crossConnection.IsPhysicalTermination)
+                                                                {
+                                                                    <small class="text-muted">
+                                                                        Physical termination
+                                                                    </small>
+                                                                }
+
+                                                            </div>
+                                                        }
+                                                    }
+
+                                                </td>
 
                                                 <td>
 

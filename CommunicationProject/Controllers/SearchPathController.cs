@@ -209,7 +209,14 @@ namespace CommunicationProject.Controllers
         segment.E1)
         .ThenInclude(e1 =>
             e1.Stm)
-
+        .Include(connection =>
+    connection.Segments)
+    .ThenInclude(segment =>
+        segment.E1)
+        .ThenInclude(e1 =>
+            e1.ConnectedE1)
+            .ThenInclude(connectedE1 =>
+                connectedE1!.Stm)
                         .Include(connection =>
                             connection.Segments)
                             .ThenInclude(segment =>
@@ -219,6 +226,115 @@ namespace CommunicationProject.Controllers
 
                         .ToListAsync();
 
+                /*
+ * Collect every E1 endpoint needed by the visible
+ * customer connections.
+ *
+ * segment.E1          = endpoint at SiteFrom
+ * segment.E1.ConnectedE1 = endpoint at SiteTo
+ */
+                var relevantE1s =
+                    customerConnections
+                        .SelectMany(connection =>
+                            connection.Segments)
+                        .SelectMany(segment =>
+                            new E1?[]
+                            {
+                segment.E1,
+                segment.E1.ConnectedE1
+                            })
+                        .Where(e1 =>
+                            e1 != null)
+                        .Select(e1 =>
+                            e1!)
+                        .ToList();
+
+
+                /*
+                 * STM ports are used to display:
+                 *
+                 * STM 1 (1.Card.Port)
+                 */
+                var relevantStmIds =
+                    relevantE1s
+                        .Where(e1 =>
+                            e1.StmId.HasValue)
+                        .Select(e1 =>
+                            e1.StmId!.Value)
+                        .Distinct()
+                        .ToList();
+
+
+                /*
+                 * E1 ports are used for the final physical
+                 * termination:
+                 *
+                 * LTU (1.Card.Port)
+                 */
+                var relevantE1Ids =
+                    relevantE1s
+                        .Select(e1 =>
+                            e1.Id)
+                        .Distinct()
+                        .ToList();
+
+
+                /*
+                 * Load all required physical MUX positions once.
+                 *
+                 * Do not query MuxPorts individually for every
+                 * E1 or STM.
+                 */
+                var relevantMuxPorts =
+                    await _context.MuxPorts
+                        .AsNoTracking()
+
+                        .Where(port =>
+                            (
+                                port.StmId.HasValue &&
+                                relevantStmIds.Contains(
+                                    port.StmId.Value)
+                            )
+                            ||
+                            (
+                                port.E1Id.HasValue &&
+                                relevantE1Ids.Contains(
+                                    port.E1Id.Value)
+                            ))
+
+                        .Include(port =>
+                            port.MuxCard)
+
+                        .ToListAsync();
+
+
+                /*
+                 * STM -> physical STM port
+                 */
+                var stmPortLookup =
+                    relevantMuxPorts
+                        .Where(port =>
+                            port.StmId.HasValue)
+                        .ToDictionary(
+                            port => port.StmId!.Value,
+                            port => port);
+
+
+                /*
+                 * E1 -> physical LTU port
+                 *
+                 * CardCategory.E1 is treated as LTU
+                 * for the Search Path display.
+                 */
+                var ltuPortLookup =
+                    relevantMuxPorts
+                        .Where(port =>
+                            port.E1Id.HasValue &&
+                            port.MuxCard.Category ==
+                                CardCategory.E1)
+                        .ToDictionary(
+                            port => port.E1Id!.Value,
+                            port => port);
 
                 foreach (var result in model.Results)
                 {
@@ -238,6 +354,147 @@ namespace CommunicationProject.Controllers
                                         .OrderBy(segment =>
                                             segment.CommunicationPathSegment.Order)
                                         .ToList();
+
+                                var crossConnections =
+    new List<CustomerPathCrossConnectionViewModel>();
+
+
+                                /*
+                                 * Intermediate sites.
+                                 *
+                                 * For:
+                                 *
+                                 * A -> B -> C
+                                 *
+                                 * the cross connection at B is:
+                                 *
+                                 * previousSegment.E1.ConnectedE1
+                                 *                  *
+                                 * currentSegment.E1
+                                 */
+                                for (int i = 1;
+                                     i < customerSegments.Count;
+                                     i++)
+                                {
+                                    var previousSegment =
+                                        customerSegments[i - 1];
+
+                                    var currentSegment =
+                                        customerSegments[i];
+
+
+                                    var incomingE1 =
+                                        previousSegment.E1.ConnectedE1;
+
+                                    var outgoingE1 =
+                                        currentSegment.E1;
+
+
+                                    if (incomingE1 == null)
+                                    {
+                                        continue;
+                                    }
+
+
+                                    string incomingSide =
+                                        BuildStmE1Display(
+                                            incomingE1,
+                                            stmPortLookup);
+
+
+                                    string outgoingSide =
+                                        BuildStmE1Display(
+                                            outgoingE1,
+                                            stmPortLookup);
+
+
+                                    crossConnections.Add(
+                                        new CustomerPathCrossConnectionViewModel
+                                        {
+                                            SiteId =
+                                                currentSegment
+                                                    .CommunicationPathSegment
+                                                    .CommunicationLink
+                                                    .SiteFromId,
+
+                                            IncomingSide =
+                                                incomingSide,
+
+                                            OutgoingSide =
+                                                outgoingSide,
+
+                                            IsPhysicalTermination =
+                                                false
+                                        });
+                                }
+
+
+                                /*
+                                 * Final destination.
+                                 *
+                                 * The last segment reaches its destination through:
+                                 *
+                                 * lastSegment.E1.ConnectedE1
+                                 *
+                                 * and that physical E1 endpoint is connected
+                                 * to an E1-category MUX port, displayed as LTU.
+                                 */
+                                if (customerSegments.Count > 0)
+                                {
+                                    var lastSegment =
+                                        customerSegments[^1];
+
+                                    var destinationE1 =
+                                        lastSegment.E1.ConnectedE1;
+
+
+                                    if (destinationE1 != null)
+                                    {
+                                        string incomingSide =
+                                            BuildStmE1Display(
+                                                destinationE1,
+                                                stmPortLookup);
+
+
+                                        string ltuSide;
+
+                                        if (ltuPortLookup.TryGetValue(
+                                                destinationE1.Id,
+                                                out var ltuPort))
+                                        {
+                                            ltuSide =
+                                                $"LTU " +
+                                                $"(1." +
+                                                $"{ltuPort.MuxCard.SlotNumber}." +
+                                                $"{ltuPort.PortNumber})";
+                                        }
+                                        else
+                                        {
+                                            ltuSide =
+                                                "LTU (Not assigned)";
+                                        }
+
+
+                                        crossConnections.Add(
+                                            new CustomerPathCrossConnectionViewModel
+                                            {
+                                                SiteId =
+                                                    lastSegment
+                                                        .CommunicationPathSegment
+                                                        .CommunicationLink
+                                                        .SiteToId,
+
+                                                IncomingSide =
+                                                    incomingSide,
+
+                                                OutgoingSide =
+                                                    ltuSide,
+
+                                                IsPhysicalTermination =
+                                                    true
+                                            });
+                                    }
+                                }
 
                                 return new CustomerPathUsageViewModel
                                 {
@@ -262,6 +519,8 @@ namespace CommunicationProject.Controllers
     customerSegments.Count > 0
         ? customerSegments[0].E1.Status
         : null,
+                                    CrossConnections =
+    crossConnections,
 
                                     StartSiteId =
                                         customerSegments.Count > 0
@@ -1066,7 +1325,52 @@ e1.LinkId ==
         }
 
 
+        private static string BuildStmE1Display(
+            E1 e1,
+            IReadOnlyDictionary<Guid, MuxPort> stmPortLookup)
+        {
+            /*
+             * PDH does not have an STM.
+             *
+             * Keep it safe for now even though the new
+             * display requirement mainly targets SDH.
+             */
+            if (!e1.StmId.HasValue ||
+                e1.Stm == null)
+            {
+                return $"Direct (PDH) E1 ({e1.E1Number})";
+            }
 
+
+            string position;
+
+            if (stmPortLookup.TryGetValue(
+                    e1.StmId.Value,
+                    out var stmPort))
+            {
+                /*
+                 * Shelf is fixed to 1 for now.
+                 *
+                 * Format:
+                 * Shelf.Card.Port
+                 */
+                position =
+                    $"1." +
+                    $"{stmPort.MuxCard.SlotNumber}." +
+                    $"{stmPort.PortNumber}";
+            }
+            else
+            {
+                position =
+                    "Not assigned";
+            }
+
+
+            return
+                $"STM {e1.Stm.Number} " +
+                $"({position}) " +
+                $"E1 ({e1.E1Number})";
+        }
         private static List<PathSearchResultViewModel>
     BuildCommunicationPathResults(
         List<CommunicationPath> paths)

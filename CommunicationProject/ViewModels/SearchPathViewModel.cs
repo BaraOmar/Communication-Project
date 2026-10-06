@@ -74,6 +74,9 @@ namespace CommunicationProject.ViewModels
 
         public E1OperationalStatus? OperationalStatus { get; set; }
 
+        public List<CustomerPathCrossConnectionViewModel> CrossConnections
+        { get; set; } = new();
+
         public List<CustomerPathE1ViewModel> E1s { get; set; } =
             new();
 
@@ -104,4 +107,20 @@ namespace CommunicationProject.ViewModels
         public string E1Number { get; set; } =
             string.Empty;
     }
+}
+public class CustomerPathCrossConnectionViewModel
+{
+    public string SiteId { get; set; } =
+        string.Empty;
+
+    public string IncomingSide { get; set; } =
+        string.Empty;
+
+    public string OutgoingSide { get; set; } =
+        string.Empty;
+
+    public bool IsPhysicalTermination { get; set; }
+
+    public string DisplayText =>
+        $"{IncomingSide} * {OutgoingSide}";
 }
