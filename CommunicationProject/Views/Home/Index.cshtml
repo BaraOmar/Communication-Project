@@ -13,19 +13,44 @@
 
 <div class="home-page">
 
-    <!-- Header -->
-    <div class="home-header">
+    <!-- =====================================================
+         HERO
+         ===================================================== -->
 
-        <h1 class="home-title">
-            Network Management
-        </h1>
+    <section class="home-hero">
 
-        <p class="home-subtitle">
-            Access communication sites, links, channels
-            and network path management from one place.
-        </p>
+        <div class="home-hero-content">
 
-    </div>
+            <div class="home-hero-label">
+                <span class="home-hero-label-dot"></span>
+                Communication Network
+            </div>
+
+            <h1 class="home-title">
+                Network Management
+            </h1>
+
+            <p class="home-subtitle">
+                Manage communication sites, links, channels,
+                equipment and network paths from one centralized system.
+            </p>
+
+        </div>
+
+
+        <div class="home-hero-decoration"
+             aria-hidden="true">
+
+            <div class="home-hero-ring home-hero-ring-large"></div>
+            <div class="home-hero-ring home-hero-ring-small"></div>
+
+            <div class="home-hero-node home-hero-node-one"></div>
+            <div class="home-hero-node home-hero-node-two"></div>
+            <div class="home-hero-node home-hero-node-three"></div>
+
+        </div>
+
+    </section>
 
 
     <!-- =====================================================
@@ -35,22 +60,56 @@
     {
         <section class="home-section">
 
-            <h2 class="home-section-title">
-                Management
-            </h2>
+            <div class="home-section-header">
+
+                <div>
+                    <div class="home-section-heading">
+                        <span class="home-section-mark"></span>
+
+                        <h2 class="home-section-title">
+                            Management
+                        </h2>
+                    </div>
+
+                    <p class="home-section-description">
+                        Configure the main administrative
+                        components of the communication network.
+                    </p>
+                </div>
+
+            </div>
 
 
             <div class="home-grid">
-
 
                 <!-- Users -->
                 <a asp-controller="Users"
                        asp-action="Index"
                        class="home-nav-card">
 
-                    <span class="home-card-icon">
-                        US
-                    </span>
+                    <div class="home-card-top">
+
+                        <span class="home-card-icon">
+
+                            <svg viewBox="0 0 24 24"
+                                 aria-hidden="true">
+                                <circle cx="9" cy="7" r="4"></circle>
+
+                                <path d="M3 21v-2a6 6 0 0 1 6-6h0a6 6 0 0 1 6 6v2"></path>
+
+                                <path d="M16 3.5a4 4 0 0 1 0 7.5"></path>
+
+                                <path d="M17 14a6 6 0 0 1 4 5.7V21"></path>
+                            </svg>
+
+                        </span>
+
+                        <span class="home-card-arrow">
+                            →
+                        </span>
+
+                    </div>
+
 
                     <h3 class="home-card-title">
                         Users
@@ -58,17 +117,16 @@
 
                     <p class="home-card-description">
                         Create system accounts and manage
-                        user access roles.
+                        user access roles and permissions.
                     </p>
+
 
                     <div class="home-card-footer">
 
+                        <span class="home-card-footer-dot"></span>
+
                         <span>
                             User management
-                        </span>
-
-                        <span class="home-card-arrow">
-                            →
                         </span>
 
                     </div>
@@ -79,25 +137,23 @@
                 <!-- Sites -->
                 <a asp-controller="Sites"
                        asp-action="Index"
-                       class="home-nav-card home-card-green">
+                       class="home-nav-card">
 
-                    <span class="home-card-icon">
-                        SI
-                    </span>
+                    <div class="home-card-top">
 
-                    <h3 class="home-card-title">
-                        Sites
-                    </h3>
+                        <span class="home-card-icon">
 
-                    <p class="home-card-description">
-                        Manage communication sites
-                        and their locations.
-                    </p>
+                            <svg viewBox="0 0 24 24"
+                                 aria-hidden="true">
 
-                    <div class="home-card-footer">
+                                <path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11z"></path>
 
-                        <span>
-                            Site management
+                                <circle cx="12"
+                                        cy="10"
+                                        r="2"></circle>
+
+                            </svg>
+
                         </span>
 
                         <span class="home-card-arrow">
@@ -106,17 +162,56 @@
 
                     </div>
 
+
+                    <h3 class="home-card-title">
+                        Sites
+                    </h3>
+
+                    <p class="home-card-description">
+                        Manage communication sites,
+                        identifiers and physical locations.
+                    </p>
+
+
+                    <div class="home-card-footer">
+
+                        <span class="home-card-footer-dot"></span>
+
+                        <span>
+                            Site management
+                        </span>
+
+                    </div>
+
                 </a>
 
 
-                <!-- Links -->
+                <!-- Communication Links -->
                 <a asp-controller="CommunicationLinks"
                        asp-action="Index"
-                       class="home-nav-card home-card-purple">
+                       class="home-nav-card">
 
-                    <span class="home-card-icon">
-                        LN
-                    </span>
+                    <div class="home-card-top">
+
+                        <span class="home-card-icon">
+
+                            <svg viewBox="0 0 24 24"
+                                 aria-hidden="true">
+
+                                <path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1.1 1.1"></path>
+
+                                <path d="M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1.1-1.1"></path>
+
+                            </svg>
+
+                        </span>
+
+                        <span class="home-card-arrow">
+                            →
+                        </span>
+
+                    </div>
+
 
                     <h3 class="home-card-title">
                         Communication Links
@@ -124,17 +219,16 @@
 
                     <p class="home-card-description">
                         Manage network routes, capacities,
-                        STMs and imported links.
+                        STMs and imported communication links.
                     </p>
+
 
                     <div class="home-card-footer">
 
+                        <span class="home-card-footer-dot"></span>
+
                         <span>
                             Link management
-                        </span>
-
-                        <span class="home-card-arrow">
-                            →
                         </span>
 
                     </div>
@@ -145,29 +239,46 @@
                 <!-- Link Types -->
                 <a asp-controller="LinkTypes"
                        asp-action="Index"
-                       class="home-nav-card home-card-gray">
+                       class="home-nav-card">
 
-                    <span class="home-card-icon">
-                        LT
-                    </span>
+                    <div class="home-card-top">
+
+                        <span class="home-card-icon">
+
+                            <svg viewBox="0 0 24 24"
+                                 aria-hidden="true">
+
+                                <path d="M4 6h16"></path>
+                                <path d="M4 12h16"></path>
+                                <path d="M4 18h10"></path>
+
+                            </svg>
+
+                        </span>
+
+                        <span class="home-card-arrow">
+                            →
+                        </span>
+
+                    </div>
+
 
                     <h3 class="home-card-title">
                         Link Types
                     </h3>
 
                     <p class="home-card-description">
-                        Manage the technologies used
-                        by communication links.
+                        Configure the technologies and
+                        categories used by communication links.
                     </p>
+
 
                     <div class="home-card-footer">
 
+                        <span class="home-card-footer-dot"></span>
+
                         <span>
                             Type configuration
-                        </span>
-
-                        <span class="home-card-arrow">
-                            →
                         </span>
 
                     </div>
@@ -186,22 +297,64 @@
 
     <section class="home-section">
 
-        <h2 class="home-section-title">
-            Network
-        </h2>
+        <div class="home-section-header">
+
+            <div>
+
+                <div class="home-section-heading">
+
+                    <span class="home-section-mark"></span>
+
+                    <h2 class="home-section-title">
+                        Network
+                    </h2>
+
+                </div>
+
+                <p class="home-section-description">
+                    Browse communication channels and
+                    trace their relationships across the network.
+                </p>
+
+            </div>
+
+        </div>
 
 
         <div class="home-grid">
-
 
             <!-- STM -->
             <a asp-controller="Stms"
                    asp-action="Index"
                    class="home-nav-card">
 
-                <span class="home-card-icon">
-                    STM
-                </span>
+                <div class="home-card-top">
+
+                    <span class="home-card-icon">
+
+                        <svg viewBox="0 0 24 24"
+                             aria-hidden="true">
+
+                            <rect x="4"
+                                  y="4"
+                                  width="16"
+                                  height="16"
+                                  rx="2"></rect>
+
+                            <path d="M8 9h8"></path>
+                            <path d="M8 13h8"></path>
+                            <path d="M8 17h5"></path>
+
+                        </svg>
+
+                    </span>
+
+                    <span class="home-card-arrow">
+                        →
+                    </span>
+
+                </div>
+
 
                 <h3 class="home-card-title">
                     STMs
@@ -212,14 +365,13 @@
                     routes and connected endpoints.
                 </p>
 
+
                 <div class="home-card-footer">
+
+                    <span class="home-card-footer-dot"></span>
 
                     <span>
                         STM inventory
-                    </span>
-
-                    <span class="home-card-arrow">
-                        →
                     </span>
 
                 </div>
@@ -230,11 +382,35 @@
             <!-- E1 -->
             <a asp-controller="E1s"
                    asp-action="Index"
-                   class="home-nav-card home-card-green">
+                   class="home-nav-card">
 
-                <span class="home-card-icon">
-                    E1
-                </span>
+                <div class="home-card-top">
+
+                    <span class="home-card-icon">
+
+                        <svg viewBox="0 0 24 24"
+                             aria-hidden="true">
+
+                            <path d="M4 12h16"></path>
+
+                            <circle cx="6"
+                                    cy="12"
+                                    r="2"></circle>
+
+                            <circle cx="18"
+                                    cy="12"
+                                    r="2"></circle>
+
+                        </svg>
+
+                    </span>
+
+                    <span class="home-card-arrow">
+                        →
+                    </span>
+
+                </div>
+
 
                 <h3 class="home-card-title">
                     E1 Channels
@@ -242,17 +418,16 @@
 
                 <p class="home-card-description">
                     Browse E1 channels, connection
-                    state and path assignment.
+                    states and path assignments.
                 </p>
+
 
                 <div class="home-card-footer">
 
+                    <span class="home-card-footer-dot"></span>
+
                     <span>
                         Channel inventory
-                    </span>
-
-                    <span class="home-card-arrow">
-                        →
                     </span>
 
                 </div>
@@ -263,11 +438,35 @@
             <!-- Search -->
             <a asp-controller="SearchPath"
                    asp-action="Index"
-                   class="home-nav-card home-card-purple">
+                   class="home-nav-card">
 
-                <span class="home-card-icon">
-                    PATH
-                </span>
+                <div class="home-card-top">
+
+                    <span class="home-card-icon">
+
+                        <svg viewBox="0 0 24 24"
+                             aria-hidden="true">
+
+                            <circle cx="6"
+                                    cy="6"
+                                    r="2"></circle>
+
+                            <circle cx="18"
+                                    cy="18"
+                                    r="2"></circle>
+
+                            <path d="M8 6h4a4 4 0 0 1 4 4v0a4 4 0 0 1-4 4H9a3 3 0 0 0-3 3v1"></path>
+
+                        </svg>
+
+                    </span>
+
+                    <span class="home-card-arrow">
+                        →
+                    </span>
+
+                </div>
+
 
                 <h3 class="home-card-title">
                     Search Paths
@@ -278,14 +477,13 @@
                     visualize their complete route.
                 </p>
 
+
                 <div class="home-card-footer">
+
+                    <span class="home-card-footer-dot"></span>
 
                     <span>
                         Path visualization
-                    </span>
-
-                    <span class="home-card-arrow">
-                        →
                     </span>
 
                 </div>
@@ -305,21 +503,62 @@
     {
         <section class="home-section">
 
-            <h2 class="home-section-title">
-                Operations
-            </h2>
+            <div class="home-section-header">
+
+                <div>
+
+                    <div class="home-section-heading">
+
+                        <span class="home-section-mark"></span>
+
+                        <h2 class="home-section-title">
+                            Operations
+                        </h2>
+
+                    </div>
+
+                    <p class="home-section-description">
+                        Perform communication network
+                        connection and routing operations.
+                    </p>
+
+                </div>
+
+            </div>
 
 
-            <div class="home-grid">
+            <div class="home-grid home-grid-operations">
 
-
+                <!-- Cross Connection -->
                 <a asp-controller="CrossConnections"
                        asp-action="Create"
-                       class="home-nav-card home-card-amber">
+                       class="home-nav-card home-card-featured">
 
-                    <span class="home-card-icon">
-                        XC
-                    </span>
+                    <div class="home-card-top">
+
+                        <span class="home-card-icon">
+
+                            <svg viewBox="0 0 24 24"
+                                 aria-hidden="true">
+
+                                <path d="M4 7h4c5 0 3 10 8 10h4"></path>
+
+                                <path d="M17 14l3 3-3 3"></path>
+
+                                <path d="M4 17h4c5 0 3-10 8-10h4"></path>
+
+                                <path d="M17 4l3 3-3 3"></path>
+
+                            </svg>
+
+                        </span>
+
+                        <span class="home-card-arrow">
+                            →
+                        </span>
+
+                    </div>
+
 
                     <h3 class="home-card-title">
                         Cross Connection
@@ -327,17 +566,16 @@
 
                     <p class="home-card-description">
                         Join incoming and outgoing E1
-                        channels to create or extend a path.
+                        channels to create or extend a network path.
                     </p>
+
 
                     <div class="home-card-footer">
 
+                        <span class="home-card-footer-dot"></span>
+
                         <span>
                             Create connection
-                        </span>
-
-                        <span class="home-card-arrow">
-                            →
                         </span>
 
                     </div>

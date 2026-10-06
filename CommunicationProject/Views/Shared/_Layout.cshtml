@@ -9,8 +9,8 @@
         return currentController.Equals(
             controller,
             StringComparison.OrdinalIgnoreCase)
-                ? "app-nav-link active"
-                : "app-nav-link";
+                ? "app-sidebar-link active"
+                : "app-sidebar-link";
     }
 }
 
@@ -45,162 +45,455 @@
 
 <body>
 
-    <!-- =====================================================
-         TOP NAVIGATION
-         ===================================================== -->
-         @if (User.Identity?.IsAuthenticated == true)
-{
-    <header class="app-header">
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <div class="app-shell">
 
-        <nav class="navbar navbar-expand-xl app-navbar">
+            <!-- ================================================
+             SIDEBAR
+             ================================================ -->
 
-            <div class="app-navbar-container">
+            <aside class="app-sidebar"
+                   id="appSidebar">
+
+                <!-- Sidebar Header -->
+                <div class="app-sidebar-header">
+
+                    <a asp-controller="Home"
+                           asp-action="Index"
+                           class="app-sidebar-brand">
 
 
-                <!-- Brand -->
-                <a asp-controller="Home"
-                       asp-action="Index"
-                       class="app-brand">
 
-                    <span class="app-brand-mark">
-                        C
-                    </span>
+                        <span class="app-sidebar-brand-text">
+                            <span class="app-sidebar-brand-name">
+                                Communication
+                            </span>
 
-                    <span class="app-brand-text">
-
-                        <span class="app-brand-name">
-                            Communication
+                            <span class="app-sidebar-brand-subtitle">
+                                Network Management
+                            </span>
                         </span>
 
-                        <span class="app-brand-subtitle">
-                            Network Management
+                    </a>
+
+
+                    <button type="button"
+                            class="app-sidebar-toggle"
+                            id="sidebarToggle"
+                            aria-label="Collapse sidebar"
+                            title="Collapse sidebar">
+
+                        <span class="app-sidebar-toggle-icon">
+                            ‹
                         </span>
 
-                    </span>
-
-                </a>
-
-
-                <!-- Mobile Toggle -->
-                <button class="navbar-toggler app-navbar-toggler"
-                        type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#mainNavigation"
-                        aria-controls="mainNavigation"
-                        aria-expanded="false"
-                        aria-label="Toggle navigation">
-
-                    <span class="navbar-toggler-icon"></span>
-
-                </button>
-
-
-                <!-- Navigation -->
-                <div id="mainNavigation"
-                     class="collapse navbar-collapse">
-
-                    <div class="app-nav">
-
-
-                        @if (User.IsInRole(AppRoles.Admin))
-                        {
-                            <a asp-controller="Users"
-                                   asp-action="Index"
-                                   class="@NavClass("Users")">
-                                Users
-                            </a>
-
-
-                            <a asp-controller="Sites"
-                                   asp-action="Index"
-                                   class="@NavClass("Sites")">
-                                Sites
-                            </a>
-
-
-                            <a asp-controller="CommunicationLinks"
-                                   asp-action="Index"
-                                   class="@NavClass("CommunicationLinks")">
-                                Links
-                            </a>
-                        }
-
-
-                        <a asp-controller="LinkTypes"
-                               asp-action="Index"
-                               class="@NavClass("LinkTypes")">
-                            Link Types
-                        </a>
-
-
-                        <a asp-controller="Stms"
-                               asp-action="Index"
-                               class="@NavClass("Stms")">
-                            STMs
-                        </a>
-
-                            <a asp-controller="Muxes"
-                                   asp-action="Index"
-                                   class="@NavClass("Muxes")">
-                                MUXes
-                            </a>
-
-                            <a asp-controller="MuxTypes"
-                                   asp-action="Index"
-                                   class="@NavClass("MuxTypes")">
-                                MUX Types
-                            </a>
-
-
-
-                        <a asp-controller="E1s"
-                               asp-action="Index"
-                               class="@NavClass("E1s")">
-                            E1s
-                        </a>
-
-
-                        @if (User.IsInRole(AppRoles.Admin) ||
-                             User.IsInRole(AppRoles.Operator))
-                        {
-                            <a asp-controller="CrossConnections"
-                                   asp-action="Create"
-                                   class="@NavClass("CrossConnections")">
-                                Cross Connection
-                            </a>
-                        }
-
-
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <a asp-controller="SearchPath"
-                                   asp-action="Index"
-                                   class="@NavClass("SearchPath")">
-                                Search Paths
-                            </a>
-                        }
-                            <a asp-controller="ExcelViewer"
-                                   asp-action="Index"
-                                   class="@NavClass("ExcelViewer")">
-                                Excel Sheet
-                            </a>
-                    </div>
-
-
-                    <!-- Account -->
-                    <div class="app-account">
-
-                        <partial name="_LoginPartial" />
-
-                    </div>
+                    </button>
 
                 </div>
 
+
+                <!-- ============================================
+                 NAVIGATION
+                 ============================================ -->
+
+                <nav class="app-sidebar-nav">
+
+
+                    <!-- Dashboard -->
+                    <a asp-controller="Home"
+                           asp-action="Index"
+                           class="@NavClass("Home")"
+                           title="Dashboard">
+
+                        <span class="app-sidebar-icon">
+                            <svg viewBox="0 0 24 24"
+                                 aria-hidden="true">
+                                <rect x="3" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="3" width="7" height="7"></rect>
+                                <rect x="3" y="14" width="7" height="7"></rect>
+                                <rect x="14" y="14" width="7" height="7"></rect>
+                            </svg>
+                        </span>
+
+                        <span class="app-sidebar-link-text">
+                            Dashboard
+                        </span>
+
+                    </a>
+
+
+                    <!-- ========================================
+                     MANAGEMENT
+                     ======================================== -->
+                    @if (User.IsInRole(AppRoles.Admin))
+                    {
+                        <div class="app-sidebar-section-title">
+                            Management
+                        </div>
+
+
+                        <a asp-controller="Users"
+                               asp-action="Index"
+                               class="@NavClass("Users")"
+                               title="Users">
+
+                            <span class="app-sidebar-icon">
+                                <svg viewBox="0 0 24 24"
+                                     aria-hidden="true">
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M3 21v-2a6 6 0 0 1 6-6h0a6 6 0 0 1 6 6v2"></path>
+                                    <path d="M16 3.5a4 4 0 0 1 0 7.5"></path>
+                                    <path d="M17 14a6 6 0 0 1 4 5.7V21"></path>
+                                </svg>
+                            </span>
+
+                            <span class="app-sidebar-link-text">
+                                Users
+                            </span>
+
+                        </a>
+
+
+                        <a asp-controller="Sites"
+                               asp-action="Index"
+                               class="@NavClass("Sites")"
+                               title="Sites">
+
+                            <span class="app-sidebar-icon">
+                                <svg viewBox="0 0 24 24"
+                                     aria-hidden="true">
+                                    <path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11z"></path>
+                                    <circle cx="12" cy="10" r="2"></circle>
+                                </svg>
+                            </span>
+
+                            <span class="app-sidebar-link-text">
+                                Sites
+                            </span>
+
+                        </a>
+
+
+                        <a asp-controller="CommunicationLinks"
+                               asp-action="Index"
+                               class="@NavClass("CommunicationLinks")"
+                               title="Communication Links">
+
+                            <span class="app-sidebar-icon">
+                                <svg viewBox="0 0 24 24"
+                                     aria-hidden="true">
+                                    <path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1.1 1.1"></path>
+                                    <path d="M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1.1-1.1"></path>
+                                </svg>
+                            </span>
+
+                            <span class="app-sidebar-link-text">
+                                Links
+                            </span>
+
+                        </a>
+                    }
+
+
+                    <a asp-controller="LinkTypes"
+                           asp-action="Index"
+                           class="@NavClass("LinkTypes")"
+                           title="Link Types">
+
+                        <span class="app-sidebar-icon">
+                            <svg viewBox="0 0 24 24"
+                                 aria-hidden="true">
+                                <path d="M4 6h16"></path>
+                                <path d="M4 12h16"></path>
+                                <path d="M4 18h10"></path>
+                            </svg>
+                        </span>
+
+                        <span class="app-sidebar-link-text">
+                            Link Types
+                        </span>
+
+                    </a>
+
+
+                    <!-- ========================================
+                     NETWORK
+                     ======================================== -->
+
+                    <div class="app-sidebar-section-title">
+                        Network
+                    </div>
+
+
+                    <a asp-controller="Stms"
+                           asp-action="Index"
+                           class="@NavClass("Stms")"
+                           title="STMs">
+
+                        <span class="app-sidebar-icon">
+                            <svg viewBox="0 0 24 24"
+                                 aria-hidden="true">
+                                <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+                                <path d="M8 9h8"></path>
+                                <path d="M8 13h8"></path>
+                                <path d="M8 17h5"></path>
+                            </svg>
+                        </span>
+
+                        <span class="app-sidebar-link-text">
+                            STMs
+                        </span>
+
+                    </a>
+
+
+                    <a asp-controller="E1s"
+                           asp-action="Index"
+                           class="@NavClass("E1s")"
+                           title="E1 Channels">
+
+                        <span class="app-sidebar-icon">
+                            <svg viewBox="0 0 24 24"
+                                 aria-hidden="true">
+                                <path d="M4 12h16"></path>
+                                <circle cx="6" cy="12" r="2"></circle>
+                                <circle cx="18" cy="12" r="2"></circle>
+                            </svg>
+                        </span>
+                        <span class="app-sidebar-link-text">
+                            E1s
+                        </span>
+
+                    </a>
+
+
+                    <a asp-controller="Muxes"
+                           asp-action="Index"
+                           class="@NavClass("Muxes")"
+                           title="MUXes">
+
+                        <span class="app-sidebar-icon">
+                            <svg viewBox="0 0 24 24"
+                                 aria-hidden="true">
+                                <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                                <path d="M7 9h2"></path>
+                                <path d="M11 9h2"></path>
+                                <path d="M15 9h2"></path>
+                                <path d="M7 15h10"></path>
+                            </svg>
+                        </span>
+
+                        <span class="app-sidebar-link-text">
+                            MUXes
+                        </span>
+
+                    </a>
+
+
+                    <a asp-controller="MuxTypes"
+                           asp-action="Index"
+                           class="@NavClass("MuxTypes")"
+                           title="MUX Types">
+                        <span class="app-sidebar-icon">
+                            <svg viewBox="0 0 24 24"
+                                 aria-hidden="true">
+                                <rect x="4" y="4" width="6" height="6" rx="1"></rect>
+                                <rect x="14" y="4" width="6" height="6" rx="1"></rect>
+                                <rect x="4" y="14" width="6" height="6" rx="1"></rect>
+                                <rect x="14" y="14" width="6" height="6" rx="1"></rect>
+                            </svg>
+                        </span>
+
+                        <span class="app-sidebar-link-text">
+                            MUX Types
+                        </span>
+
+                    </a>
+
+
+                    <!-- ========================================
+                     OPERATIONS
+                     ======================================== -->
+
+                    <div class="app-sidebar-section-title">
+                        Operations
+                    </div>
+
+
+                    @if (User.IsInRole(AppRoles.Admin) ||
+                         User.IsInRole(AppRoles.Operator))
+                    {
+                        <a asp-controller="CrossConnections"
+                               asp-action="Create"
+                               class="@NavClass("CrossConnections")"
+                               title="Cross Connection">
+
+                            <span class="app-sidebar-icon">
+                                <svg viewBox="0 0 24 24"
+                                     aria-hidden="true">
+                                    <path d="M4 7h4c5 0 3 10 8 10h4"></path>
+                                    <path d="M17 14l3 3-3 3"></path>
+
+                                    <path d="M4 17h4c5 0 3-10 8-10h4"></path>
+                                    <path d="M17 4l3 3-3 3"></path>
+                                </svg>
+                            </span>
+
+                            <span class="app-sidebar-link-text">
+                                Cross Connection
+                            </span>
+
+                        </a>
+                    }
+
+
+                    <a asp-controller="SearchPath"
+                           asp-action="Index"
+                           class="@NavClass("SearchPath")"
+                           title="Search Paths">
+
+                        <span class="app-sidebar-icon">
+                            <svg viewBox="0 0 24 24"
+                                 aria-hidden="true">
+                                <circle cx="6" cy="6" r="2"></circle>
+                                <circle cx="18" cy="18" r="2"></circle>
+                                <path d="M8 6h4a4 4 0 0 1 4 4v0a4 4 0 0 1-4 4H9a3 3 0 0 0-3 3v1"></path>
+                            </svg>
+                        </span>
+
+                        <span class="app-sidebar-link-text">
+                            Search Paths
+                        </span>
+
+                    </a>
+
+
+                    <!-- ========================================
+                     DATA
+                     ======================================== -->
+
+                    <div class="app-sidebar-section-title">
+                        Data
+                    </div>
+
+
+                    <a asp-controller="ExcelViewer"
+                           asp-action="Index"
+                           class="@NavClass("ExcelViewer")"
+                           title="Excel Sheet">
+
+                        <span class="app-sidebar-icon">
+                            <svg viewBox="0 0 24 24"
+                                 aria-hidden="true">
+                                <path d="M6 3h9l4 4v14H6z"></path>
+                                <path d="M15 3v5h5"></path>
+                                <path d="M9 12l5 6"></path>
+                                <path d="M14 12l-5 6"></path>
+                            </svg>
+                        </span>
+
+                        <span class="app-sidebar-link-text">
+                            Excel Sheet
+                        </span>
+
+                    </a>
+
+                </nav>
+
+            </aside>
+
+
+            <!-- ================================================
+             RIGHT SIDE
+             ================================================ -->
+
+            <div class="app-content">
+
+                <div class="app-page-account">
+                    <partial name="_LoginPartial" />
+                </div>
+
+                <div class="app-message-area">
+
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="app-alert app-alert-success">
+
+                            <span class="app-alert-icon">
+                                ✓
+                            </span>
+
+                            <span>
+                                @TempData["SuccessMessage"]
+                            </span>
+
+                            <button type="button"
+                                    class="app-alert-close"
+                                    onclick="this.parentElement.remove()">
+                                ×
+                            </button>
+
+                        </div>
+                    }
+
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="app-alert app-alert-error">
+
+                            <span class="app-alert-icon">
+                                !
+                            </span>
+
+                            <span>
+                                @TempData["ErrorMessage"]
+                            </span>
+
+                            <button type="button"
+                                    class="app-alert-close"
+                                    onclick="this.parentElement.remove()">
+                                ×
+                            </button>
+
+                        </div>
+                    }
+
+                </div>
+
+                <main class="app-main">
+                    @RenderBody()
+                </main>
+
+                <footer class="app-footer">
+                    <div class="app-footer-inner">
+                        <span>
+                            Communication Network Management
+                        </span>
+
+                        <span class="app-footer-year">
+                            © 2026
+                        </span>
+                    </div>
+                </footer>
+
             </div>
 
-        </nav>
 
-    </header>
+            <!-- Mobile sidebar backdrop -->
+
+            <div class="app-sidebar-backdrop"
+                 id="sidebarBackdrop">
+            </div>
+
+        </div>
+    }
+    else
+    {
+        <main class="app-main app-main-public">
+
+            @RenderBody()
+
+        </main>
     }
 
     <!-- =====================================================
@@ -266,28 +559,6 @@
     </main>
 
 
-    <!-- =====================================================
-         FOOTER
-         ===================================================== -->
-         @if (User.Identity?.IsAuthenticated == true)
-{
-    <footer class="app-footer">
-
-        <div class="app-footer-inner">
-
-            <span>
-                Communication Network Management
-            </span>
-
-            <span class="app-footer-year">
-                © 2026
-            </span>
-
-        </div>
-
-    </footer>
-
-}
     <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
 
     <script src="~/js/site.js"

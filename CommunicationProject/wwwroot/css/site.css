@@ -4,30 +4,46 @@
    ========================================================= */
 
 
-/* ---------------------------------------------------------
-   Base
-   --------------------------------------------------------- */
-input,
-select,
-textarea,
-button {
-    font-size: 0.95rem;
-}
+/* =========================================================
+   Design Tokens
+   ========================================================= */
+
 :root {
-    --app-bg: #f7f9fc;
+    /* Brand */
+    --navy: #1f2a44;
+    --navy-dark: #182137;
+    --navy-soft: rgba(31, 42, 68, .08);
+    --beige: #e8dcc8;
+    --beige-light: #f4ede2;
+    --beige-soft: #f8f5ef;
+    --gold: #c6a75e;
+    --gold-dark: #a88943;
+    --gold-soft: rgba(198, 167, 94, .16);
+    /* Application */
+    --app-bg: #f8f6f1;
     --app-surface: #ffffff;
-    --app-border: #e7ebf1;
-    --app-text: #263044;
-    --app-muted: #7d8798;
-    --app-primary: #4263eb;
-    --app-primary-soft: #eef2ff;
+    --app-border: rgba(31, 42, 68, .09);
+    --app-text: #1f2a44;
+    --app-muted: #788194;
+    --app-primary: #1f2a44;
+    --app-primary-soft: rgba(31, 42, 68, .08);
+    /* Radius */
+    --radius-sm: 10px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
 }
+
+
+/* =========================================================
+   Base
+   ========================================================= */
 
 html {
     position: relative;
     min-height: 100%;
     font-size: 16px;
 }
+
 
 body {
     min-height: 100vh;
@@ -39,155 +55,423 @@ body {
 }
 
 
-a {
-    transition: color .15s ease, background-color .15s ease, border-color .15s ease;
+input,
+select,
+textarea,
+button {
+    font-size: .95rem;
 }
 
 
-/* ---------------------------------------------------------
-   Header
-   --------------------------------------------------------- */
+a {
+    transition: color .2s ease, background-color .2s ease, border-color .2s ease;
+}
 
-.app-header {
+
+/* =========================================================
+   Application Shell
+   ========================================================= */
+
+.app-shell {
+    --sidebar-width: 270px;
+    display: grid;
+    grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+    min-height: 100vh;
+    background: var(--app-bg);
+    transition: grid-template-columns .3s cubic-bezier(.4, 0, .2, 1);
+}
+
+
+/* Collapsed */
+
+body.sidebar-collapsed .app-shell {
+    --sidebar-width: 76px;
+}
+
+
+/* =========================================================
+   Sidebar
+   ========================================================= */
+
+.app-sidebar {
     position: sticky;
     top: 0;
-    z-index: 1000;
-    background: rgba(255, 255, 255, .96);
-    border-bottom: 1px solid var(--app-border);
-    backdrop-filter: blur(12px);
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    background: linear-gradient( 180deg, #f5eddf 0%, #eee2ce 45%, #e4d2ad 100% );
+    color: var(--navy);
+    border-right: 1px solid rgba(31, 42, 68, .09);
+    box-shadow: 8px 0 30px rgba(31, 42, 68, .07);
+    z-index: 1050;
 }
 
 
-.app-navbar {
-    min-height: 66px;
-    padding: 0;
-}
+/* =========================================================
+   Sidebar Header
+   ========================================================= */
 
-
-.app-navbar-container {
+.app-sidebar-header {
     display: flex;
     align-items: center;
-    width: 100%;
-    max-width: 1500px;
-    min-height: 66px;
-    margin: 0 auto;
-    padding: 0 1.5rem;
+    min-height: 72px;
+    padding: 0 14px;
+    border-bottom: 1px solid rgba(31, 42, 68, .08);
 }
 
 
-/* ---------------------------------------------------------
-   Brand
-   --------------------------------------------------------- */
+/* =========================================================
+   Sidebar Brand
+   ========================================================= */
 
-.app-brand {
-    display: inline-flex;
+.app-sidebar-brand {
+    display: flex;
     align-items: center;
-    gap: .7rem;
-    flex-shrink: 0;
-    margin-right: 2rem;
-    color: #253047;
+    min-width: 0;
+    flex: 1;
+    color: var(--navy);
     text-decoration: none;
+    overflow: hidden;
 }
 
 
-    .app-brand:hover {
-        color: #253047;
+    .app-sidebar-brand:hover {
+        color: var(--navy);
     }
 
 
-.app-brand-mark {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 35px;
-    height: 35px;
-    background: #4263eb;
-    border-radius: 10px;
-    color: #fff;
-    font-size: .9rem;
-    font-weight: 750;
-    box-shadow: 0 5px 12px rgba(66, 99, 235, .16);
-}
-
-
-.app-brand-text {
+.app-sidebar-brand-text {
     display: flex;
     flex-direction: column;
-    line-height: 1.1;
+    min-width: 0;
+    opacity: 1;
+    transition: opacity .18s ease, transform .25s ease;
 }
 
 
-.app-brand-name {
-    color: #263044;
-    font-size: .1rem;
-    font-weight: 700;
-    letter-spacing: -.01em;
-}
-
-
-.app-brand-subtitle {
-    margin-top: .2rem;
-    color: #9aa2b1;
-    font-size: .7rem;
-    font-weight: 600;
-    letter-spacing: .025em;
-}
-
-
-/* ---------------------------------------------------------
-   Navigation
-   --------------------------------------------------------- */
-
-#mainNavigation {
-    align-items: center;
-}
-
-
-.app-nav {
-    display: flex;
-    align-items: center;
-    gap: .18rem;
-    flex: 1;
-}
-
-
-.app-nav-link {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    min-height: 40px;
-    padding: 0 .72rem;
-    border-radius: 8px;
-    color: #657085;
-    font-size: .88rem;
-    font-weight: 550;
-    text-decoration: none;
+.app-sidebar-brand-name {
+    color: var(--navy);
+    font-size: .92rem;
+    font-weight: 750;
+    line-height: 1.15;
     white-space: nowrap;
 }
 
 
-    .app-nav-link:hover {
-        background: #f5f7fa;
-        color: #344054;
+.app-sidebar-brand-subtitle {
+    margin-top: .22rem;
+    color: rgba(31, 42, 68, .50);
+    font-size: .65rem;
+    font-weight: 550;
+    line-height: 1.15;
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   Sidebar Toggle
+   ========================================================= */
+
+.app-sidebar-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    margin-left: 10px;
+    padding: 0;
+    border: 1px solid rgba(31, 42, 68, .12);
+    border-radius: 11px;
+    background: rgba(255, 255, 255, .48);
+    color: var(--navy);
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(31, 42, 68, .04);
+    transition: background-color .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+
+
+    .app-sidebar-toggle:hover {
+        background: rgba(255, 255, 255, .78);
+        border-color: rgba(31, 42, 68, .18);
+        box-shadow: 0 5px 14px rgba(31, 42, 68, .08);
     }
 
 
-    .app-nav-link.active {
-        background: #eef2ff;
-        color: #4263eb;
-        font-weight: 650;
+.app-sidebar-toggle-icon {
+    display: block;
+    color: var(--navy);
+    font-size: 1.4rem;
+    line-height: 1;
+    transition: transform .3s cubic-bezier(.4, 0, .2, 1);
+}
+
+
+body.sidebar-collapsed
+.app-sidebar-toggle-icon {
+    transform: rotate(180deg);
+}
+
+
+/* =========================================================
+   Sidebar Navigation
+   ========================================================= */
+
+.app-sidebar-nav {
+    flex: 1;
+    padding: .9rem .7rem 1.25rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: none;
+}
+
+
+    .app-sidebar-nav::-webkit-scrollbar {
+        display: none;
     }
 
 
-/* ---------------------------------------------------------
+/* =========================================================
+   Sidebar Section Titles
+   ========================================================= */
+
+.app-sidebar-section-title {
+    margin: 1.3rem .75rem .55rem;
+    color: rgba(31, 42, 68, .48);
+    font-size: .63rem;
+    font-weight: 750;
+    letter-spacing: .11em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: opacity .15s ease, height .25s ease, margin .25s ease;
+}
+
+
+/* =========================================================
+   Sidebar Links
+   ========================================================= */
+
+.app-sidebar-link {
+    display: flex;
+    align-items: center;
+    min-height: 46px;
+    margin-bottom: .28rem;
+    padding: .35rem .6rem;
+    gap: .75rem;
+    border: 1px solid transparent;
+    border-radius: 13px;
+    color: rgba(31, 42, 68, .72);
+    text-decoration: none;
+    overflow: hidden;
+    transition: background-color .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+
+
+    .app-sidebar-link:hover {
+        background: rgba(255, 255, 255, .43);
+        border-color: rgba(31, 42, 68, .05);
+        color: var(--navy);
+    }
+
+
+    /* Active page */
+
+    .app-sidebar-link.active {
+        background: var(--navy);
+        border-color: var(--navy);
+        color: #ffffff;
+        box-shadow: 0 7px 18px rgba(31, 42, 68, .16);
+    }
+
+
+/* =========================================================
+   Sidebar Icon Boxes
+   ========================================================= */
+
+.app-sidebar-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    flex: 0 0 34px;
+    border-radius: 10px;
+    background: rgba(31, 42, 68, .07);
+    color: var(--navy);
+    font-size: .68rem;
+    font-weight: 750;
+    letter-spacing: .01em;
+    transition: background-color .2s ease, color .2s ease, transform .2s ease;
+}
+
+
+.app-sidebar-link:hover
+.app-sidebar-icon {
+    background: rgba(31, 42, 68, .11);
+    color: var(--navy);
+}
+
+
+/* Active icon */
+
+.app-sidebar-link.active
+.app-sidebar-icon {
+    background: var(--gold);
+    color: var(--navy);
+    box-shadow: 0 4px 12px rgba(198, 167, 94, .24);
+}
+
+
+/* =========================================================
+   Sidebar Link Text
+   ========================================================= */
+
+.app-sidebar-link-text {
+    min-width: 0;
+    overflow: hidden;
+    color: inherit;
+    font-size: .84rem;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    opacity: 1;
+    transition: opacity .15s ease, transform .25s ease;
+}
+
+
+/* =========================================================
+   Collapsed Sidebar
+   ========================================================= */
+
+body.sidebar-collapsed
+.app-sidebar-header {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+
+/*
+   No logo is displayed in collapsed mode.
+   Only the expand button remains.
+*/
+
+body.sidebar-collapsed
+.app-sidebar-brand {
+    display: none;
+}
+
+
+body.sidebar-collapsed
+.app-sidebar-toggle {
+    margin: 0;
+}
+
+
+/* Hide link text */
+
+body.sidebar-collapsed
+.app-sidebar-link-text {
+    width: 0;
+    opacity: 0;
+    transform: translateX(-6px);
+    pointer-events: none;
+}
+
+
+/* Hide category names */
+
+body.sidebar-collapsed
+.app-sidebar-section-title {
+    height: 8px;
+    margin: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+
+/* Center icons */
+
+body.sidebar-collapsed
+.app-sidebar-nav {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+
+body.sidebar-collapsed
+.app-sidebar-link {
+    justify-content: center;
+    gap: 0;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+
+body.sidebar-collapsed
+.app-sidebar-icon {
+    margin: 0;
+}
+
+
+/* =========================================================
+   Content Area
+   ========================================================= */
+
+.app-content {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 100vh;
+}
+
+
+/* =========================================================
+   Top Bar
+   ========================================================= */
+
+.app-topbar {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 70px;
+    padding: 0 1.5rem;
+    background: rgba(255, 255, 255, .86);
+    border-bottom: 1px solid rgba(31, 42, 68, .07);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 3px 16px rgba(31, 42, 68, .025);
+    z-index: 900;
+}
+
+
+.app-topbar-left {
+    display: flex;
+    align-items: center;
+}
+
+
+.app-topbar-account {
+    margin-left: auto;
+}
+
+
+/* =========================================================
    Account Area
-   --------------------------------------------------------- */
+   ========================================================= */
 
 .app-account {
     flex-shrink: 0;
-    margin-left: 1rem;
 }
 
+
+/* User button */
 
 .app-user-button {
     display: flex;
@@ -195,20 +479,22 @@ a {
     gap: .55rem;
     padding: .35rem .45rem;
     border: 1px solid transparent;
-    border-radius: 10px;
+    border-radius: 11px;
     background: transparent;
-    color: #344054;
+    color: var(--navy);
     text-align: left;
-    transition: background-color .15s ease, border-color .15s ease;
+    transition: background-color .2s ease, border-color .2s ease;
 }
 
 
     .app-user-button:hover,
     .app-user-button[aria-expanded="true"] {
-        background: #f7f8fa;
-        border-color: #ebedf1;
+        background: rgba(232, 220, 200, .32);
+        border-color: rgba(31, 42, 68, .07);
     }
 
+
+/* Avatar */
 
 .app-user-avatar {
     display: inline-flex;
@@ -217,13 +503,15 @@ a {
     width: 38px;
     height: 38px;
     flex-shrink: 0;
-    background: #eef2ff;
-    border-radius: 9px;
-    color: #4263eb;
+    background: rgba(198, 167, 94, .16);
+    border-radius: 10px;
+    color: var(--navy);
     font-size: .86rem;
-    font-weight: 700;
+    font-weight: 750;
 }
 
+
+/* User information */
 
 .app-user-info {
     display: flex;
@@ -233,11 +521,11 @@ a {
 
 
 .app-user-name {
-    max-width: 150px;
+    max-width: 170px;
     overflow: hidden;
-    color: #344054;
+    color: var(--navy);
     font-size: .84rem;
-    font-weight: 650;
+    font-weight: 700;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
@@ -245,30 +533,32 @@ a {
 
 .app-user-role {
     margin-top: .08rem;
-    color: #98a1b0;
+    color: rgba(31, 42, 68, .48);
     font-size: .72rem;
 }
 
 
 .app-user-chevron {
     margin: 0 .2rem;
-    color: #a4acb9;
+    color: rgba(31, 42, 68, .42);
     font-size: .68rem;
 }
 
 
-/* ---------------------------------------------------------
+/* =========================================================
    User Dropdown
-   --------------------------------------------------------- */
+   ========================================================= */
 
 .app-user-menu {
     min-width: 230px;
     margin-top: .55rem !important;
     padding: .45rem;
-    border: 1px solid #e6eaf0;
-    border-radius: 11px;
-    background: #fff;
-    box-shadow: 0 12px 32px rgba(30, 42, 68, .10);
+    border: 1px solid rgba(31, 42, 68, .08);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .96);
+    box-shadow: 0 15px 38px rgba(31, 42, 68, .11);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
 }
 
 
@@ -278,15 +568,15 @@ a {
 
 
 .app-user-menu-name {
-    color: #344054;
+    color: var(--navy);
     font-size: .88rem;
-    font-weight: 650;
+    font-weight: 700;
 }
 
 
 .app-user-menu-email {
     margin-top: .15rem;
-    color: #98a1b0;
+    color: var(--app-muted);
     font-size: .76rem;
     overflow-wrap: anywhere;
 }
@@ -299,39 +589,43 @@ a {
     min-height: 38px;
     padding: 0 .75rem;
     border: 0;
-    border-radius: 7px;
+    border-radius: 9px;
     background: transparent;
-    color: #5f697b;
+    color: rgba(31, 42, 68, .72);
     font-size: .86rem;
-    font-weight: 550;
+    font-weight: 600;
     text-align: left;
     text-decoration: none;
 }
 
 
     .app-user-menu-item:hover {
-        background: #f5f7f9;
-        color: #344054;
+        background: rgba(232, 220, 200, .30);
+        color: var(--navy);
     }
 
 
 .app-user-menu-divider {
     height: 1px;
     margin: .35rem .4rem;
-    background: #eceff3;
+    background: rgba(31, 42, 68, .08);
 }
 
 
+/* Logout */
+
 .app-user-logout {
-    color: #bd5b63;
+    color: #ad555d;
 }
 
 
     .app-user-logout:hover {
-        background: #fff2f3;
-        color: #ad4e56;
+        background: #fff1f2;
+        color: #a04850;
     }
 
+
+/* Login */
 
 .app-login-button {
     display: inline-flex;
@@ -339,42 +633,47 @@ a {
     justify-content: center;
     min-height: 38px;
     padding: 0 .9rem;
-    background: #4263eb;
-    border-radius: 8px;
-    color: #fff;
+    background: var(--navy);
+    border-radius: 9px;
+    color: #ffffff;
     font-size: .78rem;
-    font-weight: 600;
+    font-weight: 650;
     text-decoration: none;
 }
 
 
     .app-login-button:hover {
-        background: #3657da;
-        color: #fff;
+        background: var(--navy-dark);
+        color: #ffffff;
     }
 
 
-/* ---------------------------------------------------------
-   Main
-   --------------------------------------------------------- */
+/* =========================================================
+   Main Content
+   ========================================================= */
 
 .app-main {
-    min-height: calc(100vh - 130px);
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
 }
 
 
-/* ---------------------------------------------------------
-   Messages
-   --------------------------------------------------------- */
+.app-main-public {
+    min-height: 100vh;
+}
 
+
+/* =========================================================
+   Messages
+   ========================================================= */
 .app-message-area {
     position: fixed;
-    top: 78px;
+    top: 88px;
     right: 1.4rem;
     z-index: 1100;
     width: min(390px, calc(100vw - 2rem));
 }
-
 
 .app-alert {
     display: flex;
@@ -382,21 +681,25 @@ a {
     gap: .65rem;
     padding: .8rem .9rem;
     margin-bottom: .6rem;
-    border-radius: 10px;
-    background: #fff;
+    border: 1px solid rgba(31, 42, 68, .07);
+    border-radius: 13px;
+    background: rgba(255, 255, 255, .94);
+    color: var(--navy);
     font-size: .78rem;
-    box-shadow: 0 10px 30px rgba(20, 32, 56, .11);
+    box-shadow: 0 12px 32px rgba(31, 42, 68, .11);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
 }
 
 
 .app-alert-success {
-    border: 1px solid #d9eadf;
+    border-color: #d9eadf;
     color: #587363;
 }
 
 
 .app-alert-error {
-    border: 1px solid #f0dadd;
+    border-color: #f0dadd;
     color: #a0545a;
 }
 
@@ -406,21 +709,23 @@ a {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    width: 25px;
-    height: 25px;
-    border-radius: 7px;
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
     background: #f4f6f8;
     font-size: .72rem;
-    font-weight: 700;
+    font-weight: 750;
 }
 
 
-.app-alert-success .app-alert-icon {
+.app-alert-success
+.app-alert-icon {
     background: #eef7f1;
 }
 
 
-.app-alert-error .app-alert-icon {
+.app-alert-error
+.app-alert-icon {
     background: #fff0f1;
 }
 
@@ -430,19 +735,20 @@ a {
     padding: .1rem .25rem;
     border: 0;
     background: transparent;
-    color: #a4acb9;
+    color: rgba(31, 42, 68, .40);
     font-size: 1.1rem;
     line-height: 1;
+    cursor: pointer;
 }
 
 
-/* ---------------------------------------------------------
+/* =========================================================
    Footer
-   --------------------------------------------------------- */
+   ========================================================= */
 
 .app-footer {
-    border-top: 1px solid #e8ebf0;
-    background: #fff;
+    border-top: 1px solid rgba(31, 42, 68, .07);
+    background: rgba(255, 255, 255, .70);
 }
 
 
@@ -453,21 +759,26 @@ a {
     max-width: 1500px;
     margin: 0 auto;
     padding: 1rem 1.5rem;
-    color: #99a2b1;
+    color: rgba(31, 42, 68, .48);
     font-size: .7rem;
 }
 
 
-/* ---------------------------------------------------------
-   Bootstrap Focus Cleanup
-   --------------------------------------------------------- */
+/* =========================================================
+   Focus States
+   ========================================================= */
 
-button:focus,
-a:focus,
-input:focus,
-select:focus,
-textarea:focus {
-    outline: none;
+/*
+   Do not completely remove focus visibility.
+*/
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid rgba(198, 167, 94, .90);
+    outline-offset: 2px;
 }
 
 
@@ -480,91 +791,261 @@ textarea:focus {
 }
 
 
-/* ---------------------------------------------------------
-   Navbar Mobile
-   --------------------------------------------------------- */
+/* =========================================================
+   Mobile Sidebar Toggle
+   ========================================================= */
 
-.app-navbar-toggler {
-    margin-left: auto;
-    padding: .35rem .45rem;
-    border-color: #e2e6ec;
+.app-mobile-sidebar-toggle {
+    display: none;
 }
 
 
-@media (max-width: 1199px) {
+/* =========================================================
+   Sidebar Backdrop
+   ========================================================= */
 
-    .app-navbar-container {
-        flex-wrap: wrap;
-        padding: .75rem 1rem;
-    }
-
-
-    .app-brand {
-        margin-right: auto;
-    }
-
-
-    #mainNavigation {
-        width: 100%;
-        margin-top: .8rem;
-        padding-top: .8rem;
-        border-top: 1px solid #edf0f4;
-    }
-
-
-    .app-nav {
-        align-items: stretch;
-        flex-direction: column;
-        gap: .2rem;
-    }
-
-
-    .app-nav-link {
-        width: 100%;
-        padding: .65rem .75rem;
-    }
-
-
-    .app-account {
-        width: 100%;
-        margin: .75rem 0 0;
-        padding-top: .75rem;
-        border-top: 1px solid #edf0f4;
-    }
-
-
-    .app-user-button {
-        width: 100%;
-    }
-
-
-    .app-user-menu {
-        width: 100%;
-    }
+.app-sidebar-backdrop {
+    display: none;
 }
 
 
-@media (max-width: 650px) {
+/* =========================================================
+   Tablet / Mobile
+   ========================================================= */
 
-    .app-navbar-container {
-        padding: .65rem .8rem;
+@media (max-width: 991px) {
+
+    .app-shell {
+        display: block;
     }
 
 
-    .app-brand-subtitle {
+    .app-sidebar {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 270px;
+        height: 100vh;
+        transform: translateX(-100%);
+        transition: transform .3s cubic-bezier(.4, 0, .2, 1);
+    }
+
+
+    body.sidebar-mobile-open
+    .app-sidebar {
+        transform: translateX(0);
+    }
+
+
+    /*
+       Ignore the desktop collapsed state
+       when the sidebar opens on mobile.
+    */
+
+    body.sidebar-collapsed
+    .app-sidebar-header {
+        justify-content: space-between;
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+
+    body.sidebar-collapsed
+    .app-sidebar-brand {
+        display: flex;
+    }
+
+
+    body.sidebar-collapsed
+    .app-sidebar-brand-text {
+        opacity: 1;
+        transform: none;
+    }
+
+
+    body.sidebar-collapsed
+    .app-sidebar-link-text {
+        width: auto;
+        opacity: 1;
+        transform: none;
+        pointer-events: auto;
+    }
+
+
+    body.sidebar-collapsed
+    .app-sidebar-section-title {
+        height: auto;
+        margin: 1.3rem .75rem .55rem;
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+
+    body.sidebar-collapsed
+    .app-sidebar-nav {
+        padding: .9rem .7rem 1.25rem;
+    }
+
+
+    body.sidebar-collapsed
+    .app-sidebar-link {
+        justify-content: flex-start;
+        gap: .75rem;
+        padding: .35rem .6rem;
+    }
+
+
+    /* Hide desktop collapse arrow */
+
+    .app-sidebar-toggle {
         display: none;
     }
 
 
+    /* Show hamburger */
+
+    .app-mobile-sidebar-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        border: 1px solid rgba(31, 42, 68, .10);
+        border-radius: 11px;
+        background: rgba(255, 255, 255, .75);
+        color: var(--navy);
+        font-size: 1.1rem;
+        cursor: pointer;
+    }
+
+
+        .app-mobile-sidebar-toggle:hover {
+            background: #ffffff;
+        }
+
+
+    /* Backdrop */
+
+    .app-sidebar-backdrop {
+        position: fixed;
+        inset: 0;
+        display: block;
+        background: rgba(18, 25, 40, .38);
+        backdrop-filter: blur(3px);
+        -webkit-backdrop-filter: blur(3px);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity .3s ease, visibility .3s ease;
+        z-index: 1040;
+    }
+
+
+    body.sidebar-mobile-open
+    .app-sidebar-backdrop {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+
+/* =========================================================
+   Small Mobile
+   ========================================================= */
+
+@media (max-width: 650px) {
+
+    .app-topbar {
+        min-height: 64px;
+        padding: 0 .9rem;
+    }
+
+
     .app-message-area {
-        top: 72px;
-        right: 1rem;
-        left: 1rem;
+        top: 74px;
+        right: .8rem;
+        left: .8rem;
         width: auto;
     }
 
-
+    .app-page-account {
+        padding: .8rem .8rem 0;
+    }
     .app-footer-inner {
         padding: .9rem 1rem;
     }
+
+
+    .app-user-name {
+        max-width: 120px;
+    }
 }
+
+
+/* =========================================================
+   Reduced Motion
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}
+/* =========================================================
+   Sidebar SVG Icons
+   ========================================================= */
+
+.app-sidebar-icon svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* =========================================================
+   Page Account Area
+   ========================================================= */
+
+.app-content {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 100vh;
+}
+
+
+.app-page-account {
+    display: flex;
+    justify-content: flex-end;
+    padding: 1rem 1.5rem 0;
+}
+
+
+    .app-page-account .app-account {
+        margin-left: 0;
+    }
+
+
+    /* Optional: make the account block feel lighter */
+    .app-page-account .app-user-button {
+        background: rgba(255, 255, 255, .55);
+        border: 1px solid rgba(31, 42, 68, .06);
+        box-shadow: 0 6px 18px rgba(31, 42, 68, .04);
+    }
+
+
+        .app-page-account .app-user-button:hover,
+        .app-page-account .app-user-button[aria-expanded="true"] {
+            background: rgba(255, 255, 255, .82);
+            border-color: rgba(31, 42, 68, .10);
+        }
