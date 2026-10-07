@@ -1,9 +1,13 @@
-﻿@model CommunicationProject.Models.Site
+﻿@model CommunicationProject.ViewModels.SiteDetailsViewModel
 @using CommunicationProject.Security
+
 
 @{
     ViewData["Title"] = "Site Details";
+
+    var site = Model.Site;
 }
+
 
 @section Styles {
     <link rel="stylesheet"
@@ -11,124 +15,639 @@
           asp-append-version="true" />
 }
 
+
 <div class="sites-details-page">
+
+
+    <!-- =====================================================
+         PAGE HEADER
+         ===================================================== -->
 
     <div class="sites-page-top">
 
-        <a asp-action="Index"
-               class="sites-back-link">
-            ← Sites
+        <a href="#"
+               class="sites-back-link js-back-link"
+               data-fallback-url="@Url.Action("Index", "Sites")">
+
+            <span>←</span>
+
+            Back
+
         </a>
 
-        <h1 class="sites-form-title">
-            Site details
-        </h1>
 
-        <p class="sites-form-subtitle">
-            View site information.
-        </p>
+        <div class="sites-details-page-heading">
+
+            <div>
+
+                <h1 class="sites-form-title">
+                    @site.Name
+                </h1>
+
+                <p class="sites-form-subtitle">
+                    Site information, communication links
+                    and installed MUX equipment.
+                </p>
+
+            </div>
+
+
+            <div class="sites-details-page-actions">
+
+                <div class="sites-details-header-actions">
+
+                    @if (User.IsInRole(AppRoles.Admin) ||
+                         User.IsInRole(AppRoles.Operator))
+                    {
+                        <a asp-controller="CommunicationLinks"
+                               asp-action="Create"
+                               asp-route-siteFromId="@site.Id"
+                               class="sites-secondary-btn">
+
+                            Create Link
+
+                        </a>
+                        <a asp-action="Edit"
+                               asp-route-id="@site.Id"
+                               class="sites-secondary-btn">
+
+                            Edit
+
+                        </a>
+
+
+                    }
+
+
+
+
+                </div>
+
+            </div>
+
+        </div>
 
     </div>
 
 
-    <div class="sites-card sites-details-card">
+    <!-- =====================================================
+         SITE INFORMATION
+         ===================================================== -->
 
-        <div class="sites-details-header">
+    <section class="sites-card sites-info-card">
 
-            <div>
+        <div class="sites-info-icon">
 
-                <h2 class="sites-details-name">
-                    @Model.Name
-                </h2>
+            <svg viewBox="0 0 24 24"
+                 aria-hidden="true">
 
-                <div class="sites-details-id">
-                    Site @Model.Id
+                <path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11z"></path>
+
+                <circle cx="12"
+                        cy="10"
+                        r="2"></circle>
+
+            </svg>
+
+        </div>
+
+
+        <div class="sites-info-content">
+
+            <div class="sites-info-heading">
+
+                <div>
+
+                    <h2>
+                        Site Information
+                    </h2>
+
+                    <span>
+                        Site @site.Id
+                    </span>
+
                 </div>
 
             </div>
-            @if (User.IsInRole(AppRoles.Admin) ||
-     User.IsInRole(AppRoles.Operator))
+
+
+            <div class="sites-info-grid">
+
+                <div class="sites-info-field">
+
+                    <span class="sites-info-label">
+                        Site ID
+                    </span>
+
+                    <span class="sites-info-value">
+                        @site.Id
+                    </span>
+
+                </div>
+
+
+                <div class="sites-info-field">
+
+                    <span class="sites-info-label">
+                        Site Name
+                    </span>
+
+                    <span class="sites-info-value">
+                        @site.Name
+                    </span>
+
+                </div>
+
+
+                <div class="sites-info-field">
+
+                    <span class="sites-info-label">
+                        Location
+                    </span>
+
+                    <span class="sites-info-value">
+                        @(string.IsNullOrWhiteSpace(site.Location)
+                            ? "—"
+                            : site.Location)
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         CONNECTION SUMMARY
+         ===================================================== -->
+
+    <div class="sites-resource-summary">
+
+        <div class="sites-resource-stat">
+
+            <span class="sites-resource-stat-number">
+                @Model.Links.Count
+            </span>
+
+            <span class="sites-resource-stat-label">
+                Communication Links
+            </span>
+
+        </div>
+
+
+        <div class="sites-resource-stat">
+
+            <span class="sites-resource-stat-number">
+                @Model.Muxes.Count
+            </span>
+
+            <span class="sites-resource-stat-label">
+                MUXes
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         COMMUNICATION LINKS
+         ===================================================== -->
+
+    <details class="sites-resource-panel"
+             >
+
+        <summary class="sites-resource-summary-header">
+
+            <div class="sites-resource-summary-left">
+
+                <span class="sites-resource-icon">
+
+                    <svg viewBox="0 0 24 24"
+                         aria-hidden="true">
+
+                        <path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1.1 1.1"></path>
+
+                        <path d="M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1.1-1.1"></path>
+
+                    </svg>
+
+                </span>
+
+
+                <span>
+
+                    <strong>
+                        Communication Links
+                    </strong>
+
+                    <small>
+                        Links connected to this site
+                    </small>
+
+                </span>
+
+            </div>
+
+
+            <div class="sites-resource-summary-right">
+
+                <span class="sites-resource-count">
+                    @Model.Links.Count
+                </span>
+
+                <span class="sites-resource-chevron">
+                    ↓
+                </span>
+
+            </div>
+
+        </summary>
+
+
+        <div class="sites-resource-body">
+
+            @if (Model.Links.Any())
             {
-                <a asp-controller="CommunicationLinks"
-                       asp-action="Create"
-                       asp-route-siteFromId="@Model.Id"
-                       class="sites-primary-btn">
-                    Create Link
-                </a>
+                <div class="sites-links-list">
+
+                    @foreach (var link in Model.Links)
+                    {
+                        string otherSiteId =
+                            link.SiteFromId == site.Id
+                                ? link.SiteToId
+                                : link.SiteFromId;
+
+                        string otherSiteName =
+                            link.SiteFromId == site.Id
+                                ? link.SiteTo?.Name ?? link.SiteToId
+                                : link.SiteFrom?.Name ?? link.SiteFromId;
+
+
+                        <div class="sites-link-item">
+
+                            <div class="sites-link-main">
+
+                                <span class="sites-link-icon">
+
+                                    <svg viewBox="0 0 24 24"
+                                         aria-hidden="true">
+
+                                        <circle cx="5"
+                                                cy="12"
+                                                r="2"></circle>
+
+                                        <circle cx="19"
+                                                cy="12"
+                                                r="2"></circle>
+
+                                        <path d="M7 12h10"></path>
+
+                                    </svg>
+
+                                </span>
+
+
+                                <div class="sites-link-info">
+
+                                    <div class="sites-link-name">
+                                        @link.Name
+                                    </div>
+
+
+                                    <div class="sites-link-route">
+
+                                        <span>
+                                            @link.SiteFromId
+                                        </span>
+
+                                        <span class="sites-link-route-arrow">
+                                            →
+                                        </span>
+
+                                        <span>
+                                            @link.SiteToId
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="sites-link-meta">
+
+                                <div class="sites-link-meta-item">
+
+                                    <span>
+                                        Connected Site
+                                    </span>
+
+                                    <strong>
+                                        @otherSiteId — @otherSiteName
+                                    </strong>
+
+                                </div>
+
+
+                                <div class="sites-link-meta-item">
+
+                                    <span>
+                                        Type
+                                    </span>
+
+                                    <strong>
+                                        @(link.LinkType?.Name ?? "—")
+                                    </strong>
+
+                                </div>
+
+
+                                <div class="sites-link-meta-item">
+
+                                    <span>
+                                        Capacity
+                                    </span>
+
+                                    <strong>
+                                        @(string.IsNullOrWhiteSpace(link.Capacity)
+                                            ? "—"
+                                            : link.Capacity)
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+
+                            <a asp-controller="CommunicationLinks"
+                               asp-action="Details"
+                               asp-route-id="@link.Id"
+                               class="sites-resource-view">
+
+                                View Details
+
+                                <span>→</span>
+
+                            </a>
+
+                        </div>
+                    }
+
+                </div>
+            }
+            else
+            {
+                <div class="sites-resource-empty">
+
+                    <span class="sites-resource-empty-icon">
+                        —
+                    </span>
+
+                    <strong>
+                        No communication links
+                    </strong>
+
+                    <p>
+                        This site currently has no communication
+                        links connected to it.
+                    </p>
+
+                </div>
             }
 
-            <a asp-action="Edit"
-                   asp-route-id="@Model.Id"
-                   class="sites-secondary-btn">
-                Edit
-            </a>
-
         </div>
 
-
-        <div class="sites-details-body">
-
-            <div class="sites-details-grid">
-
-                <div>
-
-                    <div class="sites-detail-label">
-                        Site ID
-                    </div>
-
-                    <div class="sites-detail-value">
-                        @Model.Id
-                    </div>
-
-                </div>
+    </details>
 
 
-                <div>
+    <!-- =====================================================
+         MUX EQUIPMENT
+         ===================================================== -->
 
-                    <div class="sites-detail-label">
-                        Name
-                    </div>
+    <details class="sites-resource-panel">
 
-                    <div class="sites-detail-value">
-                        @Model.Name
-                    </div>
+        <summary class="sites-resource-summary-header">
 
-                </div>
+            <div class="sites-resource-summary-left">
+
+                <span class="sites-resource-icon">
+
+                    <svg viewBox="0 0 24 24"
+                         aria-hidden="true">
+
+                        <rect x="3"
+                              y="5"
+                              width="18"
+                              height="14"
+                              rx="2"></rect>
+
+                        <path d="M7 9h2"></path>
+                        <path d="M11 9h2"></path>
+                        <path d="M15 9h2"></path>
+
+                        <path d="M7 15h10"></path>
+
+                    </svg>
+
+                </span>
 
 
-                <div>
+                <span>
 
-                    <div class="sites-detail-label">
-                        Location
-                    </div>
+                    <strong>
+                        MUX Equipment
+                    </strong>
 
-                    <div class="sites-detail-value">
-                        @(string.IsNullOrWhiteSpace(Model.Location)
-                            ? "—"
-                            : Model.Location)
-                    </div>
+                    <small>
+                        MUXes installed at this site
+                    </small>
 
-                </div>
+                </span>
 
             </div>
 
+
+            <div class="sites-resource-summary-right">
+
+                <span class="sites-resource-count">
+                    @Model.Muxes.Count
+                </span>
+
+                <span class="sites-resource-chevron">
+                    ↓
+                </span>
+
+            </div>
+
+        </summary>
+
+
+        <div class="sites-resource-body">
+
+            @if (Model.Muxes.Any())
+            {
+                <div class="sites-mux-grid">
+
+                    @foreach (var mux in Model.Muxes)
+                    {
+                        int cardCount =
+                            mux.Cards?.Count ?? 0;
+
+                        int portCount =
+                            mux.Cards?
+                                .Sum(card =>
+                                    card.Ports?.Count ?? 0)
+                            ?? 0;
+
+
+                        <div class="sites-mux-item">
+
+                            <div class="sites-mux-header">
+
+                                <span class="sites-mux-icon">
+
+                                    <svg viewBox="0 0 24 24"
+                                         aria-hidden="true">
+
+                                        <rect x="4"
+                                              y="4"
+                                              width="16"
+                                              height="16"
+                                              rx="2"></rect>
+
+                                        <path d="M8 9h8"></path>
+                                        <path d="M8 13h8"></path>
+                                        <path d="M8 17h5"></path>
+
+                                    </svg>
+
+                                </span>
+
+
+                                <div>
+
+                                    <h3>
+                                        @mux.Name
+                                    </h3>
+
+                                    <span>
+                                        @(mux.MuxType?.Name ?? "No type")
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="sites-mux-stats">
+
+                                <div>
+
+                                    <span>
+                                        Cards
+                                    </span>
+
+                                    <strong>
+                                        @cardCount
+                                    </strong>
+
+                                </div>
+
+
+                                <div>
+
+                                    <span>
+                                        Ports
+                                    </span>
+
+                                    <strong>
+                                        @portCount
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+
+                            <a asp-controller="Muxes"
+                               asp-action="Details"
+                               asp-route-id="@mux.Id"
+                               class="sites-resource-view">
+
+                                View MUX
+
+                                <span>→</span>
+
+                            </a>
+
+                        </div>
+                    }
+
+                </div>
+            }
+            else
+            {
+                <div class="sites-resource-empty">
+
+                    <span class="sites-resource-empty-icon">
+                        —
+                    </span>
+
+                    <strong>
+                        No MUX equipment
+                    </strong>
+
+                    <p>
+                        There are currently no MUXes
+                        installed at this site.
+                    </p>
+
+                </div>
+            }
+            <br />
+            @if (Model.HasSdhLinks)
+            {
+                <a asp-controller="Muxes"
+                       asp-action="InstallForSite"
+                       asp-route-siteId="@site.Id"
+                       class="sites-primary-btn">
+
+                    Install MUX
+
+                </a>
+            }
         </div>
 
+    </details>
 
-        <div class="sites-details-footer">
 
-            <a asp-action="Index"
-                   class="sites-secondary-btn">
-                Back
-            </a>
+    <!-- =====================================================
+         FOOT ACTIONS
+         ===================================================== -->
 
-            <a asp-action="Delete"
-                   asp-route-id="@Model.Id"
-                   class="site-action site-action-delete">
-                Delete site
-            </a>
+    <div class="sites-details-bottom">
 
-        </div>
+        <a href="#"
+               class="sites-secondary-btn js-back-link"
+               data-fallback-url="@Url.Action("Index", "Sites")">
+
+            Back
+
+        </a>
+
+        <a asp-action="Delete"
+           asp-route-id="@site.Id"
+           class="sites-delete-link">
+
+            Delete Site
+
+        </a>
 
     </div>
 

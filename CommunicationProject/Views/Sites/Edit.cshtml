@@ -10,27 +10,60 @@
           asp-append-version="true" />
 }
 
+
 <div class="sites-form-page">
 
-    <div class="sites-page-top">
+    <!-- Header -->
+    <div class="sites-form-header">
 
-        <a asp-action="Index"
-               class="sites-back-link">
-            ← Sites
+        <a href="#"
+               class="sites-back-link js-back-link"
+               data-fallback-url="@Url.Action("Index", "Sites")">
+
+            <span>←</span>
+            Back
+
         </a>
 
-        <h1 class="sites-form-title">
-            Edit site
-        </h1>
 
-        <p class="sites-form-subtitle">
-            Update the information for @Model.Name.
-        </p>
+        <div class="sites-form-heading">
+
+            <div class="sites-form-heading-icon">
+
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+
+                    <path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11z"></path>
+
+                    <circle cx="12"
+                            cy="10"
+                            r="2"></circle>
+
+                </svg>
+
+            </div>
+
+
+            <div>
+
+                <h1 class="sites-form-title">
+                    Edit Site
+                </h1>
+
+                <p class="sites-form-subtitle">
+                    Update the information for
+                    <strong>@Model.Name</strong>.
+                </p>
+
+            </div>
+
+        </div>
 
     </div>
 
 
-    <div class="sites-card sites-form-card">
+    <!-- Form -->
+    <div class="sites-card sites-form-card sites-form-card-modern">
 
         <form asp-action="Edit"
               method="post">
@@ -38,72 +71,118 @@
             <input type="hidden"
                    asp-for="Id" />
 
+
             <div asp-validation-summary="ModelOnly"
-                 class="sites-validation">
+                 class="sites-validation-summary">
             </div>
 
 
-            <div class="sites-form-group">
+            <div class="sites-form-section">
 
-                <label class="sites-form-label">
-                    Site ID
-                </label>
+                <div class="sites-form-section-header">
 
-                <input value="@Model.Id"
-                       class="sites-form-control"
-                       readonly />
+                    <span class="sites-form-section-mark">
+                    </span>
 
-                <div class="sites-form-hint">
-                    Site ID cannot be changed.
+                    <div>
+                        <h2>
+                            Site Information
+                        </h2>
+
+                        <p>
+                            Modify the site's name or location.
+                        </p>
+                    </div>
+
                 </div>
 
-            </div>
+
+                <div class="sites-form-grid">
+
+                    <!-- ID -->
+                    <div class="sites-form-group">
+
+                        <label class="sites-form-label">
+                            Site ID
+                        </label>
+
+                        <div class="sites-readonly-field">
+
+                            <span class="sites-readonly-value">
+                                @Model.Id
+                            </span>
+
+                            <span class="sites-readonly-badge">
+                                Fixed
+                            </span>
+
+                        </div>
+
+                        <div class="sites-form-hint">
+                            Site ID cannot be changed.
+                        </div>
+
+                    </div>
 
 
-            <div class="sites-form-group">
+                    <!-- Name -->
+                    <div class="sites-form-group">
 
-                <label asp-for="Name"
-                       class="sites-form-label">
-                    Site name
-                </label>
+                        <label asp-for="Name"
+                               class="sites-form-label">
+                            Site Name
+                        </label>
 
-                <input asp-for="Name"
-                       class="sites-form-control" />
+                        <input asp-for="Name"
+                               class="sites-form-control"
+                               placeholder="Enter site name" />
 
-                <span asp-validation-for="Name"
-                      class="sites-validation">
-                </span>
+                        <span asp-validation-for="Name"
+                              class="sites-validation">
+                        </span>
 
-            </div>
+                    </div>
 
 
-            <div class="sites-form-group">
+                    <!-- Location -->
+                    <div class="sites-form-group sites-form-group-wide">
 
-                <label asp-for="Location"
-                       class="sites-form-label">
-                    Location
-                </label>
+                        <label asp-for="Location"
+                               class="sites-form-label">
+                            Location
+                        </label>
 
-                <input asp-for="Location"
-                       class="sites-form-control" />
+                        <input asp-for="Location"
+                               class="sites-form-control"
+                               placeholder="Enter site location" />
 
-                <span asp-validation-for="Location"
-                      class="sites-validation">
-                </span>
+                        <span asp-validation-for="Location"
+                              class="sites-validation">
+                        </span>
+
+                    </div>
+
+                </div>
 
             </div>
 
 
             <div class="sites-form-actions">
 
-                <a asp-action="Index"
-                       class="sites-secondary-btn">
+                <a href="#"
+                       class="sites-secondary-btn js-back-link"
+                       data-fallback-url="@Url.Action("Index", "Sites")">
+
                     Cancel
+
                 </a>
+
 
                 <button type="submit"
                         class="sites-save-btn">
-                    Save changes
+
+                    Save Changes
+
                 </button>
 
             </div>
@@ -113,6 +192,7 @@
     </div>
 
 </div>
+
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

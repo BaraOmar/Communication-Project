@@ -1,0 +1,1939 @@
+﻿/* =========================================================
+   MUX Module
+   ========================================================= */
+
+.mux-page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 3rem;
+}
+
+
+/* =========================================================
+   Header
+   ========================================================= */
+
+.mux-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 1.75rem;
+}
+
+.mux-title {
+    margin: 0;
+    color: #172033;
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.mux-subtitle {
+    margin: 0.35rem 0 0;
+    color: #7a8497;
+    font-size: 0.95rem;
+}
+
+
+/* =========================================================
+   Primary Button
+   ========================================================= */
+
+.mux-primary-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    min-height: 42px;
+    padding: 0.65rem 1.15rem;
+    border: 1px solid #4263eb;
+    border-radius: 10px;
+    background: #4263eb;
+    color: #ffffff;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+    .mux-primary-btn:hover {
+        background: #3657da;
+        border-color: #3657da;
+        color: #ffffff;
+        box-shadow: 0 6px 16px rgba(66, 99, 235, 0.16);
+        transform: translateY(-1px);
+    }
+
+.mux-btn-icon {
+    font-size: 1.05rem;
+    line-height: 1;
+}
+
+
+/* =========================================================
+   Card
+   ========================================================= */
+
+.mux-card {
+    background: #ffffff;
+    border: 1px solid #e9edf3;
+    border-radius: 14px;
+    box-shadow: 0 3px 14px rgba(20, 32, 56, 0.04);
+}
+
+.mux-table-card {
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   Table Header
+   ========================================================= */
+
+.mux-table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.15rem 1.4rem;
+    border-bottom: 1px solid #edf0f4;
+}
+
+.mux-table-title {
+    margin: 0;
+    color: #263044;
+    font-size: 1rem;
+    font-weight: 650;
+}
+
+.mux-count {
+    padding: 0.3rem 0.65rem;
+    background: #f4f6f9;
+    border-radius: 999px;
+    color: #778196;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   Table
+   ========================================================= */
+
+.mux-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.mux-table {
+    width: 100%;
+    margin: 0;
+    border-collapse: collapse;
+}
+
+    .mux-table thead th {
+        padding: 0.8rem 1.4rem;
+        background: #fafbfc;
+        border-bottom: 1px solid #e9edf3;
+        color: #8a94a6;
+        font-size: 0.73rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .mux-table tbody td {
+        padding: 0.95rem 1.4rem;
+        border-bottom: 1px solid #f0f2f5;
+        color: #4c566a;
+        font-size: 0.9rem;
+        vertical-align: middle;
+    }
+
+    .mux-table tbody tr {
+        transition: background-color 0.15s ease;
+    }
+
+        .mux-table tbody tr:hover {
+            background: #fafbfe;
+        }
+
+        .mux-table tbody tr:last-child td {
+            border-bottom: 0;
+        }
+
+
+/* =========================================================
+   MUX Name
+   ========================================================= */
+
+.mux-name-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.mux-device-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    border: 1px solid #dfe5f4;
+    border-radius: 9px;
+    background: #f5f7ff;
+    color: #4263eb;
+    font-size: 0.75rem;
+    font-weight: 750;
+}
+
+.mux-name {
+    color: #2c3547;
+    font-weight: 650;
+}
+
+.mux-id {
+    margin-top: 0.18rem;
+    color: #98a1b1;
+    font-size: 0.72rem;
+    font-family: Consolas, "Courier New", monospace;
+}
+
+
+/* =========================================================
+   Site
+   ========================================================= */
+
+.mux-site {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.mux-site-id {
+    color: #364052;
+    font-weight: 650;
+}
+
+.mux-site-name {
+    color: #8a94a6;
+    font-size: 0.78rem;
+}
+
+
+/* =========================================================
+   Type / Card Count
+   ========================================================= */
+
+.mux-type-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.3rem 0.65rem;
+    background: #f5f7ff;
+    border: 1px solid #e1e6fa;
+    border-radius: 999px;
+    color: #5369c9;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.mux-card-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    padding: 0.28rem 0.55rem;
+    background: #f4f6f9;
+    border-radius: 7px;
+    color: #586477;
+    font-size: 0.8rem;
+    font-weight: 650;
+}
+
+.mux-empty-value {
+    color: #a1a9b7;
+}
+
+
+/* =========================================================
+   Actions
+   ========================================================= */
+
+.mux-actions-heading {
+    text-align: right;
+}
+
+.mux-row-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.45rem;
+}
+
+.mux-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    padding: 0.4rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.16s ease;
+}
+
+.mux-action-view {
+    border: 1px solid #dfe4eb;
+    background: #ffffff;
+    color: #526078;
+}
+
+    .mux-action-view:hover {
+        background: #f6f8fb;
+        border-color: #cfd6e1;
+        color: #263044;
+    }
+
+
+/* =========================================================
+   Empty State
+   ========================================================= */
+
+.mux-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 4.5rem 1.5rem;
+    text-align: center;
+}
+
+.mux-empty-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 54px;
+    height: 54px;
+    margin-bottom: 1rem;
+    border: 1px solid #dfe5f4;
+    border-radius: 14px;
+    background: #f5f7ff;
+    color: #4263eb;
+    font-weight: 750;
+}
+
+.mux-empty-state h3 {
+    margin: 0;
+    color: #2c3547;
+    font-size: 1rem;
+    font-weight: 650;
+}
+
+.mux-empty-state p {
+    margin: 0.4rem 0 1.25rem;
+    color: #8a94a6;
+    font-size: 0.88rem;
+}
+
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    .mux-page {
+        padding: 1.3rem 0.8rem 2rem;
+    }
+
+    .mux-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .mux-primary-btn {
+        width: 100%;
+    }
+
+    .mux-table {
+        min-width: 760px;
+    }
+}
+/* =========================================================
+   MUX Details
+   ========================================================= */
+
+.mux-details-page {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 3rem;
+}
+
+
+/* ---------------------------------------------------------
+   Header
+   --------------------------------------------------------- */
+
+.mux-details-top {
+    margin-bottom: 1.5rem;
+}
+
+.mux-details-back {
+    display: inline-flex;
+    margin-bottom: 1rem;
+    color: #687386;
+    font-size: 0.86rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+    .mux-details-back:hover {
+        color: #263044;
+    }
+
+.mux-details-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.mux-details-title {
+    margin: 0;
+    color: #172033;
+    font-size: 1.8rem;
+    font-weight: 720;
+}
+
+.mux-details-subtitle {
+    margin: 0.35rem 0 0;
+    color: #7a8497;
+    font-size: 0.94rem;
+}
+
+
+/* ---------------------------------------------------------
+   Summary
+   --------------------------------------------------------- */
+
+.mux-details-summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-bottom: 1.5rem;
+    background: #ffffff;
+    border: 1px solid #e7ebf1;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.mux-summary-item {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 1.1rem 1.25rem;
+    border-right: 1px solid #edf0f4;
+}
+
+    .mux-summary-item:last-child {
+        border-right: 0;
+    }
+
+.mux-summary-label {
+    margin-bottom: 0.35rem;
+    color: #929bad;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.045em;
+    text-transform: uppercase;
+}
+
+.mux-summary-item strong {
+    color: #283347;
+    font-size: 0.95rem;
+}
+
+.mux-summary-secondary {
+    margin-top: 0.18rem;
+    color: #8993a4;
+    font-size: 0.78rem;
+}
+
+
+/* ---------------------------------------------------------
+   Rack Section
+   --------------------------------------------------------- */
+
+.mux-rack-section {
+    margin-bottom: 1.5rem;
+}
+
+.mux-rack-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.8rem;
+}
+
+.mux-rack-eyebrow {
+    display: block;
+    margin-bottom: 0.2rem;
+    color: #9aa3b2;
+    font-size: 0.67rem;
+    font-weight: 750;
+    letter-spacing: 0.11em;
+}
+
+.mux-rack-header h2,
+.mux-selected-port-header h2 {
+    margin: 0;
+    color: #273247;
+    font-size: 1rem;
+    font-weight: 680;
+}
+
+
+/* ---------------------------------------------------------
+   Legend
+   --------------------------------------------------------- */
+
+.mux-rack-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+}
+
+    .mux-rack-legend span {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        color: #758095;
+        font-size: 0.75rem;
+        font-weight: 550;
+    }
+
+.mux-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.status-available {
+    background: #aab3c2;
+}
+
+.status-connected {
+    background: #3ba66b;
+}
+
+.status-wrong {
+    background: #e2a63b;
+}
+
+.status-damaged {
+    background: #d85d65;
+}
+
+
+/* ---------------------------------------------------------
+   MUX Chassis
+   --------------------------------------------------------- */
+
+.mux-rack-shell {
+    padding: 0.8rem;
+    background: linear-gradient( 180deg, #303948 0%, #222a37 100%);
+    border: 1px solid #1b2230;
+    border-radius: 15px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.09), 0 5px 18px rgba(27,34,48,0.12);
+}
+
+.mux-rack-brand,
+.mux-rack-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #cad0da;
+    font-size: 0.69rem;
+    font-weight: 650;
+    letter-spacing: 0.05em;
+}
+
+.mux-rack-brand {
+    padding: 0.15rem 0.35rem 0.75rem;
+}
+
+    .mux-rack-brand span,
+    .mux-rack-bottom span:last-child {
+        color: #838d9d;
+    }
+
+.mux-rack-bottom {
+    padding: 0.7rem 0.35rem 0.1rem;
+}
+
+
+/* ---------------------------------------------------------
+   Rack Scrolling
+   --------------------------------------------------------- */
+
+.mux-rack-scroll {
+    width: 100%;
+    padding-bottom: 0.25rem;
+    overflow-x: auto;
+}
+
+.mux-rack-slots {
+    display: flex;
+    align-items: stretch;
+    gap: 0.65rem;
+    min-width: max-content;
+}
+
+
+/* ---------------------------------------------------------
+   Physical Card
+   --------------------------------------------------------- */
+
+.mux-rack-card {
+    display: flex;
+    flex-direction: column;
+    width: 185px;
+    min-height: 300px;
+    padding: 0.55rem;
+    background: linear-gradient( 180deg, #edf0f3 0%, #dfe3e8 100%);
+    border: 1px solid #aeb7c2;
+    border-radius: 7px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.75);
+}
+
+.mux-rack-card-e1 {
+    width: 300px;
+}
+
+.mux-rack-card-power {
+    width: 150px;
+}
+
+
+/* ---------------------------------------------------------
+   Card Header
+   --------------------------------------------------------- */
+
+.mux-rack-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.25rem 0.25rem 0.55rem;
+}
+
+.mux-slot-number {
+    display: block;
+    margin-bottom: 0.15rem;
+    color: #7c8695;
+    font-size: 0.62rem;
+    font-weight: 750;
+    letter-spacing: 0.06em;
+}
+
+.mux-rack-card-header h3 {
+    margin: 0;
+    color: #253044;
+    font-size: 0.86rem;
+    font-weight: 750;
+}
+
+.mux-card-usage {
+    padding: 0.18rem 0.42rem;
+    background: rgba(255,255,255,0.7);
+    border: 1px solid #cbd2da;
+    border-radius: 5px;
+    color: #687386;
+    font-size: 0.65rem;
+    font-weight: 650;
+}
+
+
+/* ---------------------------------------------------------
+   Face Plate
+   --------------------------------------------------------- */
+
+.mux-card-face {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding: 0.45rem;
+    background: linear-gradient( 180deg, #353e4c, #29313d);
+    border: 1px solid #1e2632;
+    border-radius: 5px;
+}
+
+.mux-card-handle {
+    width: 42%;
+    height: 4px;
+    margin: 0 auto 0.7rem;
+    background: #111720;
+    border-radius: 999px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+.mux-card-handle-bottom {
+    margin: auto auto 0;
+}
+
+
+/* ---------------------------------------------------------
+   Ports
+   --------------------------------------------------------- */
+
+.mux-port-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem;
+    align-content: start;
+}
+
+.mux-rack-card-e1 .mux-port-grid {
+    grid-template-columns: repeat(6, 34px);
+    justify-content: center;
+}
+
+.mux-rack-card-power .mux-port-grid {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.mux-port-button {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    min-height: 46px;
+    padding: 0.25rem;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: #dce1e7;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+    .mux-port-button:hover {
+        background: rgba(255,255,255,0.06);
+    }
+
+    .mux-port-button.is-selected {
+        background: rgba(255,255,255,0.1);
+        border-color: #c9d2df;
+        transform: translateY(-1px);
+    }
+
+
+/* Socket */
+
+.mux-port-socket {
+    width: 20px;
+    height: 20px;
+    margin-bottom: 0.22rem;
+    background: #10161f;
+    border: 3px solid #8993a3;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 3px #252e3a;
+}
+
+.mux-port-number {
+    color: #bbc3cf;
+    font-size: 0.61rem;
+    font-weight: 650;
+}
+
+
+/* Port status */
+
+.mux-port-button.status-connected
+.mux-port-socket {
+    border-color: #42ad72;
+}
+
+.mux-port-button.status-available
+.mux-port-socket {
+    border-color: #929cab;
+}
+
+.mux-port-button.status-wrong
+.mux-port-socket {
+    border-color: #e4aa40;
+}
+
+.mux-port-button.status-damaged
+.mux-port-socket {
+    border-color: #dc6169;
+}
+
+
+/* ---------------------------------------------------------
+   Card Footer
+   --------------------------------------------------------- */
+
+.mux-rack-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.5rem 0.2rem 0;
+    color: #788293;
+    font-size: 0.67rem;
+}
+
+    .mux-rack-card-footer a {
+        color: #5068c9;
+        font-weight: 650;
+        text-decoration: none;
+    }
+
+
+/* =========================================================
+   Selected Port Inspector
+   ========================================================= */
+
+.mux-selected-port {
+    padding: 1.25rem;
+    background: #ffffff;
+    border: 1px solid #e7ebf1;
+    border-radius: 14px;
+}
+
+.mux-selected-port-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #edf0f4;
+}
+
+.mux-selected-empty {
+    padding: 1.6rem 0 0.4rem;
+    color: #8b95a5;
+    font-size: 0.87rem;
+}
+
+.mux-selected-content {
+    padding-top: 1rem;
+}
+
+.mux-selected-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.8rem;
+}
+
+    .mux-selected-grid > div {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .mux-selected-grid span {
+        margin-bottom: 0.25rem;
+        color: #929bad;
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .mux-selected-grid strong {
+        color: #303b50;
+        font-size: 0.88rem;
+    }
+
+.mux-selected-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-top: 1rem;
+}
+
+.mux-details-secondary-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0.65rem 1rem;
+    background: #ffffff;
+    border: 1px solid #dfe4eb;
+    border-radius: 9px;
+    color: #566278;
+    font-size: 0.86rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+    .mux-details-secondary-btn:hover {
+        background: #f7f8fa;
+        color: #303b50;
+    }
+
+
+/* Status Badge */
+
+.mux-port-status-badge {
+    padding: 0.3rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 650;
+}
+
+.status-badge-available {
+    background: #f0f2f5;
+    color: #687386;
+}
+
+.status-badge-connected {
+    background: #e9f6ee;
+    color: #267648;
+}
+
+.status-badge-wrong {
+    background: #fff5df;
+    color: #9b6810;
+}
+
+.status-badge-damaged {
+    background: #fbeaec;
+    color: #a23b43;
+}
+
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+@media (max-width: 850px) {
+
+    .mux-details-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .mux-summary-item:nth-child(2) {
+        border-right: 0;
+    }
+
+    .mux-selected-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+
+@media (max-width: 600px) {
+
+    .mux-details-page {
+        padding: 1.25rem 0.8rem 2rem;
+    }
+
+    .mux-details-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .mux-summary-item {
+        border-right: 0;
+        border-bottom: 1px solid #edf0f4;
+    }
+
+        .mux-summary-item:last-child {
+            border-bottom: 0;
+        }
+
+    .mux-rack-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .mux-selected-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .mux-selected-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+        .mux-selected-actions a {
+            width: 100%;
+        }
+}
+
+/* =========================================================
+   MUX Card Details
+   ========================================================= */
+
+.mux-card-details-page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 3rem;
+}
+
+
+/* ---------------------------------------------------------
+   Header
+   --------------------------------------------------------- */
+
+.mux-card-details-top {
+    margin-bottom: 1.5rem;
+}
+
+.mux-card-details-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+    .mux-card-details-heading h1 {
+        margin: 0;
+        color: #172033;
+        font-size: 1.8rem;
+        font-weight: 720;
+    }
+
+    .mux-card-details-heading p {
+        margin: 0.35rem 0 0;
+        color: #7a8497;
+        font-size: 0.92rem;
+    }
+
+.mux-card-category-badge {
+    padding: 0.4rem 0.8rem;
+    background: #f4f6f9;
+    border: 1px solid #e0e5ec;
+    border-radius: 999px;
+    color: #566278;
+    font-size: 0.76rem;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   Workspace
+   ========================================================= */
+
+.mux-card-workspace {
+    display: grid;
+    grid-template-columns: minmax(420px, 1.15fr) minmax(330px, 0.85fr);
+    gap: 1.25rem;
+    align-items: start;
+}
+
+
+/* =========================================================
+   Physical Card Panel
+   ========================================================= */
+
+.mux-card-physical-panel,
+.mux-card-port-inspector {
+    padding: 1.25rem;
+    background: #ffffff;
+    border: 1px solid #e7ebf1;
+    border-radius: 14px;
+}
+
+.mux-card-panel-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #edf0f4;
+}
+
+    .mux-card-panel-heading h2 {
+        margin: 0;
+        color: #273247;
+        font-size: 1rem;
+        font-weight: 680;
+    }
+
+
+/* =========================================================
+   Chassis
+   ========================================================= */
+
+.mux-card-detail-chassis {
+    display: flex;
+    justify-content: center;
+    padding: 2rem 1rem;
+    margin-top: 1rem;
+    background: linear-gradient( 180deg, #303947, #242c38);
+    border: 1px solid #1c2330;
+    border-radius: 12px;
+}
+
+
+/* =========================================================
+   Card Face
+   ========================================================= */
+
+.mux-card-detail-face {
+    display: flex;
+    flex-direction: column;
+    width: 330px;
+    min-height: 520px;
+    padding: 1rem;
+    background: linear-gradient( 180deg, #e7eaee, #cfd5dc);
+    border: 1px solid #a8b1bd;
+    border-radius: 8px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.72), 0 8px 20px rgba(0,0,0,0.12);
+}
+
+.mux-card-detail-e1 {
+    width: 480px;
+}
+
+.mux-card-detail-power {
+    width: 290px;
+}
+
+
+/* ---------------------------------------------------------
+   Handles
+   --------------------------------------------------------- */
+
+.mux-card-detail-handle {
+    width: 34%;
+    height: 6px;
+    margin: 0 auto 1rem;
+    background: #202734;
+    border-radius: 999px;
+}
+
+.mux-card-detail-bottom-handle {
+    margin-top: auto;
+    margin-bottom: 0;
+}
+
+
+/* ---------------------------------------------------------
+   Card Label
+   --------------------------------------------------------- */
+
+.mux-card-detail-label {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+    padding: 0.65rem 0.8rem;
+    background: #f7f8fa;
+    border: 1px solid #bcc4ce;
+    border-radius: 6px;
+}
+
+    .mux-card-detail-label span {
+        color: #7d8796;
+        font-size: 0.66rem;
+        font-weight: 750;
+    }
+
+    .mux-card-detail-label strong {
+        color: #263044;
+        font-size: 0.9rem;
+        font-weight: 750;
+    }
+
+    .mux-card-detail-label small {
+        margin-left: auto;
+        color: #8993a2;
+        font-size: 0.63rem;
+        font-weight: 700;
+    }
+
+
+/* =========================================================
+   Port Grid
+   ========================================================= */
+
+.mux-card-detail-ports {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+    padding: 1rem;
+    background: linear-gradient( 180deg, #37414f, #29323e);
+    border: 1px solid #1d2530;
+    border-radius: 6px;
+}
+
+
+/* E1 card is wider/dense */
+
+.mux-card-detail-e1
+.mux-card-detail-ports {
+    grid-template-columns: repeat(6, minmax(48px, 1fr));
+}
+
+
+/* Power */
+
+.mux-card-detail-power
+.mux-card-detail-ports {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+
+/* =========================================================
+   Physical Port
+   ========================================================= */
+
+.mux-card-detail-port {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 76px;
+    padding: 0.45rem 0.25rem;
+    background: rgba(255,255,255,0.025);
+    border: 1px solid transparent;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+    .mux-card-detail-port:hover {
+        background: rgba(255,255,255,0.07);
+    }
+
+    .mux-card-detail-port.is-selected {
+        background: rgba(255,255,255,0.1);
+        border-color: #d5dae2;
+        transform: translateY(-1px);
+    }
+
+
+.mux-card-detail-port-number {
+    margin-bottom: 0.35rem;
+    color: #c3cad4;
+    font-size: 0.67rem;
+    font-weight: 700;
+}
+
+
+/* socket */
+
+.mux-card-detail-socket {
+    width: 28px;
+    height: 28px;
+    background: #10161e;
+    border: 4px solid #929cab;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 4px #26303c;
+}
+
+.mux-card-detail-port-status {
+    margin-top: 0.35rem;
+    color: #929dab;
+    font-size: 0.58rem;
+    font-weight: 600;
+}
+
+
+/* status colors */
+
+.mux-card-detail-port.status-connected
+.mux-card-detail-socket {
+    border-color: #42ad72;
+}
+
+.mux-card-detail-port.status-wrong
+.mux-card-detail-socket {
+    border-color: #e4aa40;
+}
+
+.mux-card-detail-port.status-damaged
+.mux-card-detail-socket {
+    border-color: #dc6169;
+}
+
+
+/* =========================================================
+   Inspector
+   ========================================================= */
+
+.mux-card-port-inspector {
+    position: sticky;
+    top: 1rem;
+}
+
+.mux-card-inspector-empty {
+    padding: 2rem 0.2rem;
+    color: #8b95a5;
+    font-size: 0.87rem;
+    line-height: 1.6;
+}
+
+.mux-card-inspector-content {
+    padding-top: 1rem;
+}
+
+
+/* position */
+
+.mux-card-inspector-position {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+    .mux-card-inspector-position > div {
+        padding: 0.75rem;
+        background: #f8f9fb;
+        border: 1px solid #e7ebf0;
+        border-radius: 8px;
+    }
+
+    .mux-card-inspector-position span,
+    .mux-card-inspector-status > span,
+    .mux-card-resource-label,
+    .mux-card-resource-grid span {
+        display: block;
+        margin-bottom: 0.25rem;
+        color: #929bad;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .mux-card-inspector-position strong {
+        color: #303b50;
+        font-size: 0.88rem;
+    }
+
+
+/* Status */
+
+.mux-card-inspector-status {
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #edf0f4;
+}
+
+.mux-inspector-status {
+    display: inline-flex;
+    padding: 0.3rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.inspector-status-available {
+    background: #f0f2f5;
+    color: #667286;
+}
+
+.inspector-status-connected {
+    background: #e9f6ee;
+    color: #267648;
+}
+
+.inspector-status-wrong {
+    background: #fff5df;
+    color: #94620d;
+}
+
+.inspector-status-damaged {
+    background: #fbeaec;
+    color: #a23b43;
+}
+
+
+/* =========================================================
+   Resource
+   ========================================================= */
+
+.mux-card-resource {
+    padding-top: 0.15rem;
+}
+
+.mux-card-resource-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 0.6rem;
+    padding: 0.85rem;
+    background: #f8f9fb;
+    border: 1px solid #e7ebf0;
+    border-radius: 9px;
+}
+
+    .mux-card-resource-main > div {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .mux-card-resource-main strong {
+        color: #303b50;
+        font-size: 0.9rem;
+    }
+
+    .mux-card-resource-main span {
+        margin-top: 0.15rem;
+        color: #8b95a5;
+        font-size: 0.74rem;
+    }
+
+    .mux-card-resource-main a {
+        color: #5068c9;
+        font-size: 0.76rem;
+        font-weight: 650;
+        text-decoration: none;
+    }
+
+
+.mux-card-resource-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+    margin-top: 0.7rem;
+}
+
+    .mux-card-resource-grid > div {
+        padding: 0.7rem;
+        border: 1px solid #edf0f4;
+        border-radius: 8px;
+    }
+
+    .mux-card-resource-grid strong {
+        color: #3f4a5f;
+        font-size: 0.8rem;
+    }
+
+
+.mux-card-resource-empty {
+    display: flex;
+    flex-direction: column;
+    margin: 0.6rem 0 1rem;
+    padding: 1rem;
+    background: #f8f9fb;
+    border: 1px dashed #d8dee7;
+    border-radius: 9px;
+}
+
+    .mux-card-resource-empty strong {
+        color: #485469;
+        font-size: 0.87rem;
+    }
+
+    .mux-card-resource-empty span {
+        margin-top: 0.2rem;
+        color: #8b95a5;
+        font-size: 0.76rem;
+    }
+
+
+/* =========================================================
+   Release Button
+   ========================================================= */
+
+.mux-card-action-form {
+    margin-top: 1rem;
+}
+
+.mux-card-danger-btn {
+    min-height: 42px;
+    padding: 0.6rem 1rem;
+    background: #ffffff;
+    border: 1px solid #e3bfc2;
+    border-radius: 9px;
+    color: #ae424a;
+    font-size: 0.84rem;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+    .mux-card-danger-btn:hover {
+        background: #fff5f6;
+        border-color: #dca8ad;
+    }
+
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+@media (max-width: 950px) {
+
+    .mux-card-workspace {
+        grid-template-columns: 1fr;
+    }
+
+    .mux-card-port-inspector {
+        position: static;
+    }
+}
+
+
+@media (max-width: 600px) {
+
+    .mux-card-details-page {
+        padding: 1.25rem 0.8rem 2rem;
+    }
+
+    .mux-card-details-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .mux-card-detail-chassis {
+        padding: 1rem 0.5rem;
+        overflow-x: auto;
+    }
+
+    .mux-card-detail-face {
+        min-width: 300px;
+    }
+
+    .mux-card-detail-e1 {
+        min-width: 480px;
+    }
+}
+/* =========================================================
+   Install MUX
+   ========================================================= */
+
+.mux-install-page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 3rem;
+}
+
+
+/* ---------------------------------------------------------
+   Header
+   --------------------------------------------------------- */
+
+.mux-install-header {
+    margin-bottom: 1.5rem;
+}
+
+    .mux-install-header h1 {
+        margin: 0;
+        color: #172033;
+        font-size: 1.8rem;
+        font-weight: 720;
+        letter-spacing: -0.02em;
+    }
+
+    .mux-install-header p {
+        margin: 0.35rem 0 0;
+        color: #7a8497;
+        font-size: 0.93rem;
+    }
+
+
+/* =========================================================
+   Validation
+   ========================================================= */
+
+.mux-install-validation {
+    margin-bottom: 1rem;
+    color: #a23b43;
+    font-size: 0.85rem;
+}
+
+    .mux-install-validation:empty {
+        display: none;
+    }
+
+
+/* =========================================================
+   Main Card
+   ========================================================= */
+
+.mux-install-card {
+    margin-bottom: 1.15rem;
+    background: #ffffff;
+    border: 1px solid #e7ebf1;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.mux-install-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.15rem 1.3rem;
+    border-bottom: 1px solid #edf0f4;
+}
+
+    .mux-install-card-header h2 {
+        margin: 0;
+        color: #263044;
+        font-size: 1rem;
+        font-weight: 680;
+    }
+
+    .mux-install-card-header p {
+        margin: 0.3rem 0 0;
+        color: #8a94a6;
+        font-size: 0.8rem;
+    }
+
+
+/* =========================================================
+   Fields
+   ========================================================= */
+
+.mux-install-fields {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    padding: 1.3rem;
+}
+
+.mux-install-field {
+    min-width: 0;
+}
+
+    .mux-install-field label {
+        display: block;
+        margin-bottom: 0.45rem;
+        color: #4b566a;
+        font-size: 0.76rem;
+        font-weight: 650;
+    }
+
+.mux-install-input,
+.mux-install-select,
+.mux-install-port-select {
+    width: 100%;
+    min-height: 42px;
+    padding: 0 0.8rem;
+    background: #fbfcfe;
+    border: 1px solid #dfe4eb;
+    border-radius: 9px;
+    color: #2e394d;
+    font-size: 0.86rem;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+    .mux-install-input:focus,
+    .mux-install-select:focus,
+    .mux-install-port-select:focus {
+        background: #ffffff;
+        border-color: #9caef7;
+        box-shadow: 0 0 0 3px rgba(66, 99, 235, 0.08);
+    }
+
+    .mux-install-port-select:disabled,
+    .mux-install-select:disabled {
+        background: #f3f5f8;
+        color: #9ba4b3;
+        cursor: not-allowed;
+    }
+
+
+/* static site */
+
+.mux-install-static {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0.45rem 0.8rem;
+    background: #f4f6f9;
+    border: 1px solid #e1e5eb;
+    border-radius: 9px;
+}
+
+    .mux-install-static strong {
+        color: #344055;
+        font-size: 0.86rem;
+    }
+
+    .mux-install-static span {
+        margin-top: 0.08rem;
+        color: #929bad;
+        font-size: 0.72rem;
+    }
+
+
+/* errors */
+
+.mux-install-field-error {
+    display: block;
+    margin-top: 0.3rem;
+    color: #ae424a;
+    font-size: 0.72rem;
+}
+
+
+/* =========================================================
+   Capacity Panel
+   ========================================================= */
+
+.mux-install-capacity {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 1.15rem;
+    padding: 1rem 1.25rem;
+    background: #273247;
+    border: 1px solid #202a3c;
+    border-radius: 12px;
+    color: #ffffff;
+}
+
+.mux-install-capacity-main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+    .mux-install-capacity-main
+    .mux-rack-eyebrow {
+        color: #9ea9ba;
+    }
+
+    .mux-install-capacity-main strong {
+        color: #ffffff;
+        font-size: 0.9rem;
+        font-weight: 650;
+    }
+
+.mux-install-capacity-stats {
+    display: flex;
+    gap: 0.7rem;
+}
+
+    .mux-install-capacity-stats > div {
+        min-width: 90px;
+        padding: 0.55rem 0.75rem;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.09);
+        border-radius: 8px;
+    }
+
+    .mux-install-capacity-stats span {
+        display: block;
+        margin-bottom: 0.15rem;
+        color: #aeb7c5;
+        font-size: 0.62rem;
+        font-weight: 650;
+        text-transform: uppercase;
+    }
+
+    .mux-install-capacity-stats strong {
+        color: #ffffff;
+        font-size: 0.88rem;
+    }
+
+
+/* =========================================================
+   STM Header / Count
+   ========================================================= */
+
+.mux-install-stm-header {
+    align-items: flex-start;
+}
+
+.mux-install-count {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.32rem 0.65rem;
+    background: #f4f6f9;
+    border-radius: 999px;
+    color: #778196;
+    font-size: 0.72rem;
+    font-weight: 650;
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   STM Table
+   ========================================================= */
+
+.mux-install-table-wrap {
+    overflow-x: auto;
+}
+
+.mux-install-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .mux-install-table thead th {
+        padding: 0.8rem 1.3rem;
+        background: #fafbfc;
+        border-bottom: 1px solid #e9edf3;
+        color: #8a94a6;
+        font-size: 0.69rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        text-align: left;
+    }
+
+    .mux-install-table tbody td {
+        padding: 0.9rem 1.3rem;
+        border-bottom: 1px solid #f0f2f5;
+        color: #4c566a;
+        font-size: 0.84rem;
+        vertical-align: middle;
+    }
+
+    .mux-install-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .mux-install-table tbody tr:hover {
+        background: #fafbfe;
+    }
+
+
+/* Resource formatting */
+
+.mux-install-site-badge {
+    display: inline-flex;
+    padding: 0.28rem 0.55rem;
+    background: #f4f6f9;
+    border-radius: 7px;
+    color: #455167;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.mux-install-link-name {
+    color: #364155;
+    font-size: 0.83rem;
+    font-weight: 600;
+}
+
+.mux-install-stm-name {
+    color: #39465b;
+    font-size: 0.8rem;
+    font-weight: 650;
+}
+
+
+/* =========================================================
+   Empty State
+   ========================================================= */
+
+.mux-install-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 3.2rem 1.5rem;
+    text-align: center;
+}
+
+.mux-install-empty-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    margin-bottom: 0.85rem;
+    background: #f4f6f9;
+    border: 1px solid #e1e6ed;
+    border-radius: 12px;
+    color: #667286;
+    font-size: 0.7rem;
+    font-weight: 750;
+}
+
+.mux-install-empty strong {
+    color: #39455a;
+    font-size: 0.9rem;
+}
+
+.mux-install-empty p {
+    margin: 0.3rem 0 0;
+    color: #8a94a6;
+    font-size: 0.78rem;
+}
+
+
+/* =========================================================
+   Actions
+   ========================================================= */
+
+.mux-install-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    padding-top: 0.25rem;
+}
+
+    .mux-install-actions
+    .mux-primary-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+@media (max-width: 850px) {
+
+    .mux-install-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .mux-install-capacity {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .mux-install-capacity-stats {
+        width: 100%;
+    }
+
+        .mux-install-capacity-stats > div {
+            flex: 1;
+        }
+}
+
+
+@media (max-width: 600px) {
+
+    .mux-install-page {
+        padding: 1.25rem 0.8rem 2rem;
+    }
+
+    .mux-install-card-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .mux-install-count {
+        align-self: flex-start;
+    }
+
+    .mux-install-table {
+        min-width: 760px;
+    }
+
+    .mux-install-capacity-stats {
+        flex-direction: column;
+    }
+
+    .mux-install-actions {
+        align-items: stretch;
+        flex-direction: column-reverse;
+    }
+
+        .mux-install-actions > * {
+            width: 100%;
+        }
+}

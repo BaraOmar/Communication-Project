@@ -4,21 +4,29 @@
     ViewData["Title"] = "Add MUX Type";
 }
 
-<div class="container py-4">
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/mux-types.css"
+          asp-append-version="true" />
+}
 
-    <div class="mb-4">
-        <a asp-action="Index"
-               class="text-decoration-none">
-            ← MUX Types
+<div class="mux-type-form-page">
+
+    <div class="mux-type-form-header">
+
+        <a href="@Url.Action("Index", "MuxTypes")"
+               data-fallback-url="@Url.Action("Index", "MuxTypes")"
+               class="mux-type-back js-back-link">
+            ← Back
         </a>
 
-        <h1 class="mt-3 mb-1">
-            Add MUX Type
-        </h1>
+        <h1>Add MUX Type</h1>
 
-        <p class="text-muted mb-0">
-            Define the number of cards and ports for this reusable MUX type.
+        <p>
+            Define the physical card structure and port capacity
+            for a reusable MUX type.
         </p>
+
     </div>
 
 
@@ -27,177 +35,308 @@
 
         @Html.AntiForgeryToken()
 
+
         <div asp-validation-summary="ModelOnly"
-             class="alert alert-danger">
+             class="mux-type-validation">
         </div>
 
 
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-body p-4">
+        <!-- Name -->
 
-                <label asp-for="Name"
-                       class="form-label">
+        <section class="mux-type-form-card">
+
+            <div class="mux-type-section-heading">
+
+                <span>GENERAL</span>
+
+                <h2>MUX Type Information</h2>
+
+            </div>
+
+
+            <div class="mux-type-name-field">
+
+                <label asp-for="Name">
                 </label>
 
                 <input asp-for="Name"
-                       class="form-control"
-                       placeholder="Enter the MUX type name" />
+                       class="mux-type-input"
+                       placeholder="Example: Ericsson AXE MUX" />
 
                 <span asp-validation-for="Name"
-                      class="text-danger">
+                      class="mux-type-field-error">
                 </span>
 
             </div>
+
+        </section>
+
+
+        <!-- Hardware cards -->
+
+        <div class="mux-type-hardware-grid">
+
+
+            <!-- Power -->
+
+            <section class="mux-type-hardware-card">
+
+                <div class="mux-type-hardware-header">
+
+                    <div class="mux-type-hardware-icon">
+                        P
+                    </div>
+
+                    <div>
+                        <span>CARD CATEGORY</span>
+                        <h2>Power</h2>
+                    </div>
+
+                </div>
+
+
+                <div class="mux-type-field">
+
+                    <label asp-for="PowerCardCount">
+                    </label>
+
+                    <input asp-for="PowerCardCount"
+                           class="mux-type-input mux-capacity-input"
+                           min="0"
+                           max="100" />
+
+                    <span asp-validation-for="PowerCardCount"
+                          class="mux-type-field-error">
+                    </span>
+
+                </div>
+
+
+                <div class="mux-type-field">
+
+                    <label asp-for="PowerPortsPerCard">
+                    </label>
+
+                    <input asp-for="PowerPortsPerCard"
+                           class="mux-type-input mux-capacity-input"
+                           min="0"
+                           max="1000" />
+
+                    <span asp-validation-for="PowerPortsPerCard"
+                          class="mux-type-field-error">
+                    </span>
+
+                </div>
+
+
+                <div class="mux-type-card-total">
+
+                    <span>Total Power Ports</span>
+
+                    <strong id="powerTotal">
+                        0
+                    </strong>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- STM -->
+
+            <section class="mux-type-hardware-card">
+
+                <div class="mux-type-hardware-header">
+
+                    <div class="mux-type-hardware-icon">
+                        S
+                    </div>
+
+                    <div>
+                        <span>CARD CATEGORY</span>
+                        <h2>STM</h2>
+                    </div>
+
+                </div>
+
+
+                <div class="mux-type-field">
+
+                    <label asp-for="StmCardCount">
+                    </label>
+
+                    <input asp-for="StmCardCount"
+                           class="mux-type-input mux-capacity-input"
+                           min="0"
+                           max="100" />
+
+                    <span asp-validation-for="StmCardCount"
+                          class="mux-type-field-error">
+                    </span>
+
+                </div>
+
+
+                <div class="mux-type-field">
+
+                    <label asp-for="StmPortsPerCard">
+                    </label>
+
+                    <input asp-for="StmPortsPerCard"
+                           class="mux-type-input mux-capacity-input"
+                           min="0"
+                           max="1000" />
+
+                    <span asp-validation-for="StmPortsPerCard"
+                          class="mux-type-field-error">
+                    </span>
+
+                </div>
+
+
+                <div class="mux-type-card-total">
+
+                    <span>Total STM Ports</span>
+
+                    <strong id="stmTotal">
+                        0
+                    </strong>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- E1 -->
+
+            <section class="mux-type-hardware-card">
+
+                <div class="mux-type-hardware-header">
+
+                    <div class="mux-type-hardware-icon">
+                        E1
+                    </div>
+
+                    <div>
+                        <span>CARD CATEGORY</span>
+                        <h2>E1</h2>
+                    </div>
+
+                </div>
+
+
+                <div class="mux-type-field">
+
+                    <label asp-for="E1CardCount">
+                    </label>
+
+                    <input asp-for="E1CardCount"
+                           class="mux-type-input mux-capacity-input"
+                           min="0"
+                           max="100" />
+
+                    <span asp-validation-for="E1CardCount"
+                          class="mux-type-field-error">
+                    </span>
+
+                </div>
+
+
+                <div class="mux-type-field">
+
+                    <label asp-for="E1PortsPerCard">
+                    </label>
+
+                    <input asp-for="E1PortsPerCard"
+                           class="mux-type-input mux-capacity-input"
+                           min="0"
+                           max="1000" />
+
+                    <span asp-validation-for="E1PortsPerCard"
+                          class="mux-type-field-error">
+                    </span>
+
+                </div>
+
+
+                <div class="mux-type-card-total">
+
+                    <span>Total E1 Ports</span>
+
+                    <strong id="e1Total">
+                        0
+                    </strong>
+
+                </div>
+
+            </section>
+
         </div>
 
 
-        <div class="row g-4">
+        <!-- Summary -->
 
-            <!-- Power cards -->
-            <div class="col-lg-4">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body p-4">
+        <section class="mux-type-live-summary">
 
-                        <h5 class="mb-3">
-                            Power Cards
-                        </h5>
+            <div>
 
-                        <div class="mb-3">
-                            <label asp-for="PowerCardCount"
-                                   class="form-label">
-                            </label>
+                <span>HARDWARE SUMMARY</span>
 
-                            <input asp-for="PowerCardCount"
-                                   class="form-control"
-                                   min="0"
-                                   max="100" />
+                <strong>
+                    Current configuration
+                </strong>
 
-                            <span asp-validation-for="PowerCardCount"
-                                  class="text-danger">
-                            </span>
-                        </div>
-
-                        <div>
-                            <label asp-for="PowerPortsPerCard"
-                                   class="form-label">
-                            </label>
-
-                            <input asp-for="PowerPortsPerCard"
-                                   class="form-control"
-                                   min="0"
-                                   max="1000" />
-
-                            <span asp-validation-for="PowerPortsPerCard"
-                                  class="text-danger">
-                            </span>
-                        </div>
-
-                    </div>
-                </div>
             </div>
 
 
-            <!-- STM cards -->
-            <div class="col-lg-4">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body p-4">
+            <div class="mux-type-summary-values">
 
-                        <h5 class="mb-3">
-                            STM Cards
-                        </h5>
-
-                        <div class="mb-3">
-                            <label asp-for="StmCardCount"
-                                   class="form-label">
-                            </label>
-
-                            <input asp-for="StmCardCount"
-                                   class="form-control"
-                                   min="0"
-                                   max="100" />
-
-                            <span asp-validation-for="StmCardCount"
-                                  class="text-danger">
-                            </span>
-                        </div>
-
-                        <div>
-                            <label asp-for="StmPortsPerCard"
-                                   class="form-label">
-                            </label>
-
-                            <input asp-for="StmPortsPerCard"
-                                   class="form-control"
-                                   min="0"
-                                   max="1000" />
-
-                            <span asp-validation-for="StmPortsPerCard"
-                                  class="text-danger">
-                            </span>
-                        </div>
-
-                    </div>
+                <div>
+                    <span>Total Cards</span>
+                    <strong id="totalCards">0</strong>
                 </div>
+
+                <div>
+                    <span>Total Ports</span>
+                    <strong id="totalPorts">0</strong>
+                </div>
+
+                <div>
+                    <span>STM Capacity</span>
+                    <strong id="summaryStmPorts">0</strong>
+                </div>
+
+                <div>
+                    <span>E1 Capacity</span>
+                    <strong id="summaryE1Ports">0</strong>
+                </div>
+
             </div>
 
-
-            <!-- E1 cards -->
-            <div class="col-lg-4">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body p-4">
-
-                        <h5 class="mb-3">
-                            E1 Cards
-                        </h5>
-
-                        <div class="mb-3">
-                            <label asp-for="E1CardCount"
-                                   class="form-label">
-                            </label>
-
-                            <input asp-for="E1CardCount"
-                                   class="form-control"
-                                   min="0"
-                                   max="100" />
-
-                            <span asp-validation-for="E1CardCount"
-                                  class="text-danger">
-                            </span>
-                        </div>
-
-                        <div>
-                            <label asp-for="E1PortsPerCard"
-                                   class="form-label">
-                            </label>
-
-                            <input asp-for="E1PortsPerCard"
-                                   class="form-control"
-                                   min="0"
-                                   max="1000" />
-
-                            <span asp-validation-for="E1PortsPerCard"
-                                  class="text-danger">
-                            </span>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-
-        </div>
+        </section>
 
 
-        <div class="d-flex gap-2 mt-4">
+        <!-- Actions -->
+
+        <div class="mux-type-form-actions">
+
+            <a href="@Url.Action("Index", "MuxTypes")"
+                   data-fallback-url="@Url.Action("Index", "MuxTypes")"
+                   class="mux-type-cancel-btn js-back-link">
+
+                Cancel
+
+            </a>
+
 
             <button type="submit"
-                    class="btn btn-primary">
-                Add MUX Type
-            </button>
+                    class="mux-types-primary-btn">
 
-            <a asp-action="Index"
-                   class="btn btn-outline-secondary">
-                Cancel
-            </a>
+                Add MUX Type
+
+            </button>
 
         </div>
 
@@ -207,45 +346,175 @@
 
 
 @section Scripts {
+
     <partial name="_ValidationScriptsPartial" />
 
+
     <script>
-        function configurePortsInput(countId, portsId) {
-            const countInput =
-                document.getElementById(countId);
+        (() => {
 
-            const portsInput =
-                document.getElementById(portsId);
+            const fields = {
 
-            function updatePortsState() {
+                powerCount:
+                    document.getElementById(
+                        "PowerCardCount"),
+
+                powerPorts:
+                    document.getElementById(
+                        "PowerPortsPerCard"),
+
+                stmCount:
+                    document.getElementById(
+                        "StmCardCount"),
+
+                stmPorts:
+                    document.getElementById(
+                        "StmPortsPerCard"),
+
+                e1Count:
+                    document.getElementById(
+                        "E1CardCount"),
+
+                e1Ports:
+                    document.getElementById(
+                        "E1PortsPerCard")
+            };
+
+
+            function number(input) {
+
+                return Math.max(
+                    0,
+                    Number(input.value) || 0);
+
+            }
+
+
+            function configurePortsInput(
+                countInput,
+                portsInput) {
+
                 const hasCards =
-                    Number(countInput.value) > 0;
+                    number(countInput) > 0;
+
 
                 portsInput.disabled =
                     !hasCards;
 
+
                 if (!hasCards) {
                     portsInput.value = 0;
                 }
+
             }
 
-            countInput.addEventListener(
-                "input",
-                updatePortsState);
 
-            updatePortsState();
-        }
+            function updateSummary() {
 
-        configurePortsInput(
-            "PowerCardCount",
-            "PowerPortsPerCard");
+                configurePortsInput(
+                    fields.powerCount,
+                    fields.powerPorts);
 
-        configurePortsInput(
-            "StmCardCount",
-            "StmPortsPerCard");
+                configurePortsInput(
+                    fields.stmCount,
+                    fields.stmPorts);
 
-        configurePortsInput(
-            "E1CardCount",
-            "E1PortsPerCard");
+                configurePortsInput(
+                    fields.e1Count,
+                    fields.e1Ports);
+
+
+                const powerCount =
+                    number(fields.powerCount);
+
+                const powerPorts =
+                    number(fields.powerPorts);
+
+                const stmCount =
+                    number(fields.stmCount);
+
+                const stmPorts =
+                    number(fields.stmPorts);
+
+                const e1Count =
+                    number(fields.e1Count);
+
+                const e1Ports =
+                    number(fields.e1Ports);
+
+
+                const powerTotal =
+                    powerCount * powerPorts;
+
+                const stmTotal =
+                    stmCount * stmPorts;
+
+                const e1Total =
+                    e1Count * e1Ports;
+
+
+                document.getElementById(
+                    "powerTotal")
+                    .textContent =
+                    powerTotal;
+
+
+                document.getElementById(
+                    "stmTotal")
+                    .textContent =
+                    stmTotal;
+
+
+                document.getElementById(
+                    "e1Total")
+                    .textContent =
+                    e1Total;
+
+
+                document.getElementById(
+                    "totalCards")
+                    .textContent =
+                    powerCount +
+                    stmCount +
+                    e1Count;
+
+
+                document.getElementById(
+                    "totalPorts")
+                    .textContent =
+                    powerTotal +
+                    stmTotal +
+                    e1Total;
+
+
+                document.getElementById(
+                    "summaryStmPorts")
+                    .textContent =
+                    stmTotal;
+
+
+                document.getElementById(
+                    "summaryE1Ports")
+                    .textContent =
+                    e1Total;
+
+            }
+
+
+            document.querySelectorAll(
+                ".mux-capacity-input")
+                .forEach(input => {
+
+                    input.addEventListener(
+                        "input",
+                        updateSummary);
+
+                });
+
+
+            updateSummary();
+
+        })();
     </script>
+
 }

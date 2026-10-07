@@ -52,9 +52,10 @@
 
         <div class="link-details-heading">
 
-            <a asp-action="Index"
-                   class="links-back-link">
-                ← Communication Links
+            <a href="#"
+                   class="links-back-link js-back-link"
+                   data-fallback-url="@Url.Action("Index", "CommunicationLinks")">
+                ← Back
             </a>
 
             <h1 class="link-details-title">
@@ -67,7 +68,7 @@
 
         </div>
 
-
+@* 
         <div class="link-details-header-actions">
 
             <a asp-action="Edit"
@@ -76,7 +77,7 @@
                 Edit
             </a>
 
-        </div>
+        </div> *@
 
     </div>
 
@@ -393,16 +394,15 @@
                 </p>
 
 
-                <div class="d-flex flex-wrap gap-2">
+                <div class="link-mux-actions">
 
                     <a asp-controller="Muxes"
                            asp-action="InstallForSdhLink"
                            asp-route-linkId="@Model.Id"
                            asp-route-siteId="@Model.SiteFromId"
-                           class="btn btn-primary">
+                           class="link-mux-btn link-mux-btn-primary">
 
-                        Install MUX at
-                        @Model.SiteFrom.Id
+                        Install MUX at @Model.SiteFrom.Id
 
                     </a>
 
@@ -411,10 +411,9 @@
                            asp-action="InstallForSdhLink"
                            asp-route-linkId="@Model.Id"
                            asp-route-siteId="@Model.SiteToId"
-                           class="btn btn-outline-primary">
+                           class="link-mux-btn link-mux-btn-secondary">
 
-                        Install MUX at
-                        @Model.SiteTo.Id
+                        Install MUX at @Model.SiteTo.Id
 
                     </a>
 
@@ -425,9 +424,12 @@
         <!-- Footer -->
         <div class="link-details-footer">
 
-            <a asp-action="Index"
-                   class="links-secondary-btn">
-                Back to links
+            <a href="#"
+                   class="links-secondary-btn js-back-link"
+                   data-fallback-url="@Url.Action("Index", "CommunicationLinks")">
+
+                Back
+
             </a>
 
 

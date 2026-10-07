@@ -12,9 +12,13 @@
           asp-append-version="true" />
 }
 
+
 <div class="path-page">
 
-    <!-- Header -->
+    <!-- =====================================================
+         Header
+         ===================================================== -->
+
     <div class="path-header">
 
         <h1 class="path-title">
@@ -29,7 +33,10 @@
     </div>
 
 
-    <!-- Filters -->
+    <!-- =====================================================
+         Filters
+         ===================================================== -->
+
     <div class="path-card path-filter-card">
 
         <form asp-controller="SearchPath"
@@ -38,7 +45,6 @@
 
             <div class="path-filter-grid">
 
-                <!-- Description -->
                 <div class="path-field">
 
                     <label asp-for="Description">
@@ -52,7 +58,6 @@
                 </div>
 
 
-                <!-- Link -->
                 <div class="path-field">
 
                     <label asp-for="LinkName">
@@ -72,7 +77,6 @@
                 </div>
 
 
-                <!-- Source -->
                 <div class="path-field">
 
                     <label asp-for="SiteId">
@@ -139,7 +143,10 @@
     </div>
 
 
-    <!-- Results Header -->
+    <!-- =====================================================
+         Results Header
+         ===================================================== -->
+
     <div class="path-results-header">
 
         <h2 class="path-results-title">
@@ -147,13 +154,18 @@
         </h2>
 
         <span class="path-results-count">
+
             @Model.TotalItems
             result@(Model.TotalItems == 1 ? "" : "s")
+
         </span>
 
     </div>
 
 
+    <!-- =====================================================
+         Empty Results
+         ===================================================== -->
     @if (!Model.Results.Any())
     {
         <div class="path-card path-empty">
@@ -184,42 +196,75 @@
                     StringSplitOptions.RemoveEmptyEntries);
 
 
-            var parsedSites =
+            /*
+             * Only take site IDs.
+             * We no longer need the old IN/OUT text stored
+             * inside SitePath because the new UI builds it
+             * from the actual link sequence.
+             */
+            var sites =
                 siteSteps
                     .Select(step =>
                     {
                         int detailsStart =
                             step.IndexOf(" (");
 
-                        if (detailsStart < 0)
-                        {
-                            return new
-                            {
-                                Site = step.Trim(),
-                                Details = ""
-                            };
-                        }
 
-                        return new
-                        {
-                            Site =
-                                step[..detailsStart]
-                                    .Trim(),
-
-                            Details =
-                                step
-                                    .Substring(
-                                        detailsStart + 2)
-                                    .TrimEnd(')')
-                                    .Trim()
-                        };
+                        return detailsStart < 0
+                            ? step.Trim()
+                            : step[..detailsStart].Trim();
                     })
                     .ToList();
 
 
+            /*
+             * If Description is empty, display
+             * customer names in the path header.
+             */
+            var customerNames =
+                path.Customers
+                    .Where(customer =>
+                        !string.IsNullOrWhiteSpace(
+                            customer.CustomerName))
+                    .Select(customer =>
+                        customer.CustomerName.Trim())
+                    .Distinct(
+                        StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+
+            string pathTitle =
+                !string.IsNullOrWhiteSpace(
+                    path.Description)
+                    ? path.Description
+                    : customerNames.Any()
+                        ? string.Join(
+                            " / ",
+                            customerNames)
+                        : "No description";
+
+
+            bool titleIsCustomer =
+                string.IsNullOrWhiteSpace(
+                    path.Description) &&
+                customerNames.Any();
+
+
+            string pathBodyId =
+                $"path-body-{path.PathId}";
+
+
+            <!-- =================================================
+                 Path
+                 ================================================= -->
+
             <article class="path-card path-result">
 
-                <!-- Path Header -->
+
+                <!-- =============================================
+                     Path Header
+                     ============================================= -->
+
                 <div class="path-result-header">
 
                     <div class="path-result-identity">
@@ -229,38 +274,32 @@
                         </span>
 
 
-                        @if (string.IsNullOrWhiteSpace(
-                            path.Description))
-                        {
+                        <div class="path-title-content">
+
                             <h3 class="
                                 path-result-description
-                                path-result-no-description">
+                                @(titleIsCustomer
+                                                                    ? "path-result-customer-title"
+                                                                    : "")">
 
-                                No description
+                                @pathTitle
 
                             </h3>
-                        }
-                        else
-                        {
-                            <h3 class="path-result-description">
-                                @path.Description
-                            </h3>
-                        }
+
+
+                            @if (titleIsCustomer)
+                            {
+                                <span class="path-title-source">
+                                    Customer
+                                </span>
+                            }
+
+                        </div>
 
                     </div>
 
 
-                    <div class="d-flex align-items-center gap-2">
-
-                        @if (User.IsInRole("Admin") ||
-                             User.IsInRole("Operator"))
-                        {
-                            <a asp-action="AddCustomer"
-                                   asp-route-pathId="@path.PathId"
-                                   class="btn btn-sm btn-outline-primary">
-                                Add Customer
-                            </a>
-                        }
+                    <div class="path-result-header-actions">
 
                         <span class="path-link-count">
 
@@ -269,170 +308,346 @@
 
                         </span>
 
+
+                        <button type="button"
+                                class="path-toggle-btn"
+                                data-path-toggle="@pathBodyId"
+                                aria-expanded="false">
+
+                            <span class="path-toggle-text">
+                                View Path
+                            </span>
+
+                            <span class="path-toggle-icon">
+                                ↓
+                            </span>
+
+                        </button>
+
                     </div>
 
                 </div>
 
 
-                <!-- Network Visualization -->
-                <div class="path-result-body">
+                <!-- =============================================
+                     ENTIRE PATH - COLLAPSIBLE
+                     ============================================= -->
 
-                    <div class="path-topology">
+                <div class="path-result-body"
+                     id="@pathBodyId"
+                     hidden>
+
+                    <div class="path-network-flow">
+
 
                         @for (int i = 0;
-                              i < parsedSites.Count;
+                              i < sites.Count;
                               i++)
                         {
                             bool isFirst =
                                 i == 0;
 
+
                             bool isLast =
-                                i == parsedSites.Count - 1;
+                                i == sites.Count - 1;
 
 
-                            string nodeClass =
+                            string currentSiteId =
+                                sites[i];
+
+
+                            string previousLink =
+                                i > 0 &&
+                                (i - 1) < links.Length
+                                    ? links[i - 1]
+                                    : "";
+
+
+                            string nextLink =
+                                i < links.Length
+                                    ? links[i]
+                                    : "";
+
+
+                            string circleClass =
                                 isFirst
-                                    ? "start"
+                                    ? "origin"
                                     : isLast
-                                        ? "end"
+                                        ? "destination"
                                         : "transit";
 
 
-                            <!-- Site Node -->
-                            <div class="path-node @nodeClass">
+                            string roleText =
+                                isFirst
+                                    ? "Origin"
+                                    : isLast
+                                        ? "Destination"
+                                        : "Cross Connection";
 
-                                <div class="path-node-marker">
+                            var nodeCrossConnections =
+                                path.Customers
+                                    .SelectMany(
+                                        customer =>
+                                            customer.CrossConnections
+                                                .Where(cross =>
+                                                    string.Equals(
+                                                        cross.SiteId,
+                                                        currentSiteId,
+                                                        StringComparison.OrdinalIgnoreCase))
+                                                .Select(cross =>
+                                                    new
+                                                    {
+                                                        Customer = customer,
+                                                        CrossConnection = cross
+                                                    }))
+                                    .Where(item =>
+                                        !string.IsNullOrWhiteSpace(
+                                            item.CrossConnection.DisplayText))
+                                    .ToList();
+                            <!-- =================================
+                                 SITE NODE
+                                 ================================= -->
 
-                                    @if (isFirst)
-                                    {
-                                        <span>START</span>
-                                    }
-                                    else if (isLast)
-                                    {
-                                        <span>END</span>
-                                    }
-                                    else
-                                    {
-                                        <span>SITE</span>
-                                    }
+                            <div class="path-flow-site">
+
+                                <!-- Circle -->
+
+                                <div class="
+                                    path-flow-circle
+                                    @circleClass">
+
+                                    <span>
+                                        @currentSiteId
+                                    </span>
 
                                 </div>
 
 
-                                <div class="path-node-content">
+                                <!-- Site + Cross Connection -->
 
-                                    <div class="path-node-top">
+                                <div class="
+                                    path-flow-node-content
+                                    @(i > 0 && nodeCrossConnections.Any()
+                                                 ? "has-cross"
+                                                 : "")">
 
-                                        <div>
 
-                                            <div class="path-node-label">
-                                                Site
-                                            </div>
+                                    <!-- =============================
+             Site Information
+             ============================= -->
 
-                                            <div class="path-node-site">
-                                                @parsedSites[i].Site
-                                            </div>
+                                    <div class="path-flow-site-info">
+
+                                        <div class="path-flow-site-top">
+
+                                            <span class="path-flow-site-title">
+                                                Site @currentSiteId
+                                            </span>
+
+
+                                            <span class="
+                                                path-flow-role
+                                                @circleClass">
+
+                                                @roleText
+
+                                            </span>
 
                                         </div>
 
 
-                                        @if (isFirst)
-                                        {
-                                            <span class="
-                                                path-node-status
-                                                path-node-status-start">
-                                                Origin
-                                            </span>
-                                        }
-                                        else if (isLast)
-                                        {
-                                            <span class="
-                                                path-node-status
-                                                path-node-status-end">
-                                                Destination
-                                            </span>
-                                        }
-                                        else
-                                        {
-                                            <span class="
-                                                path-node-status
-                                                path-node-status-transit">
-                                                Cross connection
-                                            </span>
-                                        }
+                                        <div class="path-flow-site-links">
+
+                                            @if (!string.IsNullOrWhiteSpace(
+                                                previousLink))
+                                            {
+                                                <span class="
+                                                    path-flow-link-label">
+
+                                                    <small>
+                                                        IN
+                                                    </small>
+
+                                                    <strong>
+                                                        @previousLink
+                                                    </strong>
+
+                                                </span>
+                                            }
+
+
+                                            @if (!string.IsNullOrWhiteSpace(
+                                                nextLink))
+                                            {
+                                                <span class="
+                                                    path-flow-link-label">
+
+                                                    <small>
+                                                        OUT
+                                                    </small>
+
+                                                    <strong>
+                                                        @nextLink
+                                                    </strong>
+
+                                                </span>
+                                            }
+
+                                        </div>
 
                                     </div>
 
 
-                                    @if (!string.IsNullOrWhiteSpace(
-                                        parsedSites[i].Details))
+                                    <!-- =============================
+             Cross Connection
+             Starting from second node
+             ============================= -->
+                                    @if (i > 0 &&
+                                                 nodeCrossConnections.Any())
                                     {
-                                        <div class="path-node-channels">
+                                        <div class="path-readable-cross">
 
                                             @foreach (
-                                                var part
-                                                in parsedSites[i]
-                                                    .Details
-                                                    .Split('|'))
+                                                var item
+                                                in nodeCrossConnections)
                                             {
-                                                string channel =
-                                                    part.Trim();
-
-                                                bool incoming =
-                                                    channel.StartsWith(
-                                                        "IN:",
-                                                        StringComparison
-                                                            .OrdinalIgnoreCase);
-
-                                                bool outgoing =
-                                                    channel.StartsWith(
-                                                        "OUT:",
-                                                        StringComparison
-                                                            .OrdinalIgnoreCase);
-
-
                                                 <div class="
-                                                    path-channel
-                                                    @(incoming
-                                                                                                             ? "path-channel-in"
-                                                                                                             : outgoing
-                                                                                                                 ? "path-channel-out"
-                                                                                                                 : "")">
+                                                    path-readable-cross-item">
 
-                                                    @if (incoming)
-                                                    {
-                                                        var incomingText =
-                                                            channel.Substring(3).Trim();
+                                                    <div class="
+                                                        path-readable-cross-main">
 
-                                                        <span class="
-                                                            path-channel-direction">
-                                                            IN
-                                                        </span>
+                                                        <div class="
+                                                            path-readable-cross-title">
 
-                                                        <span>
-                                                            @incomingText
-                                                        </span>
-                                                    }
-                                                    else if (outgoing)
-                                                    {
-                                                        var outgoingText =
-                                                            channel.Substring(4).Trim();
+                                                            @if (
+                                                                item.CrossConnection
+                                                                    .IsPhysicalTermination)
+                                                            {
+                                                                <span>
+                                                                    Physical Termination
+                                                                </span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span>
+                                                                    Cross Connection
+                                                                </span>
+                                                            }
 
-                                                        <span class="
-                                                            path-channel-direction">
-                                                            OUT
-                                                        </span>
+                                                        </div>
 
-                                                        <span>
-                                                            @outgoingText
-                                                        </span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span>
-                                                            @channel
-                                                        </span>
-                                                    }
+
+                                                        <!-- Exact old formula -->
+
+                                                        <div class="
+                                                            path-readable-cross-formula">
+
+                                                            @(item.CrossConnection.DisplayText)
+
+                                                        </div>
+
+
+                                                        @if (
+                                                            item.CrossConnection
+                                                                .IsPhysicalTermination)
+                                                        {
+                                                            <div class="
+                                                                path-readable-cross-note">
+
+                                                                Physical termination
+
+                                                            </div>
+                                                        }
+
+                                                    </div>
+
+
+                                                    <!-- Status + Manage -->
+
+                                                    <div class="
+                                                        path-readable-cross-actions">
+
+                                                        @if (
+                                                            item.Customer
+                                                                .OperationalStatus
+                                                                .HasValue)
+                                                        {
+                                                            switch (
+                                                                item.Customer
+                                                                    .OperationalStatus
+                                                                    .Value)
+                                                            {
+                                                                case E1OperationalStatus.Connected:
+
+                                                                    <span class="
+                                                                        path-status-badge
+                                                                        path-status-connected">
+
+                                                                        Connected
+
+                                                                    </span>
+
+                                                                    break;
+
+
+                                                                case E1OperationalStatus.Wrong:
+
+                                                                    <span class="
+                                                                        path-status-badge
+                                                                        path-status-wrong">
+
+                                                                        Wrong
+
+                                                                    </span>
+
+                                                                    break;
+
+
+                                                                case E1OperationalStatus.Damaged:
+
+                                                                    <span class="
+                                                                        path-status-badge
+                                                                        path-status-damaged">
+
+                                                                        Damaged
+
+                                                                    </span>
+
+                                                                    break;
+
+
+                                                                case E1OperationalStatus.Available:
+
+                                                                    <span class="
+                                                                        path-status-badge
+                                                                        path-status-available">
+
+                                                                        Available
+
+                                                                    </span>
+
+                                                                    break;
+                                                            }
+                                                        }
+
+
+                                                        @if (
+                                                            item.Customer
+                                                                .ManageE1Id
+                                                                .HasValue)
+                                                        {
+                                                            <a asp-controller="E1s"
+                                                                   asp-action="ChangeStatus"
+                                                                   asp-route-id="@item.Customer.ManageE1Id"
+                                                                   class="path-manage-btn">
+
+                                                                Manage Connection
+
+                                                            </a>
+                                                        }
+
+                                                    </div>
 
                                                 </div>
                                             }
@@ -445,19 +660,100 @@
                             </div>
 
 
-                            <!-- Connection -->
-                            @if (i < parsedSites.Count - 1)
+                            <!-- =================================
+                                 SEGMENT TO NEXT SITE
+                                 ================================= -->
+                            @if (i < sites.Count - 1)
                             {
-                                <div class="path-connection">
+                                string nextSiteId =
+                                    sites[i + 1];
 
-                                    <div class="path-connection-rail">
+
+                                string currentLink =
+                                    i < links.Length
+                                        ? links[i]
+                                        : "—";
+
+
+                                /*
+                                 * Customer E1s that use this
+                                 * physical segment.
+                                 */
+                                var segmentE1s =
+                                    path.Customers
+                                        .SelectMany(
+                                            customer =>
+                                                customer.E1s
+                                                    .Where(e1 =>
+                                                        string.Equals(
+                                                            e1.SiteFrom,
+                                                            currentSiteId,
+                                                            StringComparison.OrdinalIgnoreCase) &&
+
+                                                        string.Equals(
+                                                            e1.SiteTo,
+                                                            nextSiteId,
+                                                            StringComparison.OrdinalIgnoreCase))
+                                                    .Select(e1 =>
+                                                        new
+                                                        {
+                                                            Customer =
+                                                                customer,
+
+                                                            E1 =
+                                                                e1
+                                                        }))
+                                        .ToList();
+
+
+                                /*
+                                 * Cross connection executed
+                                 * when reaching next site.
+                                 */
+                                var crossConnections =
+                                    path.Customers
+                                        .SelectMany(
+                                            customer =>
+                                                customer
+                                                    .CrossConnections
+                                                    .Where(cross =>
+                                                        string.Equals(
+                                                            cross.SiteId,
+                                                            nextSiteId,
+                                                            StringComparison.OrdinalIgnoreCase))
+                                                    .Select(cross =>
+                                                        new
+                                                        {
+                                                            Customer =
+                                                                customer,
+
+                                                            CrossConnection =
+                                                                cross
+                                                        }))
+                                        .Where(item =>
+                                            !string.IsNullOrWhiteSpace(
+                                                item
+                                                    .CrossConnection
+                                                    .DisplayText))
+                                        .ToList();
+
+
+                                <!-- =============================
+                                     Vertical Connector
+                                     ============================= -->
+
+                                <div class="
+                                    path-flow-segment">
+
+                                    <div class="
+                                        path-flow-rail">
 
                                         <div class="
-                                            path-connection-line">
+                                            path-flow-line">
                                         </div>
 
                                         <div class="
-                                            path-connection-arrow">
+                                            path-flow-arrow">
                                             ↓
                                         </div>
 
@@ -465,38 +761,182 @@
 
 
                                     <div class="
-                                        path-connection-card">
-
-                                        <div class="
-                                            path-connection-label">
-                                            Communication link
-                                        </div>
+                                        path-flow-segment-content">
 
 
-                                        <div class="
-                                            path-connection-name">
+                                        <!-- =========================================
+     Communication Link
+     ========================================= -->
 
-                                            @if (i < links.Length)
+                                        <div class="path-flow-link-row">
+
+                                            <div class="path-flow-link">
+
+                                                <div>
+
+                                                    <span class="path-flow-small-label">
+                                                        Communication Link
+                                                    </span>
+
+                                                    <strong>
+                                                        @currentLink
+                                                    </strong>
+
+                                                </div>
+
+
+                                                <span class="path-flow-direction">
+                                                    @currentSiteId → @nextSiteId
+                                                </span>
+
+                                            </div>
+
+
+                                            <!-- Release belongs to this physical link/E1 segment -->
+                                            @if (User.IsInRole("Admin") ||
+                                                     User.IsInRole("Operator"))
                                             {
-                                                @links[i]
-                                            }
-                                            else
-                                            {
-                                                <span>—</span>
+                                                <div class="path-flow-release-actions">
+
+                                                    @foreach (var segment in segmentE1s)
+                                                    {
+                                                        <form asp-action="ReleaseCustomerE1"
+                                                              method="post"
+                                                              class="path-inline-form"
+                                                              onsubmit="return confirm('Release this physical E1 pair?');">
+
+                                                            @Html.AntiForgeryToken()
+
+                                                            <input type="hidden"
+                                                                   name="customerConnectionSegmentId"
+                                                                   value="@segment.E1.CustomerConnectionSegmentId" />
+
+                                                            <button type="submit"
+                                                                    class="path-release-btn">
+
+                                                                Release E1
+
+                                                            </button>
+
+                                                        </form>
+                                                    }
+
+                                                </div>
                                             }
 
                                         </div>
 
 
-                                        <div class="
-                                            path-connection-direction">
+                                        <!-- =========================================
+     Cross Connection
+     ========================================= -->
+                                      @*   @if (crossConnections.Any())
+                                        {
+                                            <div class="path-readable-cross">
 
-                                            @parsedSites[i].Site
-                                            <span>→</span>
-                                            @parsedSites[i + 1].Site
+                                                <div class="path-readable-cross-title">
+                                                    Cross Connection
+                                                </div>
 
-                                        </div>
 
+                                                @foreach (var item in crossConnections)
+                                                {
+                                                    <div class="path-readable-cross-item">
+
+                                                        <div class="path-readable-cross-main">
+
+                                                            <div class="path-readable-cross-site">
+                                                                Site @nextSiteId
+                                                            </div>
+
+
+                                                            <div class="path-readable-cross-formula">
+                                                                @(item.CrossConnection.DisplayText)
+                                                            </div>
+
+
+                                                            @if (item.CrossConnection.IsPhysicalTermination)
+                                                            {
+                                                                <div class="path-readable-cross-note">
+                                                                    Physical termination
+                                                                </div>
+                                                            }
+
+                                                        </div>
+
+
+                                                        <div class="path-readable-cross-actions">
+
+                                                            @if (item.Customer.OperationalStatus.HasValue)
+                                                            {
+                                                                switch (item.Customer.OperationalStatus.Value)
+                                                                {
+                                                                    case E1OperationalStatus.Connected:
+
+                                                                        <span class="
+                                                                            path-status-badge
+                                                                            path-status-connected">
+                                                                            Connected
+                                                                        </span>
+
+                                                                        break;
+
+
+                                                                    case E1OperationalStatus.Wrong:
+
+                                                                        <span class="
+                                                                            path-status-badge
+                                                                            path-status-wrong">
+                                                                            Wrong
+                                                                        </span>
+
+                                                                        break;
+
+
+                                                                    case E1OperationalStatus.Damaged:
+
+                                                                        <span class="
+                                                                            path-status-badge
+                                                                            path-status-damaged">
+                                                                            Damaged
+                                                                        </span>
+
+                                                                        break;
+
+
+                                                                    case E1OperationalStatus.Available:
+
+                                                                        <span class="
+                                                                            path-status-badge
+                                                                            path-status-available">
+                                                                            Available
+                                                                        </span>
+
+                                                                        break;
+                                                                }
+                                                            }
+
+
+                                                            @if (item.Customer.ManageE1Id.HasValue)
+                                                            {
+                                                                <a asp-controller="E1s"
+                                                                       asp-action="ChangeStatus"
+                                                                       asp-route-id="@item.Customer.ManageE1Id"
+                                                                       class="path-manage-btn">
+
+                                                                    Manage Connection
+
+                                                                </a>
+                                                            }
+
+                                                        </div>
+
+                                                    </div>
+                                                }
+
+                                            </div>
+                                        }
+         *@                           
                                     </div>
 
                                 </div>
@@ -504,240 +944,16 @@
                         }
 
                     </div>
-                    <!-- Customers Using This Path -->
-                    <div class="path-customers">
 
-                        <div class="path-customers-header">
-
-                            <div>
-                                <h4 class="path-customers-title">
-                                    Customers
-                                </h4>
-
-                                <p class="path-customers-subtitle">
-                                    Customers currently using this communication path.
-                                </p>
-                            </div>
-
-                            <span class="path-customers-count">
-                                @path.Customers.Count
-                                customer@(path.Customers.Count == 1 ? "" : "s")
-                            </span>
-
-                        </div>
-
-
-                        @if (!path.Customers.Any())
-                        {
-                            <div class="path-customers-empty">
-                                No customers are assigned to this path yet.
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="table-responsive">
-
-                                <table class="table align-middle mb-0">
-
-                                    <thead>
-                                        <tr>
-                                            <th>Customer</th>
-                                            <th>E1 Route</th>
-                                            <th>Cross Connection</th>
-                                            <th>Status</th>
-                                        </tr>
-                                    </thead>
-
-                                    <tbody>
-
-                                        @foreach (var customer in path.Customers)
-                                        {
-                                            <tr>
-
-                                                <td>
-                                                    <div class="fw-semibold">
-                                                        @customer.CustomerName
-                                                    </div>
-
-                                                    @if (!string.IsNullOrWhiteSpace(
-                                                        customer.StartSiteId) &&
-                                                        !string.IsNullOrWhiteSpace(
-                                                        customer.DestinationSiteId))
-                                                    {
-                                                        <small class="text-muted d-block">
-                                                            Uses:
-                                                            @customer.StartSiteId
-                                                            →
-                                                            @customer.DestinationSiteId
-                                                        </small>
-                                                    }
-
-                                                    @if (!string.IsNullOrWhiteSpace(
-                                                        customer.Description))
-                                                    {
-                                                        <small class="text-muted d-block">
-                                                            @customer.Description
-                                                        </small>
-                                                    }
-                                                </td>
-
-
-                                                <td>
-
-                                                    @if (!customer.E1s.Any())
-                                                    {
-                                                        <span class="text-muted">
-                                                            No E1 assignments
-                                                        </span>
-                                                    }
-                                                    else
-                                                    {
-                                                        @foreach (var e1 in customer.E1s)
-                                                        {
-                                                            <div class="d-flex align-items-center gap-2 mb-1">
-
-                                                                <div>
-                                                                    <strong>
-                                                                        @e1.SiteFrom → @e1.SiteTo
-                                                                    </strong>
-
-                                                                    <span class="text-muted">—</span>
-
-                                                                    @(e1.StmNumber == "Direct (PDH)"
-                                                                        ? $"Direct (PDH) / E1 {e1.E1Number}"
-                                                                        : $"STM {e1.StmNumber} / E1 {e1.E1Number}")
-                                                                </div>
-
-                                                                @if (User.IsInRole("Admin") ||
-                                                                     User.IsInRole("Operator"))
-                                                                {
-                                                                    <form asp-action="ReleaseCustomerE1"
-                                                                          method="post"
-                                                                          class="d-inline"
-                                                                          onsubmit="return confirm('Release only this physical E1 pair?');">
-
-                                                                        @Html.AntiForgeryToken()
-
-                                                                        <input type="hidden"
-                                                                               name="customerConnectionSegmentId"
-                                                                               value="@e1.CustomerConnectionSegmentId" />
-
-                                                                        <button type="submit"
-                                                                                class="btn btn-sm btn-outline-danger">
-                                                                            Release E1
-                                                                        </button>
-
-                                                                    </form>
-                                                                }
-
-                                                            </div>
-                                                        }
-                                                    }
-
-                                                </td>
-                                                <td>
-
-                                                    @if (!customer.CrossConnections.Any())
-                                                    {
-                                                        <span class="text-muted">
-                                                            No cross connections
-                                                        </span>
-                                                    }
-                                                    else
-                                                    {
-                                                        @foreach (var crossConnection
-                                                                  in customer.CrossConnections)
-                                                        {
-                                                            <div class="mb-2">
-
-                                                                <div class="fw-semibold">
-                                                                    Site @crossConnection.SiteId
-                                                                </div>
-
-                                                                <div>
-                                                                    @crossConnection.DisplayText
-                                                                </div>
-
-                                                                @if (crossConnection.IsPhysicalTermination)
-                                                                {
-                                                                    <small class="text-muted">
-                                                                        Physical termination
-                                                                    </small>
-                                                                }
-
-                                                            </div>
-                                                        }
-                                                    }
-
-                                                </td>
-
-                                                <td>
-
-                                                    @if (customer.OperationalStatus.HasValue)
-                                                    {
-                                                        switch (customer.OperationalStatus.Value)
-                                                        {
-                                                            case E1OperationalStatus.Connected:
-                                                                <span class="badge bg-success">
-                                                                    Connected
-                                                                </span>
-                                                                break;
-
-                                                            case E1OperationalStatus.Wrong:
-                                                                <span class="badge bg-warning text-dark">
-                                                                    Wrong
-                                                                </span>
-                                                                break;
-
-                                                            case E1OperationalStatus.Damaged:
-                                                                <span class="badge bg-danger">
-                                                                    Damaged
-                                                                </span>
-                                                                break;
-
-                                                            case E1OperationalStatus.Available:
-                                                                <span class="badge bg-secondary">
-                                                                    Available
-                                                                </span>
-                                                                break;
-                                                        }
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="badge bg-secondary">
-                                                            Unknown
-                                                        </span>
-                                                    }
-                                                    @if (customer.ManageE1Id.HasValue)
-                                                    {
-                                                        <a asp-controller="E1s"
-                                                               asp-action="ChangeStatus"
-                                                               asp-route-id="@customer.ManageE1Id"
-                                                               class="btn btn-sm btn-outline-secondary ms-2">
-                                                            Manage Connection
-                                                        </a>
-                                                    }
-
-                                                </td>
-
-                                            </tr>
-                                        }
-
-                                    </tbody>
-
-                                </table>
-
-                            </div>
-                        }
-
-                    </div>
                 </div>
 
             </article>
         }
 
 
-        <!-- Pagination -->
+        <!-- =================================================
+             Pagination
+             ================================================= -->
         @if (Model.TotalPages > 1)
         {
             <div class="path-pagination-area">
@@ -754,7 +970,9 @@
 
                 <ul class="path-pagination">
 
+
                     <!-- Previous -->
+
                     <li>
 
                         @if (Model.HasPreviousPage)
@@ -766,7 +984,9 @@
                                    asp-route-sitePosition="@Model.SitePosition"
                                    asp-route-pageNumber="@(Model.PageNumber - 1)"
                                    class="path-page-link">
+
                                 ‹
+
                             </a>
                         }
                         else
@@ -774,7 +994,9 @@
                             <span class="
                                 path-page-link
                                 disabled">
+
                                 ‹
+
                             </span>
                         }
 
@@ -785,13 +1007,16 @@
                         int currentPage =
                             Model.PageNumber;
 
+
                         int totalPages =
                             Model.TotalPages;
+
 
                         int startPage =
                             Math.Max(
                                 2,
                                 currentPage - 2);
+
 
                         int endPage =
                             Math.Min(
@@ -800,7 +1025,8 @@
                     }
 
 
-                    <!-- First -->
+                    <!-- First Page -->
+
                     <li>
 
                         <a asp-action="Index"
@@ -809,11 +1035,14 @@
                                asp-route-siteId="@Model.SiteId"
                                asp-route-sitePosition="@Model.SitePosition"
                                asp-route-pageNumber="1"
-                               class="path-page-link
+                               class="
+                            path-page-link
                             @(currentPage == 1
                                                            ? "active"
                                                            : "")">
+
                             1
+
                         </a>
 
                     </li>
@@ -822,16 +1051,26 @@
                     @if (startPage > 2)
                     {
                         <li>
-                            <span class="path-page-ellipsis">
+
+                            <span class="
+                                path-page-ellipsis">
+
                                 …
+
                             </span>
+
                         </li>
                     }
 
 
-                    @for (int i = startPage;
-                          i <= endPage;
-                          i++)
+                    @for (
+                        int pageNumber =
+                            startPage;
+
+                        pageNumber <=
+                            endPage;
+
+                        pageNumber++)
                     {
                         <li>
 
@@ -840,24 +1079,35 @@
                                    asp-route-linkName="@Model.LinkName"
                                    asp-route-siteId="@Model.SiteId"
                                    asp-route-sitePosition="@Model.SitePosition"
-                                   asp-route-pageNumber="@i"
-                                   class="path-page-link
-                                @(currentPage == i
-                                                                   ? "active"
-                                                                   : "")">
-                                @i
+                                   asp-route-pageNumber="@pageNumber"
+                                   class="
+                                path-page-link
+                                @(currentPage ==
+                                                                   pageNumber
+                                                                       ? "active"
+                                                                       : "")">
+
+                                @pageNumber
+
                             </a>
 
                         </li>
                     }
 
 
-                    @if (endPage < totalPages - 1)
+                    @if (
+                        endPage <
+                        totalPages - 1)
                     {
                         <li>
-                            <span class="path-page-ellipsis">
+
+                            <span class="
+                                path-page-ellipsis">
+
                                 …
+
                             </span>
+
                         </li>
                     }
 
@@ -872,11 +1122,15 @@
                                    asp-route-siteId="@Model.SiteId"
                                    asp-route-sitePosition="@Model.SitePosition"
                                    asp-route-pageNumber="@totalPages"
-                                   class="path-page-link
-                                @(currentPage == totalPages
-                                                                   ? "active"
-                                                                   : "")">
+                                   class="
+                                path-page-link
+                                @(currentPage ==
+                                                                   totalPages
+                                                                       ? "active"
+                                                                       : "")">
+
                                 @totalPages
+
                             </a>
 
                         </li>
@@ -884,6 +1138,7 @@
 
 
                     <!-- Next -->
+
                     <li>
 
                         @if (Model.HasNextPage)
@@ -895,7 +1150,9 @@
                                    asp-route-sitePosition="@Model.SitePosition"
                                    asp-route-pageNumber="@(Model.PageNumber + 1)"
                                    class="path-page-link">
+
                                 ›
+
                             </a>
                         }
                         else
@@ -903,7 +1160,9 @@
                             <span class="
                                 path-page-link
                                 disabled">
+
                                 ›
+
                             </span>
                         }
 
@@ -916,3 +1175,95 @@
     }
 
 </div>
+
+
+@section Scripts {
+
+    <script>
+        (() => {
+
+            /*
+             * One button controls the WHOLE path.
+             *
+             * All nodes, links, E1 routes,
+             * formulas and actions expand/collapse
+             * together.
+             */
+
+            const buttons =
+                document.querySelectorAll(
+                    "[data-path-toggle]");
+
+
+            buttons.forEach(button => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        const bodyId =
+                            button.dataset.pathToggle;
+
+
+                        const body =
+                            document.getElementById(
+                                bodyId);
+
+
+                        if (!body) {
+                            return;
+                        }
+
+
+                        const shouldOpen =
+                            body.hidden;
+
+
+                        body.hidden =
+                            !shouldOpen;
+
+
+                        button.setAttribute(
+                            "aria-expanded",
+                            shouldOpen
+                                ? "true"
+                                : "false");
+
+
+                        const text =
+                            button.querySelector(
+                                ".path-toggle-text");
+
+
+                        const icon =
+                            button.querySelector(
+                                ".path-toggle-icon");
+
+
+                        if (text) {
+
+                            text.textContent =
+                                shouldOpen
+                                    ? "Hide Path"
+                                    : "View Path";
+
+                        }
+
+
+                        if (icon) {
+
+                            icon.textContent =
+                                shouldOpen
+                                    ? "↑"
+                                    : "↓";
+
+                        }
+
+                    });
+
+            });
+
+        })();
+    </script>
+
+}

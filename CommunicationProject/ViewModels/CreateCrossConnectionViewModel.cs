@@ -6,50 +6,103 @@ namespace CommunicationProject.ViewModels;
 
 public class CreateCrossConnectionViewModel
 {
-    [Required(ErrorMessage = "Select the cross-connection site.")]
-    [Display(Name = "Cross Connection Site")]
-    public string SiteId { get; set; } = string.Empty;
+    /* =====================================================
+       Cross-connection site
+       ===================================================== */
+
+    [Required(
+        ErrorMessage =
+            "Select the cross-connection site.")]
+    [Display(
+        Name = "Cross Connection Site")]
+    public string SiteId { get; set; } =
+        string.Empty;
 
 
-    [Required(ErrorMessage = "Select the previous site.")]
+    /* =====================================================
+   Incoming side
+   ===================================================== */
+
+    [Required(
+        ErrorMessage =
+            "Select the incoming resource.")]
     [Display(Name = "Previous Site")]
-    public string PreviousSiteId { get; set; } = string.Empty;
+    public string IncomingResourceKey { get; set; }
+        = string.Empty;
 
-    [Required(ErrorMessage = "Select the incoming link.")]
-    [Display(Name = "Incoming Link")]
+
+    /*
+     * Derived by the server from IncomingResourceKey.
+     */
+    [ValidateNever]
+    public string PreviousSiteId { get; set; }
+        = string.Empty;
+
+    [ValidateNever]
     public Guid? IncomingLinkId { get; set; }
 
-    [Display(Name = "Incoming STM")]
+    [ValidateNever]
     public Guid? IncomingStmId { get; set; }
 
-    [Required(ErrorMessage = "Select the incoming E1.")]
+
+    [Required(
+        ErrorMessage =
+            "Select the incoming E1.")]
     [Display(Name = "Incoming E1")]
     public Guid? IncomingE1Id { get; set; }
 
 
-    [Required(ErrorMessage = "Select the next site.")]
-    [Display(Name = "Next Site")]
-    public string NextSiteId { get; set; } = string.Empty;
+    /* =====================================================
+       Outgoing side
+       ===================================================== */
 
-    [Required(ErrorMessage = "Select the outgoing link.")]
-    [Display(Name = "Outgoing Link")]
+    [Required(
+        ErrorMessage =
+            "Select the outgoing resource.")]
+    [Display(Name = "Next Site")]
+    public string OutgoingResourceKey { get; set; }
+        = string.Empty;
+
+
+    /*
+     * Derived by the server from OutgoingResourceKey.
+     */
+    [ValidateNever]
+    public string NextSiteId { get; set; }
+        = string.Empty;
+
+    [ValidateNever]
     public Guid? OutgoingLinkId { get; set; }
 
-    [Display(Name = "Outgoing STM")]
+    [ValidateNever]
     public Guid? OutgoingStmId { get; set; }
 
-    [Required(ErrorMessage = "Select the outgoing E1.")]
+
+    [Required(
+        ErrorMessage =
+            "Select the outgoing E1.")]
     [Display(Name = "Outgoing E1")]
     public Guid? OutgoingE1Id { get; set; }
 
+    /* =====================================================
+       Customer
+       ===================================================== */
 
     [Required]
-    [Display(Name = "Customer")]
+    [Display(
+        Name = "Customer")]
     public string CustomerName { get; set; } =
         string.Empty;
 
 
+    /* =====================================================
+       Options
+       ===================================================== */
+
     [ValidateNever]
     public List<SelectListItem> SiteOptions
-    { get; set; } = new();
+    {
+        get;
+        set;
+    } = new();
 }

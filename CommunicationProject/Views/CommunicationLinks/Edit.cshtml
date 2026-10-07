@@ -15,10 +15,12 @@
 
     <div class="links-form-top">
 
-        <a asp-action="Details"
-               asp-route-id="@Model.Id"
-               class="links-back-link">
-            ← Link details
+        <a href="#"
+               class="links-back-link js-back-link"
+               data-fallback-url="@Url.Action("Details", "CommunicationLinks", new { id = Model.Id })">
+
+            ← Back
+
         </a>
 
         <h1 class="links-form-title">
@@ -184,10 +186,12 @@
 
             <div class="links-form-actions">
 
-                <a asp-action="Details"
-                       asp-route-id="@Model.Id"
-                       class="links-form-cancel">
+                <a href="#"
+                       class="links-form-cancel js-back-link"
+                       data-fallback-url="@Url.Action("Details", "CommunicationLinks", new { id = Model.Id })">
+
                     Cancel
+
                 </a>
 
                 <button type="submit"

@@ -1,7 +1,7 @@
 ﻿@model CommunicationProject.Models.Site
 
 @{
-    ViewData["Title"] = "Create Site";
+    ViewData["Title"] = "Add Site";
 }
 
 @section Styles {
@@ -10,104 +10,181 @@
           asp-append-version="true" />
 }
 
+
 <div class="sites-form-page">
 
-    <div class="sites-page-top">
+    <!-- Header -->
+    <div class="sites-form-header">
 
-        <a asp-action="Index"
-               class="sites-back-link">
-            ← Sites
+        <a href="#"
+               class="sites-back-link js-back-link"
+               data-fallback-url="@Url.Action("Index", "Sites")">
+
+            <span>←</span>
+            Back
+
         </a>
 
-        <h1 class="sites-form-title">
-            Create site
-        </h1>
 
-        <p class="sites-form-subtitle">
-            Add a new communication site.
-        </p>
+        <div class="sites-form-heading">
+
+            <div class="sites-form-heading-icon">
+
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+
+                    <path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11z"></path>
+
+                    <circle cx="12"
+                            cy="10"
+                            r="2"></circle>
+
+                </svg>
+
+            </div>
+
+
+            <div>
+
+                <h1 class="sites-form-title">
+                    Add Site
+                </h1>
+
+                <p class="sites-form-subtitle">
+                    Create a new communication site
+                    and define its basic information.
+                </p>
+
+            </div>
+
+        </div>
 
     </div>
 
 
-    <div class="sites-card sites-form-card">
+    <!-- Form -->
+    <div class="sites-card sites-form-card sites-form-card-modern">
 
         <form asp-action="Create"
               method="post">
 
             <div asp-validation-summary="ModelOnly"
-                 class="sites-validation">
+                 class="sites-validation-summary">
             </div>
 
 
-            <div class="sites-form-group">
+            <div class="sites-form-section">
 
-                <label asp-for="Id"
-                       class="sites-form-label">
-                    Site ID
-                </label>
+                <div class="sites-form-section-header">
 
-                <input asp-for="Id"
-                       class="sites-form-control"
-                       placeholder="Enter site ID" />
+                    <span class="sites-form-section-mark">
+                    </span>
 
-                <div class="sites-form-hint">
-                    The ID must be unique.
+                    <div>
+                        <h2>
+                            Site Information
+                        </h2>
+
+                        <p>
+                            Enter the identifier, name and
+                            location for this site.
+                        </p>
+                    </div>
+
                 </div>
 
-                <span asp-validation-for="Id"
-                      class="sites-validation">
-                </span>
 
-            </div>
+                <div class="sites-form-grid">
+
+                    <!-- Site ID -->
+                    <div class="sites-form-group">
+
+                        <label asp-for="Id"
+                               class="sites-form-label">
+                            Site ID
+                        </label>
+
+                        <input asp-for="Id"
+                               class="sites-form-control"
+                               placeholder="e.g. 005" />
+
+                        <div class="sites-form-hint">
+                            Must be unique across all sites.
+                        </div>
+
+                        <span asp-validation-for="Id"
+                              class="sites-validation">
+                        </span>
+
+                    </div>
 
 
-            <div class="sites-form-group">
+                    <!-- Site Name -->
+                    <div class="sites-form-group">
 
-                <label asp-for="Name"
-                       class="sites-form-label">
-                    Site name
-                </label>
+                        <label asp-for="Name"
+                               class="sites-form-label">
+                            Site Name
+                        </label>
 
-                <input asp-for="Name"
-                       class="sites-form-control"
-                       placeholder="Enter site name" />
+                        <input asp-for="Name"
+                               class="sites-form-control"
+                               placeholder="Enter site name" />
 
-                <span asp-validation-for="Name"
-                      class="sites-validation">
-                </span>
+                        <div class="sites-form-hint">
+                            A clear name used to identify the site.
+                        </div>
 
-            </div>
+                        <span asp-validation-for="Name"
+                              class="sites-validation">
+                        </span>
+
+                    </div>
 
 
-            <div class="sites-form-group">
+                    <!-- Location -->
+                    <div class="sites-form-group sites-form-group-wide">
 
-                <label asp-for="Location"
-                       class="sites-form-label">
-                    Location
-                </label>
+                        <label asp-for="Location"
+                               class="sites-form-label">
+                            Location
+                        </label>
 
-                <input asp-for="Location"
-                       class="sites-form-control"
-                       placeholder="Enter location" />
+                        <input asp-for="Location"
+                               class="sites-form-control"
+                               placeholder="Enter site location" />
 
-                <span asp-validation-for="Location"
-                      class="sites-validation">
-                </span>
+                        <span asp-validation-for="Location"
+                              class="sites-validation">
+                        </span>
+
+                    </div>
+
+                </div>
 
             </div>
 
 
             <div class="sites-form-actions">
 
-                <a asp-action="Index"
-                       class="sites-secondary-btn">
+                <a href="#"
+                       class="sites-secondary-btn js-back-link"
+                       data-fallback-url="@Url.Action("Index", "Sites")">
+
                     Cancel
+
                 </a>
+
 
                 <button type="submit"
                         class="sites-save-btn">
-                    Create site
+
+                    <span class="sites-save-icon">
+                        +
+                    </span>
+
+                    Add Site
+
                 </button>
 
             </div>
@@ -117,6 +194,7 @@
     </div>
 
 </div>
+
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

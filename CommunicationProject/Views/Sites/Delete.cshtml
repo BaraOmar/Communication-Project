@@ -10,77 +10,160 @@
           asp-append-version="true" />
 }
 
+
 <div class="sites-form-page">
 
-    <div class="sites-page-top">
+    <!-- Header -->
+    <div class="sites-form-header">
 
-        <a asp-action="Details"
-               asp-route-id="@Model.Id"
-               class="sites-back-link">
-            ← Site details
+        <a href="#"
+               class="sites-back-link js-back-link"
+               data-fallback-url="@Url.Action("Details", "Sites", new { id = Model.Id })">
+
+            <span>←</span>
+            Back
+
         </a>
 
-        <h1 class="sites-form-title">
-            Delete site
-        </h1>
 
-        <p class="sites-form-subtitle">
-            Review the site before deleting it.
-        </p>
+        <div class="sites-form-heading">
+
+            <div class="sites-delete-heading-icon">
+
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+
+                    <path d="M4 7h16"></path>
+
+                    <path d="M10 11v6"></path>
+
+                    <path d="M14 11v6"></path>
+
+                    <path d="M6 7l1 13h10l1-13"></path>
+
+                    <path d="M9 7V4h6v3"></path>
+
+                </svg>
+
+            </div>
+
+
+            <div>
+
+                <h1 class="sites-form-title">
+                    Delete Site
+                </h1>
+
+                <p class="sites-form-subtitle">
+                    Review the site information before
+                    permanently deleting it.
+                </p>
+
+            </div>
+
+        </div>
 
     </div>
 
 
-    <div class="sites-card sites-delete-card">
+    <!-- Delete Card -->
+    <div class="sites-card sites-delete-card-modern">
 
-        <div class="sites-delete-notice">
-            This action cannot be undone. The site will be permanently removed.
+        <!-- Warning -->
+        <div class="sites-delete-warning">
+
+            <div class="sites-delete-warning-icon">
+                !
+            </div>
+
+
+            <div>
+
+                <strong>
+                    Permanent action
+                </strong>
+
+                <p>
+                    This site will be permanently removed.
+                    This action cannot be undone.
+                </p>
+
+            </div>
+
         </div>
 
 
         <div asp-validation-summary="ModelOnly"
-             class="sites-validation">
+             class="sites-validation-summary">
         </div>
 
 
-        <div class="sites-delete-summary">
+        <!-- Site Summary -->
+        <div class="sites-delete-content">
 
-            <div>
+            <div class="sites-form-section-header">
 
-                <div class="sites-detail-label">
-                    Site ID
-                </div>
+                <span class="sites-form-section-mark">
+                </span>
 
-                <div class="sites-detail-value">
-                    @Model.Id
-                </div>
+                <div>
 
-            </div>
+                    <h2>
+                        Site Information
+                    </h2>
 
+                    <p>
+                        Confirm that this is the site
+                        you want to delete.
+                    </p>
 
-            <div>
-
-                <div class="sites-detail-label">
-                    Name
-                </div>
-
-                <div class="sites-detail-value">
-                    @Model.Name
                 </div>
 
             </div>
 
 
-            <div>
+            <div class="sites-delete-summary-modern">
 
-                <div class="sites-detail-label">
-                    Location
+                <div class="sites-delete-field">
+
+                    <span class="sites-detail-label">
+                        Site ID
+                    </span>
+
+                    <strong class="sites-detail-value">
+                        @Model.Id
+                    </strong>
+
                 </div>
 
-                <div class="sites-detail-value">
-                    @(string.IsNullOrWhiteSpace(Model.Location)
-                        ? "—"
-                        : Model.Location)
+
+                <div class="sites-delete-field">
+
+                    <span class="sites-detail-label">
+                        Site Name
+                    </span>
+
+                    <strong class="sites-detail-value">
+                        @Model.Name
+                    </strong>
+
+                </div>
+
+
+                <div class="sites-delete-field">
+
+                    <span class="sites-detail-label">
+                        Location
+                    </span>
+
+                    <strong class="sites-detail-value">
+
+                        @(string.IsNullOrWhiteSpace(Model.Location)
+                            ? "—"
+                            : Model.Location)
+
+                    </strong>
+
                 </div>
 
             </div>
@@ -97,15 +180,24 @@
 
             <div class="sites-form-actions">
 
-                <a asp-action="Details"
-                       asp-route-id="@Model.Id"
-                       class="sites-secondary-btn">
+                <a href="#"
+                       class="sites-secondary-btn js-back-link"
+                       data-fallback-url="@Url.Action("Details", "Sites", new { id = Model.Id })">
+
                     Cancel
+
                 </a>
+
 
                 <button type="submit"
                         class="sites-danger-btn">
-                    Delete site
+
+                    <span class="sites-danger-icon">
+                        ×
+                    </span>
+
+                    Delete Site
+
                 </button>
 
             </div>

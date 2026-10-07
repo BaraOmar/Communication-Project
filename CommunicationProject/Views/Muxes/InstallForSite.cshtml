@@ -1,0 +1,845 @@
+﻿@model CommunicationProject.ViewModels.InstallSiteMuxViewModel
+
+@{
+    ViewData["Title"] = "Install MUX";
+}
+
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/muxes.css"
+          asp-append-version="true" />
+}
+
+<div class="mux-install-page">
+
+    <!-- =====================================================
+         Header
+         ===================================================== -->
+
+    <div class="mux-install-header">
+
+        <a href="@Url.Action(
+                                       "Details",
+                                       "Sites",
+                                       new { id = Model.SiteId })"
+               data-fallback-url="@Url.Action(
+                                       "Details",
+                                       "Sites",
+                                       new { id = Model.SiteId })"
+               class="mux-details-back js-back-link">
+
+            ← Back
+
+        </a>
+
+
+        <div>
+
+            <span class="mux-rack-eyebrow">
+                SITE @Model.SiteId
+            </span>
+
+            <h1>
+                Install MUX
+            </h1>
+
+            <p>
+                Configure a new MUX and connect available
+                SDH STMs at this site.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <form asp-controller="Muxes"
+          asp-action="InstallForSite"
+          method="post"
+          id="installMuxForm">
+
+        @Html.AntiForgeryToken()
+
+        <input asp-for="SiteId"
+               type="hidden" />
+
+        <input asp-for="SiteName"
+               type="hidden" />
+
+
+        <!-- =================================================
+             Validation
+             ================================================= -->
+
+        <div asp-validation-summary="ModelOnly"
+             class="mux-install-validation">
+        </div>
+
+
+        <!-- =================================================
+             Installation
+             ================================================= -->
+
+        <section class="mux-install-card">
+
+            <div class="mux-install-card-header">
+
+                <div>
+
+                    <span class="mux-rack-eyebrow">
+                        INSTALLATION
+                    </span>
+
+                    <h2>
+                        MUX Configuration
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="mux-install-fields">
+
+                <!-- Site -->
+
+                <div class="mux-install-field">
+
+                    <label>
+                        Site
+                    </label>
+
+                    <div class="mux-install-static">
+
+                        <strong>
+                            @Model.SiteId
+                        </strong>
+
+                        <span>
+                            @Model.SiteName
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- MUX Name -->
+
+                <div class="mux-install-field">
+
+                    <label asp-for="MuxName">
+                    </label>
+
+                    <input asp-for="MuxName"
+                           class="mux-install-input" />
+
+                    <span asp-validation-for="MuxName"
+                          class="mux-install-field-error">
+                    </span>
+
+                </div>
+
+
+                <!-- MUX Type -->
+
+                <div class="mux-install-field">
+
+                    <label asp-for="MuxTypeId">
+                    </label>
+
+                    <select asp-for="MuxTypeId"
+                            asp-items="Model.MuxTypeOptions"
+                            class="mux-install-select"
+                            id="muxTypeSelect">
+
+                        <option value="">
+                            Select a MUX type
+                        </option>
+
+                    </select>
+
+                    <span asp-validation-for="MuxTypeId"
+                          class="mux-install-field-error">
+                    </span>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             Capacity
+             ================================================= -->
+
+        <section class="mux-install-capacity"
+                 id="muxCapacityPanel">
+
+            <div class="mux-install-capacity-main">
+
+                <span class="mux-rack-eyebrow">
+                    STM CAPACITY
+                </span>
+
+                <strong id="capacityText">
+                    Select a MUX type
+                </strong>
+
+            </div>
+
+
+            <div class="mux-install-capacity-stats">
+
+                <div>
+
+                    <span>
+                        STM Ports
+                    </span>
+
+                    <strong id="capacityTotal">
+                        —
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span>
+                        Assigned
+                    </span>
+
+                    <strong id="capacityAssigned">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span>
+                        Remaining
+                    </span>
+
+                    <strong id="capacityRemaining">
+                        —
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             STM Assignments
+             ================================================= -->
+
+        <section class="mux-install-card">
+
+            <div class="mux-install-card-header
+                mux-install-stm-header">
+
+                <div>
+
+                    <span class="mux-rack-eyebrow">
+                        SDH RESOURCES
+                    </span>
+
+                    <h2>
+                        STM Port Assignments
+                    </h2>
+
+                    <p>
+                        Available STMs from all SDH links
+                        physically terminating at this site.
+                    </p>
+
+                </div>
+
+
+                <span class="mux-install-count">
+
+                    @Model.StmAssignments.Count
+                    @(Model.StmAssignments.Count == 1
+                        ? "available STM"
+                        : "available STMs")
+
+                </span>
+
+            </div>
+
+
+            @if (Model.StmAssignments.Any())
+            {
+                <div class="mux-install-table-wrap">
+
+                    <table class="mux-install-table">
+
+                        <thead>
+
+                            <tr>
+                                <th>
+                                    Remote Site
+                                </th>
+
+                                <th>
+                                    Communication Link
+                                </th>
+
+                                <th>
+                                    STM
+                                </th>
+
+                                <th>
+                                    MUX STM Port
+                                </th>
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            @for (int index = 0;
+                                  index < Model.StmAssignments.Count;
+                                  index++)
+                            {
+                                <tr>
+
+                                    <!-- Remote Site -->
+
+                                    <td>
+
+                                        <span class="mux-install-site-badge">
+                                            @(Model.StmAssignments[index].RemoteSiteId)
+                                        </span>
+
+                                    </td>
+
+
+                                    <!-- Link -->
+
+                                    <td>
+
+                                        <strong class="mux-install-link-name">
+                                            @(Model.StmAssignments[index].LinkName)
+                                        </strong>
+
+                                    </td>
+
+
+                                    <!-- STM -->
+
+                                    <td>
+
+                                        <span class="mux-install-stm-name">
+                                            STM @(Model.StmAssignments[index].StmNumber)
+                                        </span>
+
+
+                                        <input asp-for="StmAssignments[index].StmId"
+                                               type="hidden" />
+
+                                        <input asp-for="StmAssignments[index].StmNumber"
+                                               type="hidden" />
+
+                                        <input asp-for="StmAssignments[index].LinkName"
+                                               type="hidden" />
+
+                                        <input asp-for="StmAssignments[index].RemoteSiteId"
+                                               type="hidden" />
+
+                                    </td>
+
+
+                                    <!-- Port -->
+
+                                    <td>
+
+                                        <select asp-for="StmAssignments[index].PortKey"
+                                                class="mux-install-port-select"
+                                                data-selected-port="@Model.StmAssignments[index].PortKey"
+                                                disabled>
+
+                                            <option value="">
+                                                Leave unassigned
+                                            </option>
+
+                                        </select>
+
+                                        <span asp-validation-for="StmAssignments[index].PortKey"
+                                              class="mux-install-field-error">
+                                        </span>
+
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+            }
+            else
+            {
+                <div class="mux-install-empty">
+
+                    <div class="mux-install-empty-icon">
+                        STM
+                    </div>
+
+                    <strong>
+                        No available STMs
+                    </strong>
+
+                    <p>
+                        All SDH STMs at this site are already
+                        assigned to MUX ports.
+                    </p>
+
+                </div>
+            }
+
+        </section>
+
+
+        <!-- =================================================
+             Actions
+             ================================================= -->
+
+        <div class="mux-install-actions">
+
+            <a href="@Url.Action(
+                                                   "Details",
+                                                   "Sites",
+                                                   new { id = Model.SiteId })"
+                   data-fallback-url="@Url.Action(
+                                                   "Details",
+                                                   "Sites",
+                                                   new { id = Model.SiteId })"
+                   class="mux-details-secondary-btn js-back-link">
+
+                Cancel
+
+            </a>
+
+
+            @if (Model.StmAssignments.Any())
+            {
+                <button type="submit"
+                        class="mux-primary-btn">
+
+                    Install MUX
+
+                </button>
+            }
+            else
+            {
+                <button type="button"
+                        class="mux-primary-btn"
+                        disabled>
+
+                    Install MUX
+
+                </button>
+            }
+
+        </div>
+
+    </form>
+
+</div>
+
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+
+    <script>
+        (() => {
+
+            const muxTypeSelect =
+                document.getElementById(
+                    "muxTypeSelect");
+
+
+            const portSelects =
+                Array.from(
+                    document.querySelectorAll(
+                        ".mux-install-port-select"));
+
+
+            const totalElement =
+                document.getElementById(
+                    "capacityTotal");
+
+            const assignedElement =
+                document.getElementById(
+                    "capacityAssigned");
+
+            const remainingElement =
+                document.getElementById(
+                    "capacityRemaining");
+
+            const capacityText =
+                document.getElementById(
+                    "capacityText");
+
+
+            if (!muxTypeSelect) {
+                return;
+            }
+
+
+            let availablePorts = [];
+
+
+            /*
+             * Convert the controller response into:
+             *
+             * {
+             *     value: "3:1",
+             *     text: "Card 3 / Port 1"
+             * }
+             *
+             * This also tolerates a plain string response.
+             */
+            function normalizePort(port) {
+
+                if (typeof port === "string") {
+
+                    return {
+                        value: port,
+                        text: port
+                    };
+                }
+
+
+                return {
+                    value:
+                        port.value ??
+                        port.Value ??
+                        "",
+
+                    text:
+                        port.text ??
+                        port.Text ??
+                        port.value ??
+                        port.Value ??
+                        ""
+                };
+            }
+
+
+            function updateCapacity() {
+
+                const assigned =
+                    portSelects.filter(select =>
+                        select.value !== "")
+                        .length;
+
+
+                const total =
+                    availablePorts.length;
+
+
+                totalElement.textContent =
+                    muxTypeSelect.value
+                        ? total
+                        : "—";
+
+
+                assignedElement.textContent =
+                    assigned;
+
+
+                remainingElement.textContent =
+                    muxTypeSelect.value
+                        ? Math.max(
+                            0,
+                            total - assigned)
+                        : "—";
+
+
+                if (!muxTypeSelect.value) {
+
+                    capacityText.textContent =
+                        "Select a MUX type";
+
+                    return;
+                }
+
+
+                capacityText.textContent =
+                    `${total} STM ports available on this MUX type`;
+            }
+
+
+            /*
+             * Prevent the same physical port from being
+             * selected for two STMs.
+             */
+            function updateDisabledPorts() {
+
+                const selectedPorts =
+                    new Set(
+                        portSelects
+                            .map(select =>
+                                select.value)
+                            .filter(value =>
+                                value !== "")
+                    );
+
+
+                portSelects.forEach(select => {
+
+                    const currentValue =
+                        select.value;
+
+
+                    Array.from(
+                        select.options)
+                        .forEach(option => {
+
+                            if (option.value === "") {
+
+                                option.disabled =
+                                    false;
+
+                                return;
+                            }
+
+
+                            option.disabled =
+                                selectedPorts.has(
+                                    option.value) &&
+                                option.value !==
+                                    currentValue;
+
+                        });
+
+                });
+
+
+                updateCapacity();
+            }
+
+
+            function populatePortSelects() {
+
+                portSelects.forEach(select => {
+
+                    const previousSelection =
+                        select.dataset.selectedPort ?? "";
+
+
+                    select.innerHTML = "";
+
+
+                    const emptyOption =
+                        document.createElement(
+                            "option");
+
+                    emptyOption.value =
+                        "";
+
+                    emptyOption.textContent =
+                        "Leave unassigned";
+
+                    select.appendChild(
+                        emptyOption);
+
+
+                    availablePorts.forEach(port => {
+
+                        const option =
+                            document.createElement(
+                                "option");
+
+                        option.value =
+                            port.value;
+
+                        option.textContent =
+                            port.text;
+
+                        select.appendChild(
+                            option);
+
+                    });
+
+
+                    if (
+                        previousSelection &&
+                        availablePorts.some(port =>
+                            port.value ===
+                            previousSelection)
+                    ) {
+
+                        select.value =
+                            previousSelection;
+                    }
+
+
+                    select.disabled =
+                        false;
+
+                });
+
+
+                updateDisabledPorts();
+            }
+
+
+            async function loadPorts() {
+
+                const muxTypeId =
+                    muxTypeSelect.value;
+
+
+                /*
+                 * No MUX type selected.
+                 */
+                if (!muxTypeId) {
+
+                    availablePorts = [];
+
+
+                    portSelects.forEach(select => {
+
+                        select.innerHTML =
+                            '<option value="">' +
+                            'Select a MUX type first' +
+                            '</option>';
+
+                        select.disabled =
+                            true;
+
+                    });
+
+
+                    updateCapacity();
+
+                    return;
+                }
+
+
+                try {
+
+                    portSelects.forEach(select => {
+
+                        select.disabled =
+                            true;
+
+                        select.innerHTML =
+                            '<option value="">' +
+                            'Loading ports...' +
+                            '</option>';
+
+                    });
+
+
+                    const baseUrl =
+                        '@Url.Action(
+                                            "GetMuxTypeStmPorts",
+                                            "Muxes")';
+
+
+                    const response =
+                        await fetch(
+                            `${baseUrl}?muxTypeId=${encodeURIComponent(muxTypeId)}`);
+
+
+                    if (!response.ok) {
+
+                        throw new Error(
+                            "Could not load MUX ports.");
+                    }
+
+
+                    const result =
+                        await response.json();
+
+
+                    availablePorts =
+                        Array.isArray(result)
+                            ? result.map(
+                                normalizePort)
+                            : [];
+
+
+                    populatePortSelects();
+
+                }
+                catch (error) {
+
+                    console.error(
+                        error);
+
+
+                    availablePorts = [];
+
+
+                    portSelects.forEach(select => {
+
+                        select.innerHTML =
+                            '<option value="">' +
+                            'Unable to load ports' +
+                            '</option>';
+
+                        select.disabled =
+                            true;
+
+                    });
+
+
+                    capacityText.textContent =
+                        "Unable to load STM capacity";
+
+
+                    updateCapacity();
+                }
+            }
+
+
+            muxTypeSelect.addEventListener(
+                "change",
+                loadPorts);
+
+
+            portSelects.forEach(select => {
+
+                select.addEventListener(
+                    "change",
+                    updateDisabledPorts);
+
+            });
+
+
+            /*
+             * Important for validation errors:
+             * if the server returns this same page with the
+             * previously selected MUX type, reload its ports
+             * automatically.
+             */
+            if (muxTypeSelect.value) {
+
+                loadPorts();
+
+            }
+            else {
+
+                updateCapacity();
+            }
+
+        })();
+    </script>
+
+}

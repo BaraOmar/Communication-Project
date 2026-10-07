@@ -192,7 +192,7 @@ app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
+    pattern: "{controller=Sites}/{action=Index}/{id?}")
     .WithStaticAssets();
 
 

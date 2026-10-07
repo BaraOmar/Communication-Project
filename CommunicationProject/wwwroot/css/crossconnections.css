@@ -1,454 +1,701 @@
 ﻿/* =========================================================
-   Cross Connections
+   Cross Connection
    ========================================================= */
 
 .cross-page {
-    max-width: 1080px;
+    max-width: 1220px;
     margin: 0 auto;
     padding: 2rem 1.25rem 3rem;
 }
 
 
-/* ---------------------------------------------------------
+/* =========================================================
    Header
-   --------------------------------------------------------- */
+   ========================================================= */
 
-.cross-header {
-    margin-bottom: 1.75rem;
+.cross-page-header {
+    margin-bottom: 1.5rem;
 }
 
-.cross-title {
-    margin: 0;
-    color: #172033;
-    font-size: 1.75rem;
-    font-weight: 700;
-    letter-spacing: -.02em;
-}
-
-.cross-subtitle {
-    max-width: 720px;
-    margin: .4rem 0 0;
-    color: #7f899a;
-    font-size: .9rem;
-    line-height: 1.55;
-}
-
-
-/* ---------------------------------------------------------
-   Shared card
-   --------------------------------------------------------- */
-
-.cross-card {
-    background: #fff;
-    border: 1px solid #e9edf3;
-    border-radius: 14px;
-    box-shadow: 0 3px 14px rgba(20, 32, 56, .04);
-}
-
-
-/* ---------------------------------------------------------
-   Messages
-   --------------------------------------------------------- */
-
-.cross-message {
-    margin-bottom: 1.2rem;
-    padding: .9rem 1rem;
-    border-radius: 10px;
-    font-size: .81rem;
-    line-height: 1.5;
-}
-
-.cross-message-success {
-    background: #f2f8f4;
-    border: 1px solid #dcebe1;
-    color: #587363;
-}
-
-.cross-message-error {
-    background: #fff7f7;
-    border: 1px solid #f1dddd;
-    color: #a0545a;
-}
-
-.cross-validation-summary:empty {
-    display: none;
-}
-
-.cross-validation-summary {
-    margin-bottom: 1.25rem;
-    padding: .85rem 1rem;
-    background: #fff7f7;
-    border: 1px solid #f1dddd;
-    border-radius: 10px;
-    color: #a0545a;
-    font-size: .79rem;
-}
-
-    .cross-validation-summary ul {
+    .cross-page-header h1 {
         margin: 0;
-        padding-left: 1.1rem;
+        color: #172033;
+        font-size: 1.8rem;
+        font-weight: 720;
+        letter-spacing: -0.02em;
+    }
+
+    .cross-page-header p {
+        margin: 0.35rem 0 0;
+        color: #7a8497;
+        font-size: 0.92rem;
+    }
+
+.cross-eyebrow {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: #929bad;
+    font-size: 0.66rem;
+    font-weight: 750;
+    letter-spacing: 0.07em;
+}
+
+
+/* =========================================================
+   Validation
+   ========================================================= */
+
+.cross-validation {
+    margin-bottom: 1rem;
+    color: #a23b43;
+    font-size: 0.82rem;
+}
+
+    .cross-validation:empty {
+        display: none;
+    }
+
+    .cross-validation ul {
+        margin: 0;
     }
 
 
-/* ---------------------------------------------------------
-   Central site
-   --------------------------------------------------------- */
+/* =========================================================
+   Cross Connection Site
+   ========================================================= */
 
-.cross-central-card {
-    padding: 1.4rem;
-    margin-bottom: 1rem;
+.cross-site-card {
+    margin-bottom: 1.2rem;
+    padding: 1.25rem;
+    background: #ffffff;
+    border: 1px solid #e7ebf1;
+    border-radius: 14px;
+    position: relative;
+    z-index: 20;
 }
 
-.cross-section-heading {
+.cross-site-heading {
     display: flex;
     align-items: center;
-    gap: .8rem;
+    gap: 0.85rem;
     margin-bottom: 1.15rem;
 }
 
-.cross-step {
-    display: inline-flex;
+.cross-site-icon {
+    display: flex;
     align-items: center;
     justify-content: center;
-    flex: 0 0 30px;
-    height: 30px;
-    background: #eef2ff;
-    border-radius: 8px;
-    color: #4263eb;
-    font-size: .75rem;
-    font-weight: 700;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    background: #f4f0e5;
+    border: 1px solid #e5d8b7;
+    border-radius: 11px;
+    color: #C6A75E;
+    font-size: 0.75rem;
 }
 
-.cross-section-title {
+.cross-site-heading h2,
+.cross-side-header h2,
+.cross-customer-card h2 {
     margin: 0;
-    color: #344054;
-    font-size: .93rem;
-    font-weight: 650;
+    color: #303b50;
+    font-size: 1rem;
+    font-weight: 680;
 }
 
-.cross-section-caption {
-    margin-top: .15rem;
-    color: #98a1b0;
-    font-size: .74rem;
+.cross-site-heading p,
+.cross-side-header p {
+    margin: 0.2rem 0 0;
+    color: #8a94a6;
+    font-size: 0.78rem;
 }
 
 
-/* ---------------------------------------------------------
-   Fields
-   --------------------------------------------------------- */
+/* =========================================================
+   Form Fields
+   ========================================================= */
 
 .cross-field {
-    margin-bottom: 1rem;
+    position: relative;
 }
 
-    .cross-field:last-child {
-        margin-bottom: 0;
+    .cross-field + .cross-field {
+        margin-top: 1rem;
     }
 
-.cross-label {
-    display: block;
-    margin-bottom: .45rem;
-    color: #465064;
-    font-size: .8rem;
-    font-weight: 600;
-}
+    .cross-field label {
+        display: block;
+        margin-bottom: 0.42rem;
+        color: #4b566a;
+        font-size: 0.75rem;
+        font-weight: 650;
+    }
 
-.cross-control {
+.cross-select,
+.cross-input {
     width: 100%;
     min-height: 44px;
-    padding: .65rem .85rem;
+    padding: 0 0.85rem;
     background: #fbfcfe;
     border: 1px solid #dfe4eb;
     border-radius: 9px;
-    color: #293346;
-    font-size: .87rem;
+    color: #303b50;
+    font-size: 0.85rem;
     outline: none;
-    transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
 }
 
-    .cross-control:focus {
-        background: #fff;
-        border-color: #9caef7;
-        box-shadow: 0 0 0 3px rgba(66, 99, 235, .08);
+    .cross-select:focus,
+    .cross-input:focus {
+        background: #ffffff;
+        border-color: #C6A75E;
+        box-shadow: 0 0 0 3px rgba(198, 167, 94, 0.11);
     }
 
-    .cross-control:disabled {
-        background: #f4f6f8;
-        color: #9ca3af;
+    .cross-select:disabled {
+        background: #f0f2f5;
+        color: #7f8998;
         cursor: not-allowed;
     }
 
-    .cross-control[readonly] {
-        background: #f5f6f8;
-        color: #6f7888;
+    .cross-input[readonly] {
+        background: #f4f6f9;
+        color: #536074;
     }
 
-.cross-hint {
-    margin-top: .4rem;
-    color: #9aa2b1;
-    font-size: .74rem;
-    line-height: 1.45;
-}
 
-.cross-validation {
+/* validation */
+
+.cross-field-error {
     display: block;
-    margin-top: .35rem;
-    color: #c85f67;
-    font-size: .74rem;
+    margin-top: 0.3rem;
+    color: #ae424a;
+    font-size: 0.7rem;
+}
+
+    .cross-field-error:empty {
+        display: none;
+    }
+
+
+/* =========================================================
+   Local Searchable Site Select
+   ========================================================= */
+
+.cross-searchable-select {
+    position: relative;
+    width: 100%;
 }
 
 
-/* ---------------------------------------------------------
-   Two connection sides
-   --------------------------------------------------------- */
+/* Real ASP.NET select remains in DOM for model binding */
 
-.cross-sides {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1rem;
-    margin-top: 1rem;
-}
-
-.cross-side-card {
-    overflow: hidden;
-}
-
-.cross-side-header {
-    padding: 1rem 1.2rem;
-    background: #fafbfc;
-    border-bottom: 1px solid #edf0f4;
-}
-
-.cross-side-label {
-    margin-bottom: .15rem;
-    color: #9aa2b1;
-    font-size: .67rem;
-    font-weight: 700;
-    letter-spacing: .045em;
-    text-transform: uppercase;
-}
-
-.cross-side-title {
-    margin: 0;
-    color: #3a4456;
-    font-size: .9rem;
-    font-weight: 650;
-}
-
-.cross-side-body {
-    padding: 1.25rem;
+.cross-native-select {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
 }
 
 
-/* Differentiate direction very subtly */
+/* Trigger */
 
-.cross-incoming-card {
-    border-top: 2px solid #a9b8f6;
-}
-
-.cross-outgoing-card {
-    border-top: 2px solid #b4c8bd;
-}
-
-
-/* ---------------------------------------------------------
-   Description
-   --------------------------------------------------------- */
-
-.cross-description-box {
-    margin-top: 1.1rem;
-    padding-top: 1.1rem;
-    border-top: 1px solid #edf0f4;
-}
-
-
-/* ---------------------------------------------------------
-   Path preview
-   --------------------------------------------------------- */
-
-.cross-diagram {
-    margin-top: 1rem;
-    padding: 1.2rem;
-    background: #fafbff;
-    border: 1px solid #e7eafb;
-    border-radius: 12px;
-}
-
-.cross-diagram-label {
-    margin-bottom: .8rem;
-    color: #7f899a;
-    font-size: .7rem;
-    font-weight: 700;
-    letter-spacing: .045em;
-    text-transform: uppercase;
-}
-
-.cross-diagram-flow {
+.cross-searchable-trigger {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: .55rem;
-    color: #556073;
-    font-size: .8rem;
-    font-weight: 550;
-    text-align: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    width: 100%;
+    min-height: 44px;
+    padding: 0 0.85rem;
+    background: #fbfcfe;
+    border: 1px solid #dfe4eb;
+    border-radius: 9px;
+    color: #7d8797;
+    font-size: 0.85rem;
+    text-align: left;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.cross-diagram-node {
-    padding: .48rem .7rem;
-    background: #fff;
-    border: 1px solid #e4e8ef;
-    border-radius: 8px;
+    .cross-searchable-trigger:hover {
+        background: #ffffff;
+        border-color: #d0d6df;
+    }
+
+    .cross-searchable-trigger:focus,
+    .cross-searchable-trigger[aria-expanded="true"] {
+        background: #ffffff;
+        border-color: #C6A75E;
+        box-shadow: 0 0 0 3px rgba(198, 167, 94, 0.11);
+    }
+
+    .cross-searchable-trigger.has-value {
+        color: #303b50;
+    }
+
+.cross-searchable-value {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.cross-diagram-center {
-    background: #eef2ff;
-    border-color: #dfe5ff;
-    color: #5367d7;
+.cross-select-arrow {
+    flex: 0 0 auto;
+    color: #8993a2;
+    font-size: 0.78rem;
+    transition: transform 0.15s ease;
 }
 
-.cross-diagram-arrow {
-    color: #a5adba;
+.cross-searchable-trigger[aria-expanded="true"]
+.cross-select-arrow {
+    transform: rotate(180deg);
 }
 
 
-/* ---------------------------------------------------------
-   Information note
-   --------------------------------------------------------- */
+/* Dropdown */
 
-.cross-note {
-    display: flex;
-    gap: .85rem;
-    margin-top: 1rem;
-    padding: 1rem 1.1rem;
-    background: #f8f9fc;
-    border: 1px solid #e9ecf2;
+.cross-searchable-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: 0.5rem;
+    background: #ffffff;
+    border: 1px solid #dfe4eb;
     border-radius: 10px;
+    box-shadow: 0 12px 30px rgba(31, 42, 68, 0.13);
 }
 
-.cross-note-icon {
+    .cross-searchable-dropdown[hidden] {
+        display: none;
+    }
+
+
+/* Search box inside dropdown */
+
+.cross-search-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+    padding: 0 0.7rem;
+    background: #f8f9fb;
+    border: 1px solid #e4e8ee;
+    border-radius: 8px;
+}
+
+.cross-search-icon {
+    color: #8f99a8;
+    font-size: 1rem;
+}
+
+.cross-search-input {
+    width: 100%;
+    min-height: 40px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    outline: 0;
+    color: #303b50;
+    font-size: 0.84rem;
+}
+
+    .cross-search-input::placeholder {
+        color: #a0a8b4;
+    }
+
+
+/* Options */
+
+.cross-search-options {
+    max-height: 260px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.cross-search-option {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 0.1rem;
+    padding: 0.62rem 0.72rem;
+    background: transparent;
+    border: 0;
+    border-radius: 7px;
+    color: #3c475b;
+    font-size: 0.82rem;
+    text-align: left;
+    cursor: pointer;
+}
+
+    .cross-search-option:hover {
+        background: #f5f6f8;
+    }
+
+    .cross-search-option.is-selected {
+        background: #f4f0e5;
+        color: #1F2A44;
+    }
+
+.cross-search-option-main {
+    font-weight: 600;
+}
+
+.cross-search-option small {
+    color: #939cab;
+    font-size: 0.68rem;
+}
+
+
+/* No results */
+
+.cross-search-no-results {
+    padding: 1rem;
+    color: #949dac;
+    font-size: 0.78rem;
+    text-align: center;
+}
+
+
+/* Scrollbar */
+
+.cross-search-options::-webkit-scrollbar {
+    width: 7px;
+}
+
+.cross-search-options::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.cross-search-options::-webkit-scrollbar-thumb {
+    background: #d8dde5;
+    border-radius: 999px;
+}
+
+
+/* =========================================================
+   Incoming / Outgoing Layout
+   ========================================================= */
+
+.cross-direction-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 90px minmax(0, 1fr);
+    gap: 1rem;
+    align-items: stretch;
+    margin-bottom: 1.2rem;
+}
+
+.cross-side-card {
+    padding: 1.25rem;
+    background: #ffffff;
+    border: 1px solid #e7ebf1;
+    border-radius: 14px;
+}
+
+.cross-side-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #edf0f4;
+}
+
+
+/* =========================================================
+   Direction Icons
+   ========================================================= */
+
+.cross-direction-symbol {
     display: flex;
     align-items: center;
     justify-content: center;
-    flex: 0 0 30px;
-    height: 30px;
-    background: #eef2ff;
-    border-radius: 8px;
-    color: #5367d7;
-    font-size: .75rem;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    background: #eef7f2;
+    border: 1px solid #d7eadf;
+    border-radius: 10px;
+    color: #3e8e61;
+    font-size: 1.1rem;
     font-weight: 700;
 }
 
-.cross-note-title {
-    margin-bottom: .2rem;
-    color: #4b5567;
-    font-size: .8rem;
-    font-weight: 650;
-}
-
-.cross-note-text {
-    margin: 0;
-    color: #828c9d;
-    font-size: .74rem;
-    line-height: 1.5;
+.cross-direction-out {
+    background: #f4f0e5;
+    border-color: #e7dab9;
+    color: #9b8247;
 }
 
 
-/* ---------------------------------------------------------
-   Actions
-   --------------------------------------------------------- */
+/* =========================================================
+   Center Cross Connection
+   ========================================================= */
+
+.cross-center-connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    color: #7f8999;
+}
+
+    .cross-center-connector::before,
+    .cross-center-connector::after {
+        content: "";
+        width: 100%;
+        height: 1px;
+        background: #d9dee6;
+    }
+
+    .cross-center-connector span {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        flex: 0 0 42px;
+        background: #1F2A44;
+        border: 4px solid #f3ead5;
+        border-radius: 50%;
+        color: #C6A75E;
+        font-size: 1.15rem;
+        font-weight: 750;
+    }
+
+    .cross-center-connector small {
+        color: #969faf;
+        font-size: 0.56rem;
+        font-weight: 700;
+        line-height: 1.25;
+        text-align: center;
+        letter-spacing: 0.06em;
+    }
+
+
+/* =========================================================
+   Customer
+   ========================================================= */
+
+.cross-customer-card {
+    display: grid;
+    grid-template-columns: 190px minmax(0, 1fr);
+    gap: 1.2rem;
+    align-items: center;
+    margin-bottom: 1.2rem;
+    padding: 1.25rem;
+    background: #ffffff;
+    border: 1px solid #e7ebf1;
+    border-radius: 14px;
+}
+
+.cross-customer-field {
+    margin: 0 !important;
+}
+
+
+/* =========================================================
+   Buttons
+   ========================================================= */
 
 .cross-actions {
     display: flex;
-    justify-content: flex-end;
     align-items: center;
-    gap: .6rem;
-    margin-top: 1.3rem;
-    padding-top: 1.25rem;
-    border-top: 1px solid #edf0f4;
+    justify-content: flex-end;
+    gap: 0.6rem;
 }
 
-.cross-cancel-btn,
-.cross-submit-btn {
+.cross-primary-btn,
+.cross-cancel-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     min-height: 42px;
-    padding: 0 1rem;
-    border-radius: 9px;
-    font-size: .83rem;
-    font-weight: 600;
+    padding: 0.62rem 1.05rem;
+    border-radius: 10px;
+    font-size: 0.84rem;
+    font-weight: 650;
     text-decoration: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
+
+/* Primary */
+
+.cross-primary-btn {
+    background: #1F2A44;
+    border: 1px solid #1F2A44;
+    color: #ffffff;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(31, 42, 68, 0.12);
+}
+
+    .cross-primary-btn:hover {
+        background: #273655;
+        border-color: #273655;
+        color: #ffffff;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(31, 42, 68, 0.16);
+    }
+
+
+/* Cancel */
+
 .cross-cancel-btn {
-    background: #fff;
+    background: #ffffff;
     border: 1px solid #dfe4eb;
-    color: #667085;
+    color: #667286;
 }
 
     .cross-cancel-btn:hover {
         background: #f7f8fa;
-        color: #344054;
-    }
-
-.cross-submit-btn {
-    background: #4263eb;
-    border: 1px solid #4263eb;
-    color: #fff;
-}
-
-    .cross-submit-btn:hover:not(:disabled) {
-        background: #3657da;
-        border-color: #3657da;
-    }
-
-    .cross-submit-btn:disabled {
-        background: #d9deea;
-        border-color: #d9deea;
-        color: #929bad;
-        cursor: not-allowed;
+        color: #1F2A44;
     }
 
 
-/* ---------------------------------------------------------
+/* =========================================================
    Responsive
-   --------------------------------------------------------- */
+   ========================================================= */
 
-@media (max-width: 800px) {
+@media (max-width: 900px) {
 
-    .cross-sides {
+    .cross-direction-grid {
         grid-template-columns: 1fr;
     }
 
-    .cross-diagram-flow {
-        flex-direction: column;
+
+    .cross-center-connector {
+        flex-direction: row;
+        padding: 0.2rem 0;
     }
 
-    .cross-diagram-arrow {
-        transform: rotate(90deg);
-    }
+
+        .cross-center-connector::before,
+        .cross-center-connector::after {
+            flex: 1;
+        }
 }
 
 
-@media (max-width: 650px) {
+@media (max-width: 600px) {
 
     .cross-page {
-        padding: 1.25rem .8rem 2rem;
+        padding: 1.25rem 0.8rem 2rem;
     }
 
-    .cross-central-card,
-    .cross-side-body {
-        padding: 1.1rem;
+
+    .cross-page-header h1 {
+        font-size: 1.55rem;
     }
+
+
+    .cross-site-heading,
+    .cross-side-header {
+        align-items: flex-start;
+    }
+
+
+    .cross-customer-card {
+        grid-template-columns: 1fr;
+    }
+
 
     .cross-actions {
+        align-items: stretch;
         flex-direction: column-reverse;
     }
 
-    .cross-cancel-btn,
-    .cross-submit-btn {
-        width: 100%;
+
+        .cross-actions > * {
+            width: 100%;
+        }
+
+
+    .cross-searchable-dropdown {
+        position: absolute;
     }
+}
+/* =========================================================
+   Searchable Site Select - Focus Fix
+   ========================================================= */
+
+.cross-search-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.45rem;
+    padding: 0 0.75rem;
+    min-height: 42px;
+    background: #f8f9fb;
+    border: 1px solid #e2e6ed;
+    border-radius: 8px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+
+    /*
+ * Apply the focus appearance to the OUTER
+ * search container, not to the input itself.
+ */
+    .cross-search-wrapper:focus-within {
+        background: #ffffff;
+        border-color: #C6A75E;
+        box-shadow: 0 0 0 3px rgba(198, 167, 94, 0.10);
+    }
+
+
+.cross-search-input,
+.cross-search-input:hover,
+.cross-search-input:focus,
+.cross-search-input:focus-visible,
+.cross-search-input:active {
+    width: 100%;
+    min-height: 40px;
+    padding: 0;
+    margin: 0;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    outline: none !important;
+    box-shadow: none !important;
+    color: #303b50;
+    font-size: 0.84rem;
+}
+
+
+    .cross-search-input::placeholder {
+        color: #9ba4b3;
+    }
+
+
+    /* Remove browser search-field styling */
+
+    .cross-search-input::-webkit-search-decoration,
+    .cross-search-input::-webkit-search-cancel-button,
+    .cross-search-input::-webkit-search-results-button,
+    .cross-search-input::-webkit-search-results-decoration {
+        -webkit-appearance: none;
+    }
+
+
+/* Search icon */
+
+.cross-search-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    color: #8994a5;
+    font-size: 0.9rem;
 }

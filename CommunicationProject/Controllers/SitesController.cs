@@ -100,21 +100,137 @@ namespace CommunicationProject.Controllers
         }
 
         // GET: Sites/Details/5
-        public async Task<IActionResult> Details(string id)
+        // GET: Sites/Details/5
+        // GET: Sites/Details/5
+        public async Task<IActionResult> Details(
+            string id)
         {
-            if (id == null)
+            if (string.IsNullOrWhiteSpace(id))
             {
                 return NotFound();
             }
 
-            var site = await _context.Sites
-                .FirstOrDefaultAsync(m => m.Id == id);
+
+            id = id.Trim();
+
+
+            /* =====================================================
+               Site
+               ===================================================== */
+
+            var site =
+                await _context.Sites
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(site =>
+                        site.Id == id);
+
+
             if (site == null)
             {
                 return NotFound();
             }
 
-            return View(site);
+
+            /* =====================================================
+               Communication Links
+               ===================================================== */
+
+            /*
+             * Only show the primary logical record so the same
+             * communication link does not appear twice.
+             */
+            var links =
+                await _context.CommunicationLinks
+                    .AsNoTracking()
+
+                    .Where(link =>
+                        link.IsPrimary &&
+                        (
+                            link.SiteFromId == id ||
+                            link.SiteToId == id
+                        ))
+
+                    .Include(link =>
+                        link.LinkType)
+
+                    .Include(link =>
+                        link.SiteFrom)
+
+                    .Include(link =>
+                        link.SiteTo)
+
+                    .OrderBy(link =>
+                        link.Name)
+
+                    .ToListAsync();
+
+
+            /* =====================================================
+               MUX Equipment
+               ===================================================== */
+
+            var muxes =
+                await _context.Muxes
+                    .AsNoTracking()
+
+                    .Where(mux =>
+                        mux.SiteId == id)
+
+                    .Include(mux =>
+                        mux.MuxType)
+
+                    .Include(mux =>
+                        mux.Cards)
+
+                        .ThenInclude(card =>
+                            card.Ports)
+
+                    .OrderBy(mux =>
+                        mux.Name)
+
+                    .ToListAsync();
+
+
+            /* =====================================================
+               SDH Availability
+               ===================================================== */
+
+            /*
+             * The directional link whose SiteFromId equals this
+             * site owns the STM resources physically at this site.
+             */
+            bool hasSdhLinks =
+                await _context.CommunicationLinks
+                    .AsNoTracking()
+
+                    .AnyAsync(link =>
+                        link.SiteFromId == id &&
+
+                        link.LinkType.Name == "SDH");
+
+
+            /* =====================================================
+               View Model
+               ===================================================== */
+
+            var model =
+                new SiteDetailsViewModel
+                {
+                    Site =
+                        site,
+
+                    Links =
+                        links,
+
+                    Muxes =
+                        muxes,
+
+                    HasSdhLinks =
+                        hasSdhLinks
+                };
+
+
+            return View(model);
         }
 
         // GET: Sites/Create

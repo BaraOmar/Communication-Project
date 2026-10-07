@@ -25,6 +25,22 @@ namespace CommunicationProject.Controllers
         {
             _context = context;
         }
+        public async Task<IActionResult> Index1(
+    SearchPathViewModel model)
+        {
+            var result =
+                await Index(model);
+
+
+            if (result is ViewResult viewResult)
+            {
+                viewResult.ViewName =
+                    "Index1";
+            }
+
+
+            return result;
+        }
 
         [HttpGet]
         public async Task<IActionResult> Index(

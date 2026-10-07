@@ -351,8 +351,29 @@ e1.ConnectedE1!.ConnectionType !=
     {
         NormalizeModel(model);
 
+
+        /*
+         * Rebuild validation because several values are
+         * now derived on the server rather than submitted
+         * directly by the form.
+         */
         ModelState.Clear();
+
         TryValidateModel(model);
+
+
+        /*
+         * Convert:
+         *
+         * STM:<id>
+         * or
+         * PDH:<id>
+         *
+         * into the existing LinkId / StmId / remote-site
+         * values used by the cross-connection logic.
+         */
+        await ResolveConnectionResourcesAsync(model);
+
 
         ValidateBasicSelections(model);
 
@@ -1182,11 +1203,17 @@ e1.ConnectedE1!.ConnectionType !=
         model.SiteId =
             model.SiteId?.Trim() ?? string.Empty;
 
-        model.PreviousSiteId =
-            model.PreviousSiteId?.Trim() ?? string.Empty;
+        model.IncomingResourceKey =
+            model.IncomingResourceKey?.Trim()
+            ?? string.Empty;
 
-        model.NextSiteId =
-            model.NextSiteId?.Trim() ?? string.Empty;
+        model.OutgoingResourceKey =
+            model.OutgoingResourceKey?.Trim()
+            ?? string.Empty;
+
+        model.CustomerName =
+            model.CustomerName?.Trim()
+            ?? string.Empty;
     }
 
     private void ValidateBasicSelections(
@@ -1410,6 +1437,453 @@ e1.ConnectedE1!.ConnectionType !=
                 $"Outgoing E1 '{outgoingE1.E1Number}' " +
                 "is already used by another cross connection.");
         }
+    }
+    [HttpGet]
+    public async Task<IActionResult> GetConnectionResources(
+    string? siteId)
+    {
+        siteId = siteId?.Trim();
+
+        if (string.IsNullOrWhiteSpace(siteId))
+        {
+            return Json(Array.Empty<object>());
+        }
+
+
+        bool siteExists =
+            await _context.Sites
+                .AsNoTracking()
+                .AnyAsync(site =>
+                    site.Id == siteId);
+
+        if (!siteExists)
+        {
+            return Json(Array.Empty<object>());
+        }
+
+
+        /* =====================================================
+           SDH resources
+
+           Only show STMs that:
+
+           1. Physically belong to this site.
+           2. Are actually installed on an STM MUX port.
+           ===================================================== */
+
+        var stmResources =
+            await _context.MuxPorts
+                .AsNoTracking()
+
+                .Where(port =>
+                    port.StmId != null &&
+
+                    port.MuxCard.Category ==
+                        CardCategory.STM &&
+
+                    port.MuxCard.Mux.SiteId ==
+                        siteId &&
+
+                    port.Stm!.Link.SiteFromId ==
+                        siteId)
+
+                .Select(port => new
+                {
+                    StmId =
+                        port.StmId!.Value,
+
+                    LinkId =
+                        port.Stm!.LinkId,
+
+                    SlotNumber =
+                        port.MuxCard.SlotNumber,
+
+                    PortNumber =
+                        port.PortNumber,
+
+                    ConnectedSiteId =
+                        port.Stm.Link.SiteToId,
+
+                    LocalStmNumber =
+                        port.Stm.Number,
+
+                    RemoteStmNumber =
+                        port.Stm.ConnectedStm != null
+                            ? port.Stm.ConnectedStm.Number
+                            : port.Stm.Number
+                })
+
+                .ToListAsync();
+
+
+        /* =====================================================
+           PDH resources
+
+           PDH has no STM.
+
+           Therefore the directional link itself is the resource.
+           ===================================================== */
+
+        var pdhResources =
+            await _context.CommunicationLinks
+                .AsNoTracking()
+
+                .Where(link =>
+                    link.SiteFromId == siteId &&
+
+                    link.LinkType.Name == "PDH")
+
+                .Select(link => new
+                {
+                    LinkId =
+                        link.Id,
+
+                    LinkName =
+                        link.Name,
+
+                    ConnectedSiteId =
+                        link.SiteToId
+                })
+
+                .ToListAsync();
+
+
+        /* =====================================================
+           Build one dropdown list
+           ===================================================== */
+
+        var resources =
+            new List<object>();
+
+
+        /*
+         * Shelf number is fixed as 1 for now.
+         *
+         * Example:
+         *
+         * STM 1.2.3 [005 STM 1]
+         *
+         * 1 = Shelf
+         * 2 = Card / Slot
+         * 3 = Port
+         */
+        foreach (var stm in stmResources
+            .OrderBy(item =>
+                item.ConnectedSiteId)
+            .ThenBy(item =>
+                item.SlotNumber)
+            .ThenBy(item =>
+                item.PortNumber))
+        {
+            resources.Add(new
+            {
+                value =
+                    $"STM:{stm.StmId}",
+
+                text =
+                    $"STM 1.{stm.SlotNumber}.{stm.PortNumber} " +
+                    $"[{stm.ConnectedSiteId} STM {stm.RemoteStmNumber}]",
+
+                resourceType =
+                    "STM",
+
+                linkId =
+                    stm.LinkId,
+
+                stmId =
+                    stm.StmId,
+
+                connectedSiteId =
+                    stm.ConnectedSiteId
+            });
+        }
+
+
+        /*
+         * Example:
+         *
+         * PDH [005 — 005 - 006 - 1]
+         *
+         * 005 = remote/connected site
+         * remaining text = actual link name
+         */
+        foreach (var link in pdhResources
+            .OrderBy(item =>
+                item.ConnectedSiteId)
+            .ThenBy(item =>
+                item.LinkName))
+        {
+            resources.Add(new
+            {
+                value =
+                    $"PDH:{link.LinkId}",
+
+                text =
+                    $"PDH [{link.LinkName}]",
+
+                resourceType =
+                    "PDH",
+
+                linkId =
+                    link.LinkId,
+
+                stmId =
+                    (Guid?)null,
+
+                connectedSiteId =
+                    link.ConnectedSiteId
+            });
+        }
+
+
+        return Json(resources);
+    }
+
+    private async Task ResolveConnectionResourcesAsync(
+    CreateCrossConnectionViewModel model)
+    {
+        /*
+         * Reset all derived values first.
+         */
+        model.PreviousSiteId = string.Empty;
+        model.IncomingLinkId = null;
+        model.IncomingStmId = null;
+
+        model.NextSiteId = string.Empty;
+        model.OutgoingLinkId = null;
+        model.OutgoingStmId = null;
+
+
+        if (string.IsNullOrWhiteSpace(model.SiteId))
+        {
+            return;
+        }
+
+
+        /*
+         * Incoming resource
+         */
+        if (!string.IsNullOrWhiteSpace(
+                model.IncomingResourceKey))
+        {
+            await ResolveConnectionResourceAsync(
+                model,
+                model.IncomingResourceKey,
+                isIncoming: true);
+        }
+
+
+        /*
+         * Outgoing resource
+         */
+        if (!string.IsNullOrWhiteSpace(
+                model.OutgoingResourceKey))
+        {
+            await ResolveConnectionResourceAsync(
+                model,
+                model.OutgoingResourceKey,
+                isIncoming: false);
+        }
+    }
+
+
+    private async Task ResolveConnectionResourceAsync(
+        CreateCrossConnectionViewModel model,
+        string resourceKey,
+        bool isIncoming)
+    {
+        resourceKey = resourceKey.Trim();
+
+        string fieldName =
+            isIncoming
+                ? nameof(model.IncomingResourceKey)
+                : nameof(model.OutgoingResourceKey);
+
+
+        string[] parts =
+            resourceKey.Split(
+                ':',
+                2,
+                StringSplitOptions.RemoveEmptyEntries |
+                StringSplitOptions.TrimEntries);
+
+
+        if (parts.Length != 2 ||
+            !Guid.TryParse(parts[1], out Guid resourceId))
+        {
+            ModelState.AddModelError(
+                fieldName,
+                "The selected connection resource is invalid.");
+
+            return;
+        }
+
+
+        string resourceType =
+            parts[0].ToUpperInvariant();
+
+
+        /* =====================================================
+           STM / SDH
+           ===================================================== */
+
+        if (resourceType == "STM")
+        {
+            /*
+             * The STM must:
+             *
+             * 1. Exist.
+             * 2. Physically belong to the selected site.
+             * 3. Be installed on an STM card in a MUX
+             *    at the selected site.
+             */
+            var resource =
+                await _context.MuxPorts
+                    .AsNoTracking()
+
+                    .Where(port =>
+                        port.StmId == resourceId &&
+
+                        port.MuxCard.Category ==
+                            CardCategory.STM &&
+
+                        port.MuxCard.Mux.SiteId ==
+                            model.SiteId &&
+
+                        port.Stm != null &&
+
+                        port.Stm.Link.SiteFromId ==
+                            model.SiteId)
+
+                    .Select(port => new
+                    {
+                        StmId =
+                            port.StmId!.Value,
+
+                        LinkId =
+                            port.Stm!.LinkId,
+
+                        ConnectedSiteId =
+                            port.Stm.Link.SiteToId
+                    })
+
+                    .FirstOrDefaultAsync();
+
+
+            if (resource == null)
+            {
+                ModelState.AddModelError(
+                    fieldName,
+                    "The selected STM is not installed " +
+                    "in a MUX at this site.");
+
+                return;
+            }
+
+
+            if (isIncoming)
+            {
+                model.IncomingStmId =
+                    resource.StmId;
+
+                model.IncomingLinkId =
+                    resource.LinkId;
+
+                model.PreviousSiteId =
+                    resource.ConnectedSiteId;
+            }
+            else
+            {
+                model.OutgoingStmId =
+                    resource.StmId;
+
+                model.OutgoingLinkId =
+                    resource.LinkId;
+
+                model.NextSiteId =
+                    resource.ConnectedSiteId;
+            }
+
+
+            return;
+        }
+
+
+        /* =====================================================
+           PDH
+           ===================================================== */
+
+        if (resourceType == "PDH")
+        {
+            /*
+             * PDH E1s are directly under the link,
+             * therefore StmId remains null.
+             */
+            var resource =
+                await _context.CommunicationLinks
+                    .AsNoTracking()
+
+                    .Where(link =>
+                        link.Id == resourceId &&
+
+                        link.SiteFromId ==
+                            model.SiteId &&
+
+                        link.LinkType.Name ==
+                            "PDH")
+
+                    .Select(link => new
+                    {
+                        LinkId =
+                            link.Id,
+
+                        ConnectedSiteId =
+                            link.SiteToId
+                    })
+
+                    .FirstOrDefaultAsync();
+
+
+            if (resource == null)
+            {
+                ModelState.AddModelError(
+                    fieldName,
+                    "The selected PDH link does not " +
+                    "belong to this site.");
+
+                return;
+            }
+
+
+            if (isIncoming)
+            {
+                model.IncomingStmId = null;
+
+                model.IncomingLinkId =
+                    resource.LinkId;
+
+                model.PreviousSiteId =
+                    resource.ConnectedSiteId;
+            }
+            else
+            {
+                model.OutgoingStmId = null;
+
+                model.OutgoingLinkId =
+                    resource.LinkId;
+
+                model.NextSiteId =
+                    resource.ConnectedSiteId;
+            }
+
+
+            return;
+        }
+
+
+        ModelState.AddModelError(
+            fieldName,
+            "The selected connection resource type is invalid.");
     }
 
     private async Task LoadSiteOptionsAsync(
@@ -1641,6 +2115,8 @@ e1.ConnectedE1!.ConnectionType !=
 
             return;
         }
+
+
 
         /*
          * CrossConnected and any unexpected state cannot

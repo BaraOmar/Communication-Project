@@ -10,7 +10,9 @@ namespace CommunicationProject.Controllers
         [Authorize]
         public IActionResult Index()
         {
-            return View();
+            return RedirectToAction(
+                "Index",
+                "Sites");
         }
 
         public IActionResult Privacy()

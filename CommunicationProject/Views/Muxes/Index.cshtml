@@ -5,80 +5,214 @@
     ViewData["Title"] = "MUXes";
 }
 
-<div class="container py-4">
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/muxes.css"
+          asp-append-version="true" />
+}
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="mux-page">
 
+    <!-- =====================================================
+         Header
+         ===================================================== -->
+    <div class="mux-header">
         <div>
-            <h1 class="mb-1">
-                MUXes
+            <h1 class="mux-title">
+                MUX Equipment
             </h1>
 
-            <p class="text-muted mb-0">
-                View and manage MUX devices by site.
+            <p class="mux-subtitle">
+                View installed MUX equipment by site.
             </p>
         </div>
 
-        @if (User.IsInRole(AppRoles.Admin) ||
+
+@*         @if (User.IsInRole(AppRoles.Admin) ||
              User.IsInRole(AppRoles.Operator))
         {
             <a asp-action="Create"
-                   class="btn btn-primary">
+                   class="mux-primary-btn">
+
+                <span class="mux-btn-icon">+</span>
+
                 Add MUX
+
             </a>
-        }
+        } *@
 
     </div>
 
 
-    <div class="card border-0 shadow-sm">
+    <!-- =====================================================
+         Table
+         ===================================================== -->
+    <div class="mux-card mux-table-card">
 
-        <div class="table-responsive">
+        <div class="mux-table-header">
 
-            <table class="table align-middle mb-0">
+            <h2 class="mux-table-title">
+                Installed MUXes
+            </h2>
 
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Site</th>
-                        <th>MUX Type</th>
-                        <th>Cards</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @foreach (var item in Model)
-                    {
-                        <tr>
-                            <td>@item.Name</td>
-
-                            <td>
-                                @item.Site?.Name
-                            </td>
-
-                            <td>
-                                @item.MuxType?.Name
-                            </td>
-
-                            <td>
-                                @item.Cards.Count
-                            </td>
-
-                            <td>
-                                <a asp-action="Details"
-                                       asp-route-id="@item.Id"
-                                       class="btn btn-sm btn-outline-primary">
-                                    Details
-                                </a>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-
-            </table>
+            <span class="mux-count">
+                @Model.Count
+                @(Model.Count == 1 ? "MUX" : "MUXes")
+            </span>
 
         </div>
+
+
+        @if (Model.Any())
+        {
+            <div class="mux-table-wrapper">
+
+                <table class="mux-table">
+
+                    <thead>
+                        <tr>
+                            <th>MUX Name</th>
+                            <th>Site</th>
+                            <th>MUX Type</th>
+                            <th>Cards</th>
+                            <th class="mux-actions-heading">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+
+
+                    <tbody>
+
+                        @foreach (var mux in Model)
+                        {
+                            <tr>
+
+                                <!-- MUX Name -->
+                                <td>
+                                    <div class="mux-name-cell">
+
+                                        <div class="mux-device-icon">
+                                            M
+                                        </div>
+
+                                        <div>
+                                            <div class="mux-name">
+                                                @mux.Name
+                                            </div>
+
+                                            <div class="mux-id">
+                                                @(mux.Id.ToString().Substring(0, 8))
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </td>
+
+
+                                <!-- Site -->
+                                <td>
+                                    @if (mux.Site != null)
+                                    {
+                                        <div class="mux-site">
+
+                                            <span class="mux-site-id">
+                                                @mux.Site.Id
+                                            </span>
+
+                                            <span class="mux-site-name">
+                                                @mux.Site.Name
+                                            </span>
+
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="mux-empty-value">
+                                            —
+                                        </span>
+                                    }
+                                </td>
+
+
+                                <!-- Type -->
+                                <td>
+                                    @if (mux.MuxType != null)
+                                    {
+                                        <span class="mux-type-badge">
+                                            @mux.MuxType.Name
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="mux-empty-value">
+                                            Not specified
+                                        </span>
+                                    }
+                                </td>
+
+
+                                <!-- Cards -->
+                                <td>
+                                    <span class="mux-card-count">
+                                        @mux.Cards.Count
+                                    </span>
+                                </td>
+
+
+                                <!-- Actions -->
+                                <td>
+                                    <div class="mux-row-actions">
+
+                                        <a asp-action="Details"
+                                               asp-route-id="@mux.Id"
+                                               class="mux-action mux-action-view">
+
+                                            View
+
+                                        </a>
+
+                                    </div>
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        }
+        else
+        {
+            <div class="mux-empty-state">
+
+                <div class="mux-empty-icon">
+                    M
+                </div>
+
+                <h3>
+                    No MUX equipment installed
+                </h3>
+
+                <p>
+                    Installed MUX equipment will appear here.
+                </p>
+
+                @if (User.IsInRole(AppRoles.Admin) ||
+                     User.IsInRole(AppRoles.Operator))
+                {
+                    <a asp-action="Create"
+                           class="mux-primary-btn">
+
+                        Add MUX
+
+                    </a>
+                }
+
+            </div>
+        }
 
     </div>
 

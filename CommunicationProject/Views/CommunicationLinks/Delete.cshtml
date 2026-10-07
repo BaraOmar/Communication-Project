@@ -25,19 +25,50 @@
     <!-- Header -->
     <div class="links-form-top">
 
-        <a asp-action="Details"
-               asp-route-id="@Model.Id"
-               class="links-back-link">
-            ← Link details
+        <a href="#"
+               class="links-back-link js-back-link"
+               data-fallback-url="@Url.Action(
+                                      "Details",
+                                      "CommunicationLinks",
+                                      new { id = Model.Id })">
+
+            ← Back
+
         </a>
 
-        <h1 class="links-form-title">
-            Delete communication link
-        </h1>
 
-        <p class="links-form-subtitle">
-            Review what will be removed before continuing.
-        </p>
+        <div class="links-form-heading">
+
+            <div class="link-delete-heading-icon">
+
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+
+                    <path d="M4 7h16"></path>
+                    <path d="M10 11v6"></path>
+                    <path d="M14 11v6"></path>
+                    <path d="M6 7l1 13h10l1-13"></path>
+                    <path d="M9 7V4h6v3"></path>
+
+                </svg>
+
+            </div>
+
+
+            <div>
+
+                <h1 class="links-form-title">
+                    Delete Communication Link
+                </h1>
+
+                <p class="links-form-subtitle">
+                    Review what will be removed
+                    before continuing.
+                </p>
+
+            </div>
+
+        </div>
 
     </div>
 
@@ -55,12 +86,12 @@
             <div>
 
                 <div class="link-delete-warning-title">
-                    This action cannot be undone
+                    Permanent action
                 </div>
 
                 <p class="link-delete-warning-text">
                     Deleting this communication link removes
-                    both directional link records together with
+                    both directional records together with
                     their related STM and E1 inventory.
                 </p>
 
@@ -79,9 +110,18 @@
 
             <div class="link-delete-summary-header">
 
-                <div class="link-delete-name">
-                    @Model.Name
+                <div>
+
+                    <div class="link-delete-name">
+                        @Model.Name
+                    </div>
+
+                    <div class="link-delete-caption">
+                        Communication Link
+                    </div>
+
                 </div>
+
 
                 <span class="link-details-type-badge">
                     @Model.LinkType.Name
@@ -92,7 +132,8 @@
 
             <div class="link-delete-grid">
 
-                <div>
+                <!-- Source -->
+                <div class="link-delete-field">
 
                     <div class="link-detail-label">
                         Source
@@ -109,7 +150,8 @@
                 </div>
 
 
-                <div>
+                <!-- Destination -->
+                <div class="link-delete-field">
 
                     <div class="link-detail-label">
                         Destination
@@ -126,7 +168,22 @@
                 </div>
 
 
-                <div>
+                <!-- Type -->
+                <div class="link-delete-field">
+
+                    <div class="link-detail-label">
+                        Link Type
+                    </div>
+
+                    <div class="link-detail-value">
+                        @Model.LinkType.Name
+                    </div>
+
+                </div>
+
+
+                <!-- Capacity -->
+                <div class="link-delete-field">
 
                     <div class="link-detail-label">
                         Capacity
@@ -142,40 +199,50 @@
 
                 </div>
 
+            </div>
+
+
+            <div class="link-delete-inventory">
+
+                <div class="link-delete-inventory-icon">
+                    i
+                </div>
+
 
                 <div>
 
-                    <div class="link-detail-label">
-                        STM inventory
-                    </div>
+                    <strong>
+                        @totalStmCount STM records
+                    </strong>
 
-                    <div class="link-detail-value">
-                        @totalStmCount records
+                    <span>
+                        will be affected across both directions.
+                    </span>
+
+                    <div class="link-delete-inventory-detail">
+
+                        @Model.SiteFrom.Id
+                        →
+                        @Model.SiteTo.Id:
+                        @primaryStmCount
+
+                        &nbsp; · &nbsp;
+
+                        @Model.SiteTo.Id
+                        →
+                        @Model.SiteFrom.Id:
+                        @reverseStmCount
+
                     </div>
 
                 </div>
 
             </div>
 
-
-            <div class="link-delete-inventory">
-
-                <strong>@primaryStmCount</strong>
-                STM records exist in the
-                @Model.SiteFrom.Name →
-                @Model.SiteTo.Name direction,
-
-                and
-
-                <strong>@reverseStmCount</strong>
-                exist in the reverse direction.
-
-            </div>
-
         </div>
 
 
-        <!-- Form -->
+        <!-- Actions -->
         <form asp-action="Delete"
               method="post">
 
@@ -185,15 +252,27 @@
 
             <div class="link-delete-actions">
 
-                <a asp-action="Details"
-                       asp-route-id="@Model.Id"
-                       class="links-form-cancel">
+                <a href="#"
+                       class="links-form-cancel js-back-link"
+                       data-fallback-url="@Url.Action(
+                                                              "Details",
+                                                              "CommunicationLinks",
+                                                              new { id = Model.Id })">
+
                     Cancel
+
                 </a>
+
 
                 <button type="submit"
                         class="link-delete-btn">
-                    Delete link
+
+                    <span class="link-delete-btn-icon">
+                        ×
+                    </span>
+
+                    Delete Link
+
                 </button>
 
             </div>

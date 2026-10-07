@@ -117,3 +117,55 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 });
+
+/* =========================================================
+Smart Back Links
+========================================================= */
+
+document.addEventListener("click", function (event) {
+
+    const backLink =
+        event.target.closest(".js-back-link");
+
+    if (!backLink) {
+        return;
+    }
+
+    event.preventDefault();
+
+
+    const fallbackUrl =
+        backLink.dataset.fallbackUrl;
+
+
+    /*
+     * If the browser has a previous page,
+     * return to it.
+     *
+     * Example:
+     *
+     * Sites Index -> Site Details
+     *     returns to Sites Index
+     *
+     * Search results -> Site Details
+     *     returns to Search results
+     *
+     * Communication Link -> Site Details
+     *     returns to Communication Link
+     */
+    if (window.history.length > 1) {
+
+        window.history.back();
+
+        return;
+    }
+
+
+    /*
+     * Details page opened directly.
+     */
+    if (fallbackUrl) {
+        window.location.href = fallbackUrl;
+    }
+
+});

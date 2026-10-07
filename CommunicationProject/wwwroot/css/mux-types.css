@@ -1,0 +1,649 @@
+﻿/* =========================================================
+   MUX Types
+   ========================================================= */
+
+.mux-types-page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 3rem;
+}
+
+
+/* =========================================================
+   Header
+   ========================================================= */
+
+.mux-types-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 1.75rem;
+}
+
+.mux-types-title {
+    margin: 0;
+    color: #172033;
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.mux-types-subtitle {
+    margin: 0.35rem 0 0;
+    color: #7a8497;
+    font-size: 0.94rem;
+}
+
+
+/* =========================================================
+   Primary Button
+   ========================================================= */
+
+.mux-types-primary-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    min-height: 42px;
+    padding: 0.65rem 1.15rem;
+    background: #1F2A44;
+    border: 1px solid #1F2A44;
+    border-radius: 10px;
+    color: #ffffff;
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(31, 42, 68, 0.12);
+    transition: background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+    .mux-types-primary-btn span {
+        color: #C6A75E;
+        font-weight: 700;
+    }
+
+    .mux-types-primary-btn:hover {
+        background: #273655;
+        border-color: #273655;
+        color: #ffffff;
+        box-shadow: 0 6px 16px rgba(31, 42, 68, 0.18);
+        transform: translateY(-1px);
+    }
+
+
+/* =========================================================
+   Main Card
+   ========================================================= */
+
+.mux-types-card {
+    background: #ffffff;
+    border: 1px solid #e8ecf2;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 3px 14px rgba(20, 32, 56, 0.04);
+}
+
+.mux-types-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.15rem 1.4rem;
+    border-bottom: 1px solid #edf0f4;
+}
+
+    .mux-types-card-header h2 {
+        margin: 0;
+        color: #263044;
+        font-size: 1rem;
+        font-weight: 650;
+    }
+
+.mux-types-count {
+    padding: 0.3rem 0.65rem;
+    background: #f4f6f9;
+    border-radius: 999px;
+    color: #778196;
+    font-size: 0.76rem;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   Table
+   ========================================================= */
+
+.mux-types-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.mux-types-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .mux-types-table thead th {
+        padding: 0.8rem 1.3rem;
+        background: #fafbfc;
+        border-bottom: 1px solid #e9edf3;
+        color: #8a94a6;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        text-align: left;
+    }
+
+    .mux-types-table tbody td {
+        padding: 0.95rem 1.3rem;
+        border-bottom: 1px solid #f0f2f5;
+        color: #4c566a;
+        font-size: 0.85rem;
+        vertical-align: middle;
+    }
+
+    .mux-types-table tbody tr {
+        transition: background-color 0.15s ease;
+    }
+
+        .mux-types-table tbody tr:hover {
+            background: #fafbfe;
+        }
+
+        .mux-types-table tbody tr:last-child td {
+            border-bottom: 0;
+        }
+
+
+/* =========================================================
+   Type Name
+   ========================================================= */
+
+.mux-type-name-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.mux-type-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    background: #f5f7ff;
+    border: 1px solid #dfe5f4;
+    border-radius: 9px;
+    color: #4263eb;
+    font-size: 0.72rem;
+    font-weight: 750;
+}
+
+.mux-type-name-cell > div:last-child {
+    display: flex;
+    flex-direction: column;
+}
+
+.mux-type-name-cell strong {
+    color: #2c3547;
+    font-size: 0.88rem;
+    font-weight: 650;
+}
+
+.mux-type-name-cell span {
+    margin-top: 0.15rem;
+    color: #929bad;
+    font-size: 0.7rem;
+}
+
+
+/* =========================================================
+   Card Capacity
+   ========================================================= */
+
+.mux-type-capacity {
+    display: flex;
+    flex-direction: column;
+}
+
+    .mux-type-capacity strong {
+        color: #374357;
+        font-size: 0.84rem;
+        font-weight: 650;
+    }
+
+    .mux-type-capacity span {
+        margin-top: 0.12rem;
+        color: #8f99a9;
+        font-size: 0.7rem;
+    }
+
+.mux-type-none {
+    color: #a1a9b7;
+    font-size: 0.78rem;
+}
+
+
+/* =========================================================
+   Totals
+   ========================================================= */
+
+.mux-type-total {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    padding: 0.3rem 0.6rem;
+    background: #f4f6f9;
+    border-radius: 7px;
+    color: #566278;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.mux-type-total-primary {
+    background: #f3f5ff;
+    color: #5369c9;
+}
+
+
+/* =========================================================
+   Empty State
+   ========================================================= */
+
+.mux-types-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 4rem 1.5rem;
+    text-align: center;
+}
+
+.mux-types-empty-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 54px;
+    height: 54px;
+    margin-bottom: 1rem;
+    background: #f5f7ff;
+    border: 1px solid #dfe5f4;
+    border-radius: 14px;
+    color: #4263eb;
+    font-size: 0.75rem;
+    font-weight: 750;
+}
+
+.mux-types-empty h3 {
+    margin: 0;
+    color: #2f3b50;
+    font-size: 1rem;
+    font-weight: 650;
+}
+
+.mux-types-empty p {
+    margin: 0.4rem 0 1.25rem;
+    color: #8a94a6;
+    font-size: 0.82rem;
+}
+
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    .mux-types-page {
+        padding: 1.25rem 0.8rem 2rem;
+    }
+
+    .mux-types-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .mux-types-primary-btn {
+        width: 100%;
+    }
+
+    .mux-types-table {
+        min-width: 860px;
+    }
+}
+/* =========================================================
+   MUX Type Create
+   ========================================================= */
+
+.mux-type-form-page {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 3rem;
+}
+
+.mux-type-form-header {
+    margin-bottom: 1.5rem;
+}
+
+.mux-type-back {
+    display: inline-flex;
+    margin-bottom: 1rem;
+    color: #68758b;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+    .mux-type-back:hover {
+        color: #1F2A44;
+    }
+
+.mux-type-form-header h1 {
+    margin: 0;
+    color: #172033;
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.mux-type-form-header p {
+    margin: 0.35rem 0 0;
+    color: #7a8497;
+    font-size: 0.92rem;
+}
+
+
+/* validation */
+
+.mux-type-validation {
+    margin-bottom: 1rem;
+    color: #a23b43;
+    font-size: 0.82rem;
+}
+
+    .mux-type-validation:empty {
+        display: none;
+    }
+
+
+/* =========================================================
+   General Card
+   ========================================================= */
+
+.mux-type-form-card {
+    margin-bottom: 1.2rem;
+    padding: 1.3rem;
+    background: #ffffff;
+    border: 1px solid #e7ebf1;
+    border-radius: 14px;
+}
+
+.mux-type-section-heading {
+    margin-bottom: 1rem;
+}
+
+    .mux-type-section-heading span,
+    .mux-type-hardware-header span,
+    .mux-type-live-summary > div:first-child > span {
+        display: block;
+        margin-bottom: 0.2rem;
+        color: #929bad;
+        font-size: 0.66rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+    }
+
+    .mux-type-section-heading h2,
+    .mux-type-hardware-header h2 {
+        margin: 0;
+        color: #303b50;
+        font-size: 1rem;
+        font-weight: 680;
+    }
+
+.mux-type-name-field {
+    max-width: 600px;
+}
+
+
+/* =========================================================
+   Inputs
+   ========================================================= */
+
+.mux-type-field {
+    margin-top: 1rem;
+}
+
+    .mux-type-name-field label,
+    .mux-type-field label {
+        display: block;
+        margin-bottom: 0.4rem;
+        color: #4b566a;
+        font-size: 0.75rem;
+        font-weight: 650;
+    }
+
+.mux-type-input {
+    width: 100%;
+    min-height: 42px;
+    padding: 0 0.8rem;
+    background: #fbfcfe;
+    border: 1px solid #dfe4eb;
+    border-radius: 9px;
+    color: #303b50;
+    font-size: 0.86rem;
+    outline: none;
+}
+
+    .mux-type-input:focus {
+        background: #ffffff;
+        border-color: #9b8a5b;
+        box-shadow: 0 0 0 3px rgba(198, 167, 94, 0.12);
+    }
+
+    .mux-type-input:disabled {
+        background: #f2f4f7;
+        color: #9da6b4;
+        cursor: not-allowed;
+    }
+
+.mux-type-field-error {
+    display: block;
+    margin-top: 0.3rem;
+    color: #ae424a;
+    font-size: 0.7rem;
+}
+
+
+/* =========================================================
+   Hardware Cards
+   ========================================================= */
+
+.mux-type-hardware-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+}
+
+.mux-type-hardware-card {
+    padding: 1.2rem;
+    background: #ffffff;
+    border: 1px solid #e7ebf1;
+    border-radius: 14px;
+}
+
+.mux-type-hardware-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #edf0f4;
+}
+
+.mux-type-hardware-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    background: #f4f0e5;
+    border: 1px solid #e5d8b7;
+    border-radius: 10px;
+    color: #8b743e;
+    font-size: 0.72rem;
+    font-weight: 750;
+}
+
+
+/* card total */
+
+.mux-type-card-total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1.2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #edf0f4;
+}
+
+    .mux-type-card-total span {
+        color: #8993a5;
+        font-size: 0.72rem;
+    }
+
+    .mux-type-card-total strong {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 38px;
+        padding: 0.28rem 0.6rem;
+        background: #f3f5f8;
+        border-radius: 7px;
+        color: #1F2A44;
+        font-size: 0.8rem;
+    }
+
+
+/* =========================================================
+   Summary
+   ========================================================= */
+
+.mux-type-live-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1rem 1.2rem;
+    background: #1F2A44;
+    border-radius: 12px;
+    color: #ffffff;
+}
+
+    .mux-type-live-summary > div:first-child strong {
+        color: #ffffff;
+        font-size: 0.9rem;
+    }
+
+.mux-type-summary-values {
+    display: flex;
+    gap: 0.6rem;
+}
+
+    .mux-type-summary-values > div {
+        min-width: 105px;
+        padding: 0.55rem 0.7rem;
+        background: rgba(255,255,255,0.07);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px;
+    }
+
+    .mux-type-summary-values span {
+        display: block;
+        margin-bottom: 0.15rem;
+        color: #b6bdc9;
+        font-size: 0.61rem;
+        text-transform: uppercase;
+    }
+
+    .mux-type-summary-values strong {
+        color: #ffffff;
+        font-size: 0.86rem;
+    }
+
+
+/* =========================================================
+   Actions
+   ========================================================= */
+
+.mux-type-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    margin-top: 1.2rem;
+}
+
+.mux-type-cancel-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0.6rem 1rem;
+    background: #ffffff;
+    border: 1px solid #dfe4eb;
+    border-radius: 10px;
+    color: #667286;
+    font-size: 0.84rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+    .mux-type-cancel-btn:hover {
+        background: #f7f8fa;
+        color: #1F2A44;
+    }
+
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+@media (max-width: 850px) {
+
+    .mux-type-hardware-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mux-type-live-summary {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .mux-type-summary-values {
+        width: 100%;
+    }
+
+        .mux-type-summary-values > div {
+            flex: 1;
+        }
+}
+
+@media (max-width: 600px) {
+
+    .mux-type-summary-values {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .mux-type-form-actions {
+        flex-direction: column-reverse;
+    }
+
+        .mux-type-form-actions > * {
+            width: 100%;
+        }
+}

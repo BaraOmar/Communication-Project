@@ -7,42 +7,54 @@
     string initialValuesJson =
         JsonSerializer.Serialize(new
         {
-            siteId = Model.SiteId,
-            previousSiteId = Model.PreviousSiteId,
-            incomingLinkId =
-                Model.IncomingLinkId?.ToString(),
-            incomingStmId =
-                Model.IncomingStmId?.ToString(),
+            siteId =
+                Model.SiteId,
+
+            incomingResourceKey =
+                Model.IncomingResourceKey,
+
             incomingE1Id =
                 Model.IncomingE1Id?.ToString(),
 
-            nextSiteId = Model.NextSiteId,
-            outgoingLinkId =
-                Model.OutgoingLinkId?.ToString(),
-            outgoingStmId =
-                Model.OutgoingStmId?.ToString(),
+            outgoingResourceKey =
+                Model.OutgoingResourceKey,
+
             outgoingE1Id =
                 Model.OutgoingE1Id?.ToString()
         });
 }
 
+
 @section Styles {
+
     <link rel="stylesheet"
           href="~/css/crossconnections.css"
           asp-append-version="true" />
+
 }
 
 
-<div class="container py-4">
+<div class="cross-page">
 
-    <div class="mb-4">
-        <h1 class="mb-1">
+    <!-- =====================================================
+         Header
+         ===================================================== -->
+
+    <div class="cross-page-header">
+
+        <span class="cross-eyebrow">
+            NETWORK OPERATION
+        </span>
+
+        <h1>
             Create Cross Connection
         </h1>
 
-        <p class="text-muted mb-0">
-            Join an incoming E1 to an outgoing E1 at one site.
+        <p>
+            Join an incoming E1 to an outgoing E1
+            through one communication site.
         </p>
+
     </div>
 
 
@@ -51,306 +63,426 @@
 
         @Html.AntiForgeryToken()
 
+
+        <!-- =================================================
+             Validation
+             ================================================= -->
+
         <div asp-validation-summary="ModelOnly"
-             class="alert alert-danger">
+             class="cross-validation">
         </div>
 
 
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-body p-4">
+        <!-- =================================================
+             Cross-Connection Site
+             ================================================= -->
 
-                <label asp-for="SiteId"
-                       class="form-label">
+        <section class="cross-site-card">
+
+            <div class="cross-site-heading">
+
+                <div class="cross-site-icon">
+                    ●
+                </div>
+
+
+                <div>
+
+                    <span class="cross-eyebrow">
+                        CONNECTION POINT
+                    </span>
+
+                    <h2>
+                        Cross-Connection Site
+                    </h2>
+
+                    <p>
+                        Select the site where the incoming
+                        and outgoing communication resources
+                        will be joined.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="cross-field">
+
+                <label asp-for="SiteId">
+                    Cross Connection Site
                 </label>
 
-                <select asp-for="SiteId"
-                        asp-items="Model.SiteOptions"
-                        id="siteSelect"
-                        class="form-select">
 
-                    <option value="">
-                        Select cross-connection site
-                    </option>
+                <!-- =========================================
+                     Searchable Site Select
+                     ========================================= -->
 
-                </select>
+                <div class="cross-searchable-select"
+                     id="siteSearchableSelect">
+
+                    <button type="button"
+                            id="siteSelectTrigger"
+                            class="cross-searchable-trigger"
+                            aria-haspopup="listbox"
+                            aria-expanded="false">
+
+                        <span id="siteSelectText"
+                              class="cross-searchable-value">
+
+                            Select cross-connection site
+
+                        </span>
+
+
+                        <span class="cross-select-arrow">
+                            ▾
+                        </span>
+
+                    </button>
+
+
+                    <div id="siteSelectDropdown"
+                         class="cross-searchable-dropdown"
+                         hidden>
+
+
+                        <!-- Search is inside the opened select -->
+
+                        <div class="cross-search-wrapper">
+
+                            <span class="cross-search-icon">
+                                ⌕
+                            </span>
+
+                            <input type="search"
+                                   id="siteSearchInput"
+                                   class="cross-search-input"
+                                   placeholder="Search site..."
+                                   autocomplete="off" />
+
+                        </div>
+
+
+                        <div id="siteOptionList"
+                             class="cross-search-options"
+                             role="listbox">
+                        </div>
+
+
+                        <div id="siteNoResults"
+                             class="cross-search-no-results"
+                             hidden>
+
+                            No sites found.
+
+                        </div>
+
+                    </div>
+
+
+                    <!--
+                        Real ASP.NET select.
+
+                        This remains the field submitted to
+                        the controller. The custom dropdown
+                        only changes its value.
+                    -->
+
+                    <select asp-for="SiteId"
+                            asp-items="Model.SiteOptions"
+                            id="siteSelect"
+                            class="cross-native-select"
+                            tabindex="-1"
+                            aria-hidden="true">
+
+                        <option value="">
+                            Select cross-connection site
+                        </option>
+
+                    </select>
+
+                </div>
+
 
                 <span asp-validation-for="SiteId"
-                      class="text-danger">
+                      class="cross-field-error">
                 </span>
 
             </div>
-        </div>
+
+        </section>
 
 
-        <div class="row g-4">
+        <!-- =================================================
+             Incoming / Outgoing
+             ================================================= -->
 
-            <!-- Incoming side -->
-            <div class="col-lg-6">
+        <div class="cross-direction-grid">
 
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body p-4">
 
-                        <h4 class="mb-1">
+            <!-- =============================================
+                 Incoming Side
+                 ============================================= -->
+
+            <section class="cross-side-card">
+
+                <div class="cross-side-header">
+
+                    <div class="cross-direction-symbol">
+                        →
+                    </div>
+
+
+                    <div>
+
+                        <span class="cross-eyebrow">
+                            INCOMING
+                        </span>
+
+                        <h2>
                             Incoming Side
-                        </h4>
+                        </h2>
 
-                        <p class="text-muted mb-4">
-                            Select the link arriving from the previous site.
+                        <p>
+                            Select the communication resource
+                            arriving from the previous site.
                         </p>
 
-
-                        <div class="mb-3">
-
-                            <label asp-for="PreviousSiteId"
-                                   class="form-label">
-                            </label>
-
-                            <select asp-for="PreviousSiteId"
-                                    id="previousSiteSelect"
-                                    class="form-select"
-                                    disabled>
-
-                                <option value="">
-                                    Select previous site
-                                </option>
-
-                            </select>
-
-                            <span asp-validation-for="PreviousSiteId"
-                                  class="text-danger">
-                            </span>
-
-                        </div>
-
-
-                        <div class="mb-3">
-
-                            <label asp-for="IncomingLinkId"
-                                   class="form-label">
-                            </label>
-
-                            <select asp-for="IncomingLinkId"
-                                    id="incomingLinkSelect"
-                                    class="form-select"
-                                    disabled>
-
-                                <option value="">
-                                    Select incoming link
-                                </option>
-
-                            </select>
-
-                            <span asp-validation-for="IncomingLinkId"
-                                  class="text-danger">
-                            </span>
-
-                        </div>
-
-
-                        <div id="incomingStmField"
-                             class="mb-3">
-
-                            <label asp-for="IncomingStmId"
-                                   class="form-label">
-                            </label>
-
-                            <select asp-for="IncomingStmId"
-                                    id="incomingStmSelect"
-                                    class="form-select"
-                                    disabled>
-
-                                <option value="">
-                                    Select incoming STM
-                                </option>
-
-                            </select>
-
-                            <span asp-validation-for="IncomingStmId"
-                                  class="text-danger">
-                            </span>
-
-                        </div>
-
-
-                        <div>
-
-                            <label asp-for="IncomingE1Id"
-                                   class="form-label">
-                            </label>
-
-                            <select asp-for="IncomingE1Id"
-                                    id="incomingE1Select"
-                                    class="form-select"
-                                    disabled>
-
-                                <option value="">
-                                    Select incoming E1
-                                </option>
-
-                            </select>
-
-                            <span asp-validation-for="IncomingE1Id"
-                                  class="text-danger">
-                            </span>
-
-                        </div>
-
                     </div>
+
                 </div>
+
+
+                <!-- Previous Site -->
+
+                <div class="cross-field">
+
+                    <label for="incomingResourceSelect">
+                        Previous Site
+                    </label>
+
+                    <select asp-for="IncomingResourceKey"
+                            id="incomingResourceSelect"
+                            class="cross-select"
+                            disabled>
+
+                        <option value="">
+                            Select incoming STM or PDH link
+                        </option>
+
+                    </select>
+
+                    <span asp-validation-for="IncomingResourceKey"
+                          class="cross-field-error">
+                    </span>
+
+                </div>
+
+
+                <!-- Incoming E1 -->
+
+                <div class="cross-field">
+
+                    <label asp-for="IncomingE1Id">
+                        Incoming E1
+                    </label>
+
+                    <select asp-for="IncomingE1Id"
+                            id="incomingE1Select"
+                            class="cross-select"
+                            disabled>
+
+                        <option value="">
+                            Select incoming E1
+                        </option>
+
+                    </select>
+
+                    <span asp-validation-for="IncomingE1Id"
+                          class="cross-field-error">
+                    </span>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =============================================
+                 Cross Connection
+                 ============================================= -->
+
+            <div class="cross-center-connector">
+
+                <span>
+                    ×
+                </span>
+
+                <small>
+                    CROSS
+                    <br />
+                    CONNECTION
+                </small>
 
             </div>
 
 
-            <!-- Outgoing side -->
-            <div class="col-lg-6">
 
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body p-4">
+            <!-- =============================================
+                 Outgoing Side
+                 ============================================= -->
 
-                        <h4 class="mb-1">
+            <section class="cross-side-card">
+
+                <div class="cross-side-header">
+
+                    <div class="cross-direction-symbol
+                        cross-direction-out">
+                        →
+                    </div>
+
+
+                    <div>
+
+                        <span class="cross-eyebrow">
+                            OUTGOING
+                        </span>
+
+                        <h2>
                             Outgoing Side
-                        </h4>
+                        </h2>
 
-                        <p class="text-muted mb-4">
-                            Select the link leaving toward the next site.
+                        <p>
+                            Select the communication resource
+                            leaving toward the next site.
                         </p>
 
-
-                        <div class="mb-3">
-
-                            <label asp-for="NextSiteId"
-                                   class="form-label">
-                            </label>
-
-                            <select asp-for="NextSiteId"
-                                    id="nextSiteSelect"
-                                    class="form-select"
-                                    disabled>
-
-                                <option value="">
-                                    Select next site
-                                </option>
-
-                            </select>
-
-                            <span asp-validation-for="NextSiteId"
-                                  class="text-danger">
-                            </span>
-
-                        </div>
-
-
-                        <div class="mb-3">
-
-                            <label asp-for="OutgoingLinkId"
-                                   class="form-label">
-                            </label>
-
-                            <select asp-for="OutgoingLinkId"
-                                    id="outgoingLinkSelect"
-                                    class="form-select"
-                                    disabled>
-
-                                <option value="">
-                                    Select outgoing link
-                                </option>
-
-                            </select>
-
-                            <span asp-validation-for="OutgoingLinkId"
-                                  class="text-danger">
-                            </span>
-
-                        </div>
-
-
-                        <div id="outgoingStmField"
-                             class="mb-3">
-
-                            <label asp-for="OutgoingStmId"
-                                   class="form-label">
-                            </label>
-
-                            <select asp-for="OutgoingStmId"
-                                    id="outgoingStmSelect"
-                                    class="form-select"
-                                    disabled>
-
-                                <option value="">
-                                    Select outgoing STM
-                                </option>
-
-                            </select>
-
-                            <span asp-validation-for="OutgoingStmId"
-                                  class="text-danger">
-                            </span>
-
-                        </div>
-
-
-                        <div>
-
-                            <label asp-for="OutgoingE1Id"
-                                   class="form-label">
-                            </label>
-
-                            <select asp-for="OutgoingE1Id"
-                                    id="outgoingE1Select"
-                                    class="form-select"
-                                    disabled>
-
-                                <option value="">
-                                    Select outgoing E1
-                                </option>
-
-                            </select>
-
-                            <span asp-validation-for="OutgoingE1Id"
-                                  class="text-danger">
-                            </span>
-
-                        </div>
-
                     </div>
+
                 </div>
 
-            </div>
+
+                <!-- Next Site -->
+
+                <div class="cross-field">
+
+                    <label for="outgoingResourceSelect">
+                        Next Site
+                    </label>
+
+                    <select asp-for="OutgoingResourceKey"
+                            id="outgoingResourceSelect"
+                            class="cross-select"
+                            disabled>
+
+                        <option value="">
+                            Select outgoing STM or PDH link
+                        </option>
+
+                    </select>
+
+                    <span asp-validation-for="OutgoingResourceKey"
+                          class="cross-field-error">
+                    </span>
+
+                </div>
+
+
+                <!-- Outgoing E1 -->
+
+                <div class="cross-field">
+
+                    <label asp-for="OutgoingE1Id">
+                        Outgoing E1
+                    </label>
+
+                    <select asp-for="OutgoingE1Id"
+                            id="outgoingE1Select"
+                            class="cross-select"
+                            disabled>
+
+                        <option value="">
+                            Select outgoing E1
+                        </option>
+
+                    </select>
+
+                    <span asp-validation-for="OutgoingE1Id"
+                          class="cross-field-error">
+                    </span>
+
+                </div>
+
+            </section>
 
         </div>
 
 
-        <div class="card border-0 shadow-sm my-4">
-            <div class="card-body p-4">
+        <!-- =================================================
+             Customer
+             ================================================= -->
 
-                <label asp-for="CustomerName"
-                       class="form-label">
+        <section class="cross-customer-card">
+
+            <div>
+
+                <span class="cross-eyebrow">
+                    SERVICE
+                </span>
+
+                <h2>
+                    Customer
+                </h2>
+
+            </div>
+
+
+            <div class="cross-field
+                cross-customer-field">
+
+                <label asp-for="CustomerName">
+                    Customer Name
                 </label>
 
                 <input asp-for="CustomerName"
-                       class="form-control"
+                       class="cross-input"
                        placeholder="Enter customer name" />
 
                 <span asp-validation-for="CustomerName"
-                      class="text-danger">
+                      class="cross-field-error">
                 </span>
 
             </div>
-        </div>
+
+        </section>
 
 
-        <div class="d-flex gap-2">
+        <!-- =================================================
+             Actions
+             ================================================= -->
+
+        <div class="cross-actions">
+
+            <a href="@Url.Action(
+                                                   "Index",
+                                                   "Sites")"
+                   data-fallback-url="@Url.Action(
+                                                   "Index",
+                                                   "Sites")"
+                   class="cross-cancel-btn js-back-link">
+
+                Cancel
+
+            </a>
+
 
             <button type="submit"
-                    class="btn btn-primary">
-                Create Cross Connection
-            </button>
+                    class="cross-primary-btn">
 
-            <a asp-controller="Home"
-                   asp-action="Index"
-                   class="btn btn-outline-secondary">
-                Cancel
-            </a>
+                Create Cross Connection
+
+            </button>
 
         </div>
 
@@ -360,618 +492,1294 @@
 
 
 @section Scripts {
+
     <partial name="_ValidationScriptsPartial" />
 
+
     <script>
-        const initialValues =
-            @Html.Raw(initialValuesJson);
 
-        const urls = {
-            connectedSites:
-                '@Url.Action("GetConnectedSites", "CrossConnections")',
+        (() => {
 
-            links:
-                '@Url.Action("GetLinks", "CrossConnections")',
+            /* =================================================
+               Initial Values
+               ================================================= */
 
-            stms:
-                '@Url.Action("GetStms", "CrossConnections")',
-
-            e1s:
-                '@Url.Action("GetAvailableE1s", "CrossConnections")'
-        };
+            const initialValues =
+                @Html.Raw(initialValuesJson);
 
 
-        const siteSelect =
-            document.getElementById("siteSelect");
+            /* =================================================
+               API URLs
+               ================================================= */
 
-        const previousSiteSelect =
-            document.getElementById("previousSiteSelect");
+            const urls = {
 
-        const nextSiteSelect =
-            document.getElementById("nextSiteSelect");
+                resources:
+                    '@Url.Action(
+                                                    "GetConnectionResources",
+                                                    "CrossConnections")',
 
+                e1s:
+                    '@Url.Action(
+                                                    "GetAvailableE1s",
+                                                    "CrossConnections")'
 
-        const incomingLinkSelect =
-            document.getElementById("incomingLinkSelect");
-
-        const incomingStmSelect =
-            document.getElementById("incomingStmSelect");
-
-        const incomingE1Select =
-            document.getElementById("incomingE1Select");
-
-        const incomingStmField =
-            document.getElementById("incomingStmField");
+            };
 
 
-        const outgoingLinkSelect =
-            document.getElementById("outgoingLinkSelect");
+            /* =================================================
+               Elements
+               ================================================= */
 
-        const outgoingStmSelect =
-            document.getElementById("outgoingStmSelect");
-
-        const outgoingE1Select =
-            document.getElementById("outgoingE1Select");
-
-        const outgoingStmField =
-            document.getElementById("outgoingStmField");
-
-                    const customerNameInput =
-            document.getElementById("CustomerName");
-
-        let customerWasAutoFilled = false;
+            const siteSearchableSelect =
+                document.getElementById(
+                    "siteSearchableSelect");
 
 
-        function resetSelect(
-            select,
-            placeholder) {
-
-            select.innerHTML = "";
-
-            const option =
-                document.createElement("option");
-
-            option.value = "";
-            option.textContent = placeholder;
-
-            select.appendChild(option);
-
-            select.value = "";
-            select.disabled = true;
-        }
+            const siteSelectTrigger =
+                document.getElementById(
+                    "siteSelectTrigger");
 
 
-        function populateSelect(
-            select,
-            items,
-            placeholder,
-            selectedValue = "") {
+            const siteSelectText =
+                document.getElementById(
+                    "siteSelectText");
 
-            resetSelect(
-                select,
-                placeholder);
 
-            for (const item of items) {
+            const siteSelectDropdown =
+                document.getElementById(
+                    "siteSelectDropdown");
+
+
+            const siteSearchInput =
+                document.getElementById(
+                    "siteSearchInput");
+
+
+            const siteOptionList =
+                document.getElementById(
+                    "siteOptionList");
+
+
+            const siteNoResults =
+                document.getElementById(
+                    "siteNoResults");
+
+
+            const siteSelect =
+                document.getElementById(
+                    "siteSelect");
+
+
+            const incomingResourceSelect =
+                document.getElementById(
+                    "incomingResourceSelect");
+
+
+            const outgoingResourceSelect =
+                document.getElementById(
+                    "outgoingResourceSelect");
+
+
+            const incomingE1Select =
+                document.getElementById(
+                    "incomingE1Select");
+
+
+            const outgoingE1Select =
+                document.getElementById(
+                    "outgoingE1Select");
+
+
+            const customerNameInput =
+                document.getElementById(
+                    "CustomerName");
+
+
+            let customerWasAutoFilled =
+                false;
+
+
+            /* =================================================
+               Searchable Site Select
+               ================================================= */
+
+            const siteOptions =
+                Array.from(
+                    siteSelect.options)
+                    .filter(option =>
+                        option.value !== "")
+                    .map(option => ({
+
+                        value:
+                            option.value,
+
+                        text:
+                            option.textContent
+                                .trim()
+
+                    }));
+
+
+            function getSelectedSiteText() {
+
+                if (!siteSelect.value) {
+
+                    return "Select cross-connection site";
+
+                }
+
+
                 const option =
-                    document.createElement("option");
+                    Array.from(
+                        siteSelect.options)
+                        .find(item =>
+                            item.value ===
+                            siteSelect.value);
 
-                option.value = item.value;
-                option.textContent = item.text;
 
-                if (item.technology) {
-                    option.dataset.technology =
-                        item.technology;
+                return option
+                    ?.textContent
+                    ?.trim() ??
+                    "Select cross-connection site";
+
+            }
+
+
+            function updateSiteTrigger() {
+
+                const hasValue =
+                    siteSelect.value !== "";
+
+
+                siteSelectText.textContent =
+                    getSelectedSiteText();
+
+
+                siteSelectTrigger.classList.toggle(
+                    "has-value",
+                    hasValue);
+
+            }
+
+
+            function renderSiteOptions(
+                searchText = "") {
+
+                const query =
+                    searchText
+                        .trim()
+                        .toLowerCase();
+
+
+                siteOptionList.innerHTML =
+                    "";
+
+
+                const matchingSites =
+                    siteOptions.filter(site => {
+
+                        if (!query) {
+                            return true;
+                        }
+
+
+                        const searchable =
+                            (
+                                site.value +
+                                " " +
+                                site.text
+                            ).toLowerCase();
+
+
+                        return searchable.includes(
+                            query);
+
+                    });
+
+
+                siteNoResults.hidden =
+                    matchingSites.length > 0;
+
+
+                matchingSites.forEach(site => {
+
+                    const button =
+                        document.createElement(
+                            "button");
+
+
+                    button.type =
+                        "button";
+
+
+                    button.className =
+                        "cross-search-option";
+
+
+                    button.dataset.value =
+                        site.value;
+
+
+                    button.setAttribute(
+                        "role",
+                        "option");
+
+
+                    const selected =
+                        site.value ===
+                        siteSelect.value;
+
+
+                    button.setAttribute(
+                        "aria-selected",
+                        selected
+                            ? "true"
+                            : "false");
+
+
+                    if (selected) {
+
+                        button.classList.add(
+                            "is-selected");
+
+                    }
+
+
+                    const main =
+                        document.createElement(
+                            "span");
+
+
+                    main.className =
+                        "cross-search-option-main";
+
+
+                    main.textContent =
+                        site.text;
+
+
+                    button.appendChild(
+                        main);
+
+
+                    /*
+                     * If the option text does not
+                     * already show the site ID,
+                     * display it separately.
+                     */
+                    if (
+                        site.value &&
+                        !site.text
+                            .toLowerCase()
+                            .includes(
+                                site.value
+                                    .toLowerCase())
+                    ) {
+
+                        const id =
+                            document.createElement(
+                                "small");
+
+
+                        id.textContent =
+                            site.value;
+
+
+                        button.appendChild(
+                            id);
+
+                    }
+
+
+                    button.addEventListener(
+                        "click",
+                        () => {
+
+                            selectSite(
+                                site.value);
+
+                        });
+
+
+                    siteOptionList.appendChild(
+                        button);
+
+                });
+
+            }
+
+
+            function openSiteDropdown() {
+
+                siteSelectDropdown.hidden =
+                    false;
+
+
+                siteSelectTrigger.setAttribute(
+                    "aria-expanded",
+                    "true");
+
+
+                siteSearchInput.value =
+                    "";
+
+
+                renderSiteOptions();
+
+
+                requestAnimationFrame(
+                    () => {
+
+                        siteSearchInput.focus();
+
+                    });
+
+            }
+
+
+            function closeSiteDropdown() {
+
+                siteSelectDropdown.hidden =
+                    true;
+
+
+                siteSelectTrigger.setAttribute(
+                    "aria-expanded",
+                    "false");
+
+            }
+
+
+            function selectSite(
+                value) {
+
+                const changed =
+                    siteSelect.value !==
+                    value;
+
+
+                siteSelect.value =
+                    value;
+
+
+                updateSiteTrigger();
+
+
+                closeSiteDropdown();
+
+
+                if (changed) {
+
+                    siteSelect.dispatchEvent(
+                        new Event(
+                            "change",
+                            {
+                                bubbles: true
+                            }));
+
                 }
-                        if (item.state) {
-            option.dataset.state =
-                item.state;
-        }
 
-        if (item.customerName) {
-            option.dataset.customerName =
-                item.customerName;
-        }
-                select.appendChild(option);
             }
 
-            select.disabled = false;
 
-            if (selectedValue) {
-                select.value = selectedValue;
-            }
-        }
+            siteSelectTrigger.addEventListener(
+                "click",
+                () => {
+
+                    if (
+                        siteSelectDropdown.hidden
+                    ) {
+
+                        openSiteDropdown();
+
+                    }
+                    else {
+
+                        closeSiteDropdown();
+
+                    }
+
+                });
 
 
-        async function getJson(
-            url,
-            parameters) {
+            siteSearchInput.addEventListener(
+                "input",
+                () => {
 
-            const query =
-                new URLSearchParams();
+                    renderSiteOptions(
+                        siteSearchInput.value);
 
-            for (const [key, value]
-                 of Object.entries(parameters)) {
+                });
 
-                if (value !== null &&
-                    value !== undefined &&
-                    value !== "") {
 
-                    query.append(
-                        key,
-                        value);
+            siteSearchInput.addEventListener(
+                "keydown",
+                event => {
+
+                    if (
+                        event.key ===
+                        "Escape"
+                    ) {
+
+                        event.preventDefault();
+
+                        closeSiteDropdown();
+
+                        siteSelectTrigger.focus();
+
+                        return;
+
+                    }
+
+
+                    /*
+                     * Enter selects the first
+                     * visible search result.
+                     */
+                    if (
+                        event.key ===
+                        "Enter"
+                    ) {
+
+                        const firstOption =
+                            siteOptionList
+                                .querySelector(
+                                    ".cross-search-option");
+
+
+                        if (!firstOption) {
+                            return;
+                        }
+
+
+                        event.preventDefault();
+
+
+                        selectSite(
+                            firstOption
+                                .dataset
+                                .value);
+
+                    }
+
+                });
+
+
+            document.addEventListener(
+                "click",
+                event => {
+
+                    if (
+                        !siteSearchableSelect
+                            .contains(
+                                event.target)
+                    ) {
+
+                        closeSiteDropdown();
+
+                    }
+
+                });
+
+
+            /* =================================================
+               Request Helper
+               ================================================= */
+
+            async function getJson(
+                url,
+                parameters) {
+
+                const query =
+                    new URLSearchParams();
+
+
+                for (
+                    const [key, value]
+                    of Object.entries(
+                        parameters)
+                ) {
+
+                    if (
+                        value !== null &&
+                        value !== undefined &&
+                        value !== ""
+                    ) {
+
+                        query.append(
+                            key,
+                            value);
+
+                    }
+
                 }
+
+
+                const response =
+                    await fetch(
+                        url +
+                        "?" +
+                        query.toString());
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        "Unable to load options.");
+
+                }
+
+
+                return await response.json();
+
             }
 
-            const response =
-                await fetch(
-                    url + "?" + query.toString());
 
-            if (!response.ok) {
-                throw new Error(
-                    "Unable to load options.");
+            /* =================================================
+               Generic Select Reset
+               ================================================= */
+
+            function resetSelect(
+                select,
+                placeholder) {
+
+                select.innerHTML =
+                    "";
+
+
+                const option =
+                    document.createElement(
+                        "option");
+
+
+                option.value =
+                    "";
+
+
+                option.textContent =
+                    placeholder;
+
+
+                select.appendChild(
+                    option);
+
+
+                select.value =
+                    "";
+
+
+                select.disabled =
+                    true;
+
             }
 
-            return await response.json();
-        }
+
+            /* =================================================
+               Populate Resource Select
+               ================================================= */
+
+            function populateResourceSelect(
+                select,
+                resources,
+                placeholder,
+                selectedValue = "") {
+
+                resetSelect(
+                    select,
+                    placeholder);
 
 
-        function resetIncomingSide() {
-            resetSelect(
-                incomingLinkSelect,
-                "Select incoming link");
+                resources.forEach(
+                    resource => {
 
-            resetSelect(
-                incomingStmSelect,
-                "Select incoming STM");
+                        const option =
+                            document.createElement(
+                                "option");
 
-            resetSelect(
-                incomingE1Select,
-                "Select incoming E1");
 
-            incomingStmField.classList.remove(
-                "d-none");
+                        option.value =
+                            resource.value;
+
+
+                        option.textContent =
+                            resource.text;
+
+
+                        option.dataset.resourceType =
+                            resource.resourceType ??
+                            "";
+
+
+                        option.dataset.linkId =
+                            resource.linkId ??
+                            "";
+
+
+                        option.dataset.stmId =
+                            resource.stmId ??
+                            "";
+
+
+                        option.dataset.connectedSiteId =
+                            resource.connectedSiteId ??
+                            "";
+
+
+                        select.appendChild(
+                            option);
+
+                    });
+
+
+                select.disabled =
+                    resources.length === 0;
+
+
+                if (
+                    selectedValue &&
+                    Array.from(
+                        select.options)
+                        .some(option =>
+                            option.value ===
+                            selectedValue)
+                ) {
+
+                    select.value =
+                        selectedValue;
+
+                }
+
+            }
+
+
+            /* =================================================
+               Populate E1 Select
+               ================================================= */
+
+            function populateE1Select(
+                select,
+                e1s,
+                placeholder,
+                selectedValue = "") {
+
+                resetSelect(
+                    select,
+                    placeholder);
+
+
+                e1s.forEach(
+                    e1 => {
+
+                        const option =
+                            document.createElement(
+                                "option");
+
+
+                        option.value =
+                            e1.value;
+
+
+                        option.textContent =
+                            e1.text;
+
+
+                        if (e1.state) {
+
+                            option.dataset.state =
+                                e1.state;
+
+                        }
+
+
+                        if (e1.customerName) {
+
+                            option.dataset.customerName =
+                                e1.customerName;
+
+                        }
+
+
+                        select.appendChild(
+                            option);
+
+                    });
+
+
+                select.disabled =
+                    e1s.length === 0;
+
+
+                if (
+                    selectedValue &&
+                    Array.from(
+                        select.options)
+                        .some(option =>
+                            option.value ===
+                            selectedValue)
+                ) {
+
+                    select.value =
+                        selectedValue;
+
+                }
+
+            }
+
+
+            /* =================================================
+               Customer
+               ================================================= */
+
+            function updateCustomerFromIncomingE1() {
+
+                const selectedOption =
+                    incomingE1Select.options[
+                        incomingE1Select
+                            .selectedIndex];
+
+
+                const isExistingPath =
+                    selectedOption
+                        ?.dataset
+                        ?.state ===
+                    "ExtendExistingPath";
+
+
+                const customerName =
+                    selectedOption
+                        ?.dataset
+                        ?.customerName ??
+                    "";
+
+
+                if (
+                    isExistingPath &&
+                    customerName
+                ) {
+
+                    customerNameInput.value =
+                        customerName;
+
+
+                    customerNameInput.readOnly =
+                        true;
+
+
+                    customerWasAutoFilled =
+                        true;
+
+
+                    return;
+
+                }
+
+
+                if (customerWasAutoFilled) {
+
+                    customerNameInput.value =
+                        "";
+
+                }
+
+
+                customerNameInput.readOnly =
+                    false;
+
+
+                customerWasAutoFilled =
+                    false;
+
+            }
+
+
+            /* =================================================
+               Reset Both Sides
+               ================================================= */
+
+            function resetConnectionSides() {
+
+                resetSelect(
+                    incomingResourceSelect,
+                    "Select incoming STM or PDH link");
+
+
+                resetSelect(
+                    outgoingResourceSelect,
+                    "Select outgoing STM or PDH link");
+
+
+                resetSelect(
+                    incomingE1Select,
+                    "Select incoming E1");
+
+
+                resetSelect(
+                    outgoingE1Select,
+                    "Select outgoing E1");
+
 
                 updateCustomerFromIncomingE1();
-        }
 
-
-        function resetOutgoingSide() {
-            resetSelect(
-                outgoingLinkSelect,
-                "Select outgoing link");
-
-            resetSelect(
-                outgoingStmSelect,
-                "Select outgoing STM");
-
-            resetSelect(
-                outgoingE1Select,
-                "Select outgoing E1");
-
-            outgoingStmField.classList.remove(
-                "d-none");
-        }
-
-
-        async function loadConnectedSites(
-            previousValue = "",
-            nextValue = "") {
-
-            resetSelect(
-                previousSiteSelect,
-                "Select previous site");
-
-            resetSelect(
-                nextSiteSelect,
-                "Select next site");
-
-            resetIncomingSide();
-            resetOutgoingSide();
-
-            if (!siteSelect.value) {
-                return;
             }
 
-            const sites =
-                await getJson(
-                    urls.connectedSites,
-                    {
-                        siteId:
-                            siteSelect.value
+
+            /* =================================================
+               Connected-Site Helper
+               ================================================= */
+
+            function getConnectedSiteId(
+                select) {
+
+                if (!select.value) {
+                    return "";
+                }
+
+
+                const option =
+                    select.options[
+                        select.selectedIndex];
+
+
+                return option
+                    ?.dataset
+                    ?.connectedSiteId ??
+                    "";
+
+            }
+
+
+            /* =================================================
+               Previous / Next Site Availability
+               ================================================= */
+
+            function updateResourceAvailability(
+                changedSide = "") {
+
+                const previousSiteId =
+                    getConnectedSiteId(
+                        incomingResourceSelect);
+
+
+                const nextSiteId =
+                    getConnectedSiteId(
+                        outgoingResourceSelect);
+
+
+                /*
+                 * Previous Site and Next Site
+                 * cannot be the same.
+                 */
+
+                if (
+                    changedSide ===
+                        "incoming" &&
+                    previousSiteId &&
+                    nextSiteId &&
+                    previousSiteId ===
+                        nextSiteId
+                ) {
+
+                    outgoingResourceSelect.value =
+                        "";
+
+
+                    resetSelect(
+                        outgoingE1Select,
+                        "Select outgoing E1");
+
+                }
+
+
+                if (
+                    changedSide ===
+                        "outgoing" &&
+                    previousSiteId &&
+                    nextSiteId &&
+                    previousSiteId ===
+                        nextSiteId
+                ) {
+
+                    incomingResourceSelect.value =
+                        "";
+
+
+                    resetSelect(
+                        incomingE1Select,
+                        "Select incoming E1");
+
+
+                    updateCustomerFromIncomingE1();
+
+                }
+
+
+                const selectedPreviousSite =
+                    getConnectedSiteId(
+                        incomingResourceSelect);
+
+
+                const selectedNextSite =
+                    getConnectedSiteId(
+                        outgoingResourceSelect);
+
+
+                /*
+                 * Disable incoming resources that
+                 * point to the selected Next Site.
+                 */
+
+                Array.from(
+                    incomingResourceSelect.options)
+                    .forEach(option => {
+
+                        if (!option.value) {
+                            return;
+                        }
+
+
+                        const sameSite =
+                            selectedNextSite &&
+                            option.dataset
+                                .connectedSiteId ===
+                            selectedNextSite;
+
+
+                        option.disabled =
+                            !!sameSite;
+
                     });
 
-            populateSelect(
-                previousSiteSelect,
-                sites,
-                "Select previous site",
-                previousValue);
 
-            populateSelect(
-                nextSiteSelect,
-                sites,
-                "Select next site",
-                nextValue);
+                /*
+                 * Disable outgoing resources that
+                 * point to the selected Previous Site.
+                 */
 
-        updateSideSiteAvailability();
-    }
+                Array.from(
+                    outgoingResourceSelect.options)
+                    .forEach(option => {
+
+                        if (!option.value) {
+                            return;
+                        }
 
 
-        async function loadLinks(
-            side,
-            selectedLinkId = "",
-            selectedStmId = "",
-            selectedE1Id = "") {
+                        const sameSite =
+                            selectedPreviousSite &&
+                            option.dataset
+                                .connectedSiteId ===
+                            selectedPreviousSite;
 
-            const isIncoming =
-                side === "incoming";
 
-            const connectedSiteSelect =
-                isIncoming
-                    ? previousSiteSelect
-                    : nextSiteSelect;
+                        option.disabled =
+                            !!sameSite;
 
-            const linkSelect =
-                isIncoming
-                    ? incomingLinkSelect
-                    : outgoingLinkSelect;
-
-            const stmSelect =
-                isIncoming
-                    ? incomingStmSelect
-                    : outgoingStmSelect;
-
-            const e1Select =
-                isIncoming
-                    ? incomingE1Select
-                    : outgoingE1Select;
-
-            resetSelect(
-                linkSelect,
-                isIncoming
-                    ? "Select incoming link"
-                    : "Select outgoing link");
-
-            resetSelect(
-                stmSelect,
-                isIncoming
-                    ? "Select incoming STM"
-                    : "Select outgoing STM");
-
-            resetSelect(
-                e1Select,
-                isIncoming
-                    ? "Select incoming E1"
-                    : "Select outgoing E1");
-
-            if (!siteSelect.value ||
-                !connectedSiteSelect.value) {
-                return;
-            }
-
-            const links =
-                await getJson(
-                    urls.links,
-                    {
-                        siteId:
-                            siteSelect.value,
-
-                        connectedSiteId:
-                            connectedSiteSelect.value
                     });
 
-            populateSelect(
-                linkSelect,
-                links,
-                isIncoming
-                    ? "Select incoming link"
-                    : "Select outgoing link",
-                selectedLinkId);
-
-            if (selectedLinkId) {
-                await configureLink(
-                    side,
-                    selectedStmId,
-                    selectedE1Id);
-            }
-        }
-
-
-        async function configureLink(
-            side,
-            selectedStmId = "",
-            selectedE1Id = "") {
-
-            const isIncoming =
-                side === "incoming";
-
-            const linkSelect =
-                isIncoming
-                    ? incomingLinkSelect
-                    : outgoingLinkSelect;
-
-            const stmSelect =
-                isIncoming
-                    ? incomingStmSelect
-                    : outgoingStmSelect;
-
-            const e1Select =
-                isIncoming
-                    ? incomingE1Select
-                    : outgoingE1Select;
-
-            const stmField =
-                isIncoming
-                    ? incomingStmField
-                    : outgoingStmField;
-
-            resetSelect(
-                stmSelect,
-                isIncoming
-                    ? "Select incoming STM"
-                    : "Select outgoing STM");
-
-            resetSelect(
-                e1Select,
-                isIncoming
-                    ? "Select incoming E1"
-                    : "Select outgoing E1");
-
-            if (!linkSelect.value) {
-                stmField.classList.remove(
-                    "d-none");
-
-                return;
             }
 
-            const selectedOption =
-                linkSelect.options[
-                    linkSelect.selectedIndex];
 
-            const technology =
-                (
-                    selectedOption.dataset.technology ||
-                    ""
-                ).toUpperCase();
+            /* =================================================
+               Load Resources At Selected Site
+               ================================================= */
 
-            if (technology === "PDH") {
-                stmField.classList.add(
-                    "d-none");
+            async function loadResources(
+                incomingValue = "",
+                outgoingValue = "",
+                incomingE1Value = "",
+                outgoingE1Value = "") {
 
-                stmSelect.value = "";
-                stmSelect.disabled = true;
+                resetConnectionSides();
 
-                await loadE1s(
-                    side,
-                    null,
-                    selectedE1Id);
 
-                return;
+                if (!siteSelect.value) {
+                    return;
+                }
+
+
+                try {
+
+                    const resources =
+                        await getJson(
+                            urls.resources,
+                            {
+                                siteId:
+                                    siteSelect.value
+                            });
+
+
+                    populateResourceSelect(
+                        incomingResourceSelect,
+                        resources,
+                        "Select incoming STM or PDH link",
+                        incomingValue);
+
+
+                    populateResourceSelect(
+                        outgoingResourceSelect,
+                        resources,
+                        "Select outgoing STM or PDH link",
+                        outgoingValue);
+
+
+                    updateResourceAvailability();
+
+
+                    if (
+                        incomingResourceSelect.value
+                    ) {
+
+                        await loadE1s(
+                            "incoming",
+                            incomingE1Value);
+
+                    }
+
+
+                    if (
+                        outgoingResourceSelect.value
+                    ) {
+
+                        await loadE1s(
+                            "outgoing",
+                            outgoingE1Value);
+
+                    }
+
+                }
+                catch (error) {
+
+                    console.error(
+                        error);
+
+
+                    resetConnectionSides();
+
+                }
+
             }
 
-            stmField.classList.remove(
-                "d-none");
 
-            const stms =
-                await getJson(
-                    urls.stms,
-                    {
-                        linkId:
-                            linkSelect.value
+            /* =================================================
+               Load E1s
+               ================================================= */
+
+            async function loadE1s(
+                side,
+                selectedE1Id = "") {
+
+                const isIncoming =
+                    side ===
+                    "incoming";
+
+
+                const resourceSelect =
+                    isIncoming
+                        ? incomingResourceSelect
+                        : outgoingResourceSelect;
+
+
+                const e1Select =
+                    isIncoming
+                        ? incomingE1Select
+                        : outgoingE1Select;
+
+
+                resetSelect(
+                    e1Select,
+                    isIncoming
+                        ? "Select incoming E1"
+                        : "Select outgoing E1");
+
+
+                if (!resourceSelect.value) {
+
+                    if (isIncoming) {
+
+                        updateCustomerFromIncomingE1();
+
+                    }
+
+
+                    return;
+
+                }
+
+
+                const selectedResource =
+                    resourceSelect.options[
+                        resourceSelect
+                            .selectedIndex];
+
+
+                const linkId =
+                    selectedResource
+                        ?.dataset
+                        ?.linkId ??
+                    "";
+
+
+                const stmId =
+                    selectedResource
+                        ?.dataset
+                        ?.stmId ??
+                    "";
+
+
+                if (!linkId) {
+                    return;
+                }
+
+
+                try {
+
+                    const e1s =
+                        await getJson(
+                            urls.e1s,
+                            {
+                                linkId:
+                                    linkId,
+
+                                stmId:
+                                    stmId || null,
+
+                                isIncoming:
+                                    isIncoming
+                            });
+
+
+                    populateE1Select(
+                        e1Select,
+                        e1s,
+                        isIncoming
+                            ? "Select incoming E1"
+                            : "Select outgoing E1",
+                        selectedE1Id);
+
+
+                    if (isIncoming) {
+
+                        updateCustomerFromIncomingE1();
+
+                    }
+
+                }
+                catch (error) {
+
+                    console.error(
+                        error);
+
+
+                    resetSelect(
+                        e1Select,
+                        isIncoming
+                            ? "Select incoming E1"
+                            : "Select outgoing E1");
+
+                }
+
+            }
+
+
+            /* =================================================
+               Events
+               ================================================= */
+
+            siteSelect.addEventListener(
+                "change",
+                async () => {
+
+                    updateSiteTrigger();
+
+
+                    await loadResources();
+
+                });
+
+
+            incomingResourceSelect
+                .addEventListener(
+                    "change",
+                    async () => {
+
+                        updateResourceAvailability(
+                            "incoming");
+
+
+                        await loadE1s(
+                            "incoming");
+
                     });
 
-            populateSelect(
-                stmSelect,
-                stms,
-                isIncoming
-                    ? "Select incoming STM"
-                    : "Select outgoing STM",
-                selectedStmId);
 
-            if (selectedStmId) {
-                await loadE1s(
-                    side,
-                    selectedStmId,
-                    selectedE1Id);
-            }
-        }
+            outgoingResourceSelect
+                .addEventListener(
+                    "change",
+                    async () => {
+
+                        updateResourceAvailability(
+                            "outgoing");
 
 
-        async function loadE1s(
-            side,
-            stmId,
-            selectedE1Id = "") {
+                        await loadE1s(
+                            "outgoing");
 
-            const isIncoming =
-                side === "incoming";
-
-            const linkSelect =
-                isIncoming
-                    ? incomingLinkSelect
-                    : outgoingLinkSelect;
-
-            const e1Select =
-                isIncoming
-                    ? incomingE1Select
-                    : outgoingE1Select;
-
-            resetSelect(
-                e1Select,
-                isIncoming
-                    ? "Select incoming E1"
-                    : "Select outgoing E1");
-
-            if (!linkSelect.value) {
-                return;
-            }
-
-            const e1s =
-                await getJson(
-                    urls.e1s,
-                    {
-                        linkId:
-                            linkSelect.value,
-
-                        stmId:
-                            stmId,
-
-                        isIncoming:
-                            isIncoming
                     });
 
-            populateSelect(
-                e1Select,
-                e1s,
-                isIncoming
-                    ? "Select incoming E1"
-                    : "Select outgoing E1",
-                selectedE1Id);
-                        if (isIncoming) {
-            updateCustomerFromIncomingE1();
-        }
 
-        }
-        function updateSideSiteAvailability() {
-            const previousSiteId = previousSiteSelect.value;
-            const nextSiteId = nextSiteSelect.value;
+            incomingE1Select
+                .addEventListener(
+                    "change",
+                    updateCustomerFromIncomingE1);
 
-            for (const option of previousSiteSelect.options) {
-                const unavailable =
-                    option.value !== "" &&
-                    option.value === nextSiteId;
 
-                option.hidden = unavailable;
-                option.disabled = unavailable;
+            /* =================================================
+               Restore Values After Validation
+               ================================================= */
+
+            async function restoreSelections() {
+
+                /*
+                 * Always synchronize custom control
+                 * with the real <select>.
+                 */
+
+                updateSiteTrigger();
+
+
+                if (!initialValues.siteId) {
+                    return;
+                }
+
+
+                siteSelect.value =
+                    initialValues.siteId;
+
+
+                updateSiteTrigger();
+
+
+                await loadResources(
+                    initialValues
+                        .incomingResourceKey,
+
+                    initialValues
+                        .outgoingResourceKey,
+
+                    initialValues
+                        .incomingE1Id,
+
+                    initialValues
+                        .outgoingE1Id);
+
             }
 
-            for (const option of nextSiteSelect.options) {
-                const unavailable =
-                    option.value !== "" &&
-                    option.value === previousSiteId;
 
-                option.hidden = unavailable;
-                option.disabled = unavailable;
-            }
-        }
-        
+            restoreSelections();
 
+        })();
 
-        function updateCustomerFromIncomingE1() {
-            const selectedOption =
-                incomingE1Select.options[
-                    incomingE1Select.selectedIndex];
-
-            const isExistingPath =
-                selectedOption?.dataset.state ===
-                "ExtendExistingPath";
-
-            const customerName =
-                selectedOption?.dataset.customerName || "";
-
-            if (isExistingPath && customerName) {
-                customerNameInput.value =
-                    customerName;
-
-                customerNameInput.readOnly = true;
-                customerWasAutoFilled = true;
-
-                return;
-            }
-
-            if (customerWasAutoFilled) {
-                customerNameInput.value = "";
-            }
-
-            customerNameInput.readOnly = false;
-            customerWasAutoFilled = false;
-        }
-
-        siteSelect.addEventListener(
-            "change",
-            async () => {
-                await loadConnectedSites();
-            });
-
-
-        previousSiteSelect.addEventListener(
-            "change",
-            async () => {
-                updateSideSiteAvailability();
-                await loadLinks("incoming");
-            });
-                incomingE1Select.addEventListener(
-        "change",
-        updateCustomerFromIncomingE1);
-
-        nextSiteSelect.addEventListener(
-            "change",
-            async () => {
-                updateSideSiteAvailability();
-                await loadLinks("outgoing");
-            });
-
-
-        incomingLinkSelect.addEventListener(
-            "change",
-            async () => {
-                await configureLink("incoming");
-            });
-
-
-        outgoingLinkSelect.addEventListener(
-            "change",
-            async () => {
-                await configureLink("outgoing");
-            });
-
-
-        incomingStmSelect.addEventListener(
-            "change",
-            async () => {
-                await loadE1s(
-                    "incoming",
-                    incomingStmSelect.value);
-            });
-
-
-        outgoingStmSelect.addEventListener(
-            "change",
-            async () => {
-                await loadE1s(
-                    "outgoing",
-                    outgoingStmSelect.value);
-            });
-
-
-        async function restoreSelections() {
-            if (!initialValues.siteId) {
-                return;
-            }
-
-            siteSelect.value =
-                initialValues.siteId;
-
-            await loadConnectedSites(
-                initialValues.previousSiteId,
-                initialValues.nextSiteId);
-
-            if (initialValues.previousSiteId) {
-                await loadLinks(
-                    "incoming",
-                    initialValues.incomingLinkId,
-                    initialValues.incomingStmId,
-                    initialValues.incomingE1Id);
-            }
-
-            if (initialValues.nextSiteId) {
-                await loadLinks(
-                    "outgoing",
-                    initialValues.outgoingLinkId,
-                    initialValues.outgoingStmId,
-                    initialValues.outgoingE1Id);
-            }
-        }
-
-
-        restoreSelections();
     </script>
+
 }

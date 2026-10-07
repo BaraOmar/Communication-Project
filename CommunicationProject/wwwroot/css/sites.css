@@ -904,3 +904,2014 @@
         width: 100%;
     }
 }
+
+/* =========================================================
+   Sites Index
+   Navy / Beige / Gold Glass Theme
+   ========================================================= */
+
+
+/* =========================================================
+   Page
+   ========================================================= */
+
+.sites-page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 3.5rem;
+}
+
+
+/* =========================================================
+   Page Header
+   ========================================================= */
+
+.sites-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+
+.sites-title {
+    position: relative;
+    margin: 0;
+    padding-left: .8rem;
+    color: var(--navy);
+    font-size: 1.85rem;
+    font-weight: 800;
+    letter-spacing: -.03em;
+}
+
+
+    .sites-title::before {
+        content: "";
+        position: absolute;
+        top: 5px;
+        bottom: 5px;
+        left: 0;
+        width: 4px;
+        background: var(--gold);
+        border-radius: 999px;
+    }
+
+
+.sites-subtitle {
+    margin: .45rem 0 0 .8rem;
+    color: rgba(31, 42, 68, .52);
+    font-size: .9rem;
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   Add Site Button
+   ========================================================= */
+
+.sites-primary-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    min-height: 44px;
+    padding: 0 1.15rem;
+    border: 1px solid var(--navy);
+    border-radius: 12px;
+    background: var(--navy);
+    color: #ffffff;
+    font-size: .86rem;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 7px 18px rgba(31, 42, 68, .13);
+    transition: transform .25s ease, box-shadow .25s ease, background-color .25s ease;
+}
+
+
+    .sites-primary-btn span {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        border-radius: 7px;
+        background: rgba(198, 167, 94, .18);
+        color: var(--gold);
+        font-size: 1rem;
+        font-weight: 500;
+    }
+
+
+    .sites-primary-btn:hover {
+        background: var(--navy);
+        border-color: var(--navy);
+        color: #ffffff;
+        transform: translateY(-2px);
+        box-shadow: 0 11px 25px rgba(31, 42, 68, .18);
+    }
+
+
+/* =========================================================
+   Glass Cards
+   ========================================================= */
+
+.sites-card {
+    background: linear-gradient( 135deg, rgba(255, 255, 255, .96) 0%, rgba(255, 255, 255, .72) 100% );
+    border: 1px solid rgba(198, 167, 94, .16);
+    border-radius: 20px;
+    box-shadow: 0 12px 34px rgba(31, 42, 68, .05), 0 3px 10px rgba(31, 42, 68, .025), inset 0 1px 1px rgba(255, 255, 255, 1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+
+/* =========================================================
+   Filters
+   ========================================================= */
+
+.sites-filter-card {
+    position: relative;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+}
+
+
+    .sites-filter-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 24px;
+        right: 24px;
+        height: 2px;
+        background: linear-gradient( 90deg, transparent, rgba(198, 167, 94, .52), transparent );
+    }
+
+
+.sites-filter-grid {
+    display: grid;
+    grid-template-columns: minmax(280px, 1fr) 240px auto;
+    gap: .9rem;
+    align-items: end;
+}
+
+
+.sites-field label {
+    display: block;
+    margin-bottom: .45rem;
+    color: rgba(31, 42, 68, .72);
+    font-size: .76rem;
+    font-weight: 700;
+    letter-spacing: .015em;
+}
+
+
+/* =========================================================
+   Filter Inputs
+   ========================================================= */
+
+.sites-input,
+.sites-select {
+    width: 100%;
+    height: 44px;
+    padding: 0 .9rem;
+    background: rgba(255, 255, 255, .74);
+    border: 1px solid rgba(31, 42, 68, .10);
+    border-radius: 11px;
+    color: var(--navy);
+    font-size: .86rem;
+    outline: none;
+    box-shadow: inset 0 1px 2px rgba(31, 42, 68, .025);
+    transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+}
+
+
+    .sites-input::placeholder {
+        color: rgba(31, 42, 68, .34);
+    }
+
+
+    .sites-input:focus,
+    .sites-select:focus {
+        background: #ffffff;
+        border-color: rgba(198, 167, 94, .75);
+        box-shadow: 0 0 0 3px rgba(198, 167, 94, .12), inset 0 1px 2px rgba(31, 42, 68, .02);
+    }
+
+
+/* =========================================================
+   Filter Actions
+   ========================================================= */
+
+.sites-filter-actions {
+    display: flex;
+    gap: .55rem;
+}
+
+
+.sites-filter-btn,
+.sites-reset-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 1rem;
+    border-radius: 11px;
+    font-size: .82rem;
+    font-weight: 700;
+    transition: transform .2s ease, background-color .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+
+
+/* Apply */
+
+.sites-filter-btn {
+    border: 1px solid var(--navy);
+    background: var(--navy);
+    color: #ffffff;
+    box-shadow: 0 5px 14px rgba(31, 42, 68, .10);
+}
+
+
+    .sites-filter-btn:hover {
+        background: var(--navy);
+        border-color: var(--navy);
+        transform: translateY(-1px);
+        box-shadow: 0 7px 17px rgba(31, 42, 68, .14);
+    }
+
+
+/* Clear */
+
+.sites-reset-btn {
+    border: 1px solid rgba(31, 42, 68, .09);
+    background: rgba(255, 255, 255, .62);
+    color: rgba(31, 42, 68, .65);
+    text-decoration: none;
+}
+
+
+    .sites-reset-btn:hover {
+        background: #ffffff;
+        border-color: rgba(198, 167, 94, .24);
+        color: var(--navy);
+    }
+
+
+/* =========================================================
+   Table Card
+   ========================================================= */
+
+.sites-table-card {
+    position: relative;
+    overflow: hidden;
+}
+
+
+    .sites-table-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 30px;
+        right: 30px;
+        height: 2px;
+        background: linear-gradient( 90deg, transparent, rgba(198, 167, 94, .55), transparent );
+        z-index: 1;
+    }
+
+
+/* =========================================================
+   Table Header
+   ========================================================= */
+
+.sites-table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.15rem 1.4rem;
+    border-bottom: 1px solid rgba(31, 42, 68, .07);
+}
+
+
+.sites-table-title {
+    margin: 0;
+    color: var(--navy);
+    font-size: .95rem;
+    font-weight: 750;
+}
+
+
+.sites-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 28px;
+    padding: 0 .7rem;
+    background: rgba(198, 167, 94, .12);
+    border: 1px solid rgba(198, 167, 94, .16);
+    border-radius: 999px;
+    color: #8d743a;
+    font-size: .72rem;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   Table
+   ========================================================= */
+
+.sites-table {
+    width: 100%;
+    margin: 0;
+    border-collapse: collapse;
+}
+
+
+    .sites-table thead th {
+        padding: .85rem 1.4rem;
+        background: rgba(232, 220, 200, .20);
+        border-bottom: 1px solid rgba(31, 42, 68, .07);
+        color: rgba(31, 42, 68, .50);
+        font-size: .68rem;
+        font-weight: 800;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+    }
+
+
+    .sites-table tbody td {
+        padding: .95rem 1.4rem;
+        border-bottom: 1px solid rgba(31, 42, 68, .055);
+        color: rgba(31, 42, 68, .70);
+        font-size: .85rem;
+        vertical-align: middle;
+    }
+
+
+    .sites-table tbody tr {
+        transition: background-color .18s ease;
+    }
+
+
+        .sites-table tbody tr:hover {
+            background: rgba(198, 167, 94, .045);
+        }
+
+
+        .sites-table tbody tr:last-child td {
+            border-bottom: 0;
+        }
+
+
+/* =========================================================
+   Site Values
+   ========================================================= */
+
+.site-id {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 0 .6rem;
+    background: rgba(198, 167, 94, .11);
+    border: 1px solid rgba(198, 167, 94, .13);
+    border-radius: 8px;
+    color: var(--navy);
+    font-size: .78rem;
+    font-weight: 750;
+}
+
+
+.site-name {
+    color: var(--navy);
+    font-weight: 650;
+}
+
+
+.site-location {
+    color: rgba(31, 42, 68, .52);
+}
+
+
+/* =========================================================
+   Row Actions
+   ========================================================= */
+
+.site-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: .35rem;
+}
+
+
+.site-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
+    padding: 0 .65rem;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    font-size: .75rem;
+    font-weight: 650;
+    text-decoration: none;
+    transition: background-color .18s ease, color .18s ease, border-color .18s ease;
+}
+
+
+/* View */
+
+.site-action-view {
+    color: rgba(31, 42, 68, .58);
+}
+
+
+    .site-action-view:hover {
+        background: rgba(31, 42, 68, .055);
+        color: var(--navy);
+    }
+
+
+/* Edit */
+
+.site-action-edit {
+    color: var(--navy);
+}
+
+
+    .site-action-edit:hover {
+        background: rgba(31, 42, 68, .07);
+        border-color: rgba(31, 42, 68, .07);
+        color: var(--navy);
+    }
+
+
+/* Delete */
+
+.site-action-delete {
+    color: #b85b62;
+}
+
+
+    .site-action-delete:hover {
+        background: rgba(208, 93, 101, .075);
+        border-color: rgba(208, 93, 101, .08);
+        color: #a94b53;
+    }
+
+
+/* =========================================================
+   Empty State
+   ========================================================= */
+
+.sites-empty {
+    padding: 4rem 1rem !important;
+    text-align: center;
+}
+
+
+.sites-empty-title {
+    margin-bottom: .4rem;
+    color: var(--navy);
+    font-size: .95rem;
+    font-weight: 700;
+}
+
+
+.sites-empty-text {
+    margin: 0;
+    color: rgba(31, 42, 68, .43);
+    font-size: .83rem;
+}
+
+
+/* =========================================================
+   Pagination
+   ========================================================= */
+
+.sites-pagination-area {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.4rem;
+    border-top: 1px solid rgba(31, 42, 68, .07);
+    background: rgba(255, 255, 255, .26);
+}
+
+
+.sites-page-info {
+    flex-shrink: 0;
+    color: rgba(31, 42, 68, .45);
+    font-size: .78rem;
+}
+
+
+.sites-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: .25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+
+.sites-page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 .55rem;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    background: transparent;
+    color: rgba(31, 42, 68, .62);
+    font-size: .78rem;
+    font-weight: 650;
+    text-decoration: none;
+    transition: background-color .18s ease, color .18s ease, border-color .18s ease;
+}
+
+
+    .sites-page-link:hover {
+        background: rgba(198, 167, 94, .10);
+        border-color: rgba(198, 167, 94, .12);
+        color: var(--navy);
+    }
+
+
+    .sites-page-link.active {
+        background: var(--navy);
+        border-color: var(--navy);
+        color: #ffffff;
+        font-weight: 750;
+        box-shadow: 0 4px 12px rgba(31, 42, 68, .12);
+    }
+
+
+    .sites-page-link.disabled {
+        color: rgba(31, 42, 68, .22);
+        cursor: default;
+        pointer-events: none;
+    }
+
+
+.sites-page-ellipsis {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 34px;
+    color: rgba(31, 42, 68, .36);
+    font-size: .85rem;
+}
+
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    .sites-filter-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+
+    .sites-filter-actions {
+        grid-column: 1 / -1;
+    }
+}
+
+
+@media (max-width: 650px) {
+
+    .sites-page {
+        padding: 1.25rem .8rem 2rem;
+    }
+
+
+    .sites-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+
+    .sites-primary-btn {
+        width: 100%;
+    }
+
+
+    .sites-filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+
+    .sites-filter-actions {
+        grid-column: auto;
+    }
+
+
+    .sites-filter-btn,
+    .sites-reset-btn {
+        flex: 1;
+    }
+
+
+    .sites-pagination-area {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+
+    .sites-pagination {
+        justify-content: flex-start;
+    }
+}
+
+/* =========================================================
+   Site Details - Glass Resource View
+   ========================================================= */
+
+
+/* =========================================================
+   Main Details Layout
+   ========================================================= */
+
+.sites-details-page {
+    width: 100%;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 3.5rem;
+}
+
+
+.sites-details-page-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.5rem;
+}
+
+
+.sites-details-page-actions {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+}
+
+
+/* =========================================================
+   Site Information Card
+   ========================================================= */
+
+.sites-info-card {
+    display: flex;
+    gap: 1.25rem;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+
+.sites-info-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 54px;
+    height: 54px;
+    flex: 0 0 54px;
+    background: var(--navy);
+    border-radius: 16px;
+    color: var(--gold);
+    box-shadow: 0 8px 20px rgba(31, 42, 68, .14);
+}
+
+
+    .sites-info-icon svg {
+        width: 22px;
+        height: 22px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+
+.sites-info-content {
+    flex: 1;
+    min-width: 0;
+}
+
+
+.sites-info-heading {
+    margin-bottom: 1.25rem;
+}
+
+
+    .sites-info-heading h2 {
+        margin: 0;
+        color: var(--navy);
+        font-size: 1.05rem;
+        font-weight: 750;
+    }
+
+
+    .sites-info-heading span {
+        display: block;
+        margin-top: .25rem;
+        color: rgba(31, 42, 68, .40);
+        font-size: .73rem;
+    }
+
+
+.sites-info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+
+.sites-info-field {
+    padding: .9rem 1rem;
+    background: rgba(232, 220, 200, .16);
+    border: 1px solid rgba(31, 42, 68, .05);
+    border-radius: 12px;
+}
+
+
+.sites-info-label {
+    display: block;
+    margin-bottom: .3rem;
+    color: rgba(31, 42, 68, .40);
+    font-size: .66rem;
+    font-weight: 750;
+    letter-spacing: .055em;
+    text-transform: uppercase;
+}
+
+
+.sites-info-value {
+    display: block;
+    overflow: hidden;
+    color: var(--navy);
+    font-size: .86rem;
+    font-weight: 650;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   Summary Statistics
+   ========================================================= */
+
+.sites-resource-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .8rem;
+    margin-bottom: 1rem;
+}
+
+
+.sites-resource-stat {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    padding: .8rem 1rem;
+    background: rgba(255, 255, 255, .58);
+    border: 1px solid rgba(198, 167, 94, .14);
+    border-radius: 14px;
+}
+
+
+.sites-resource-stat-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 .55rem;
+    background: var(--navy);
+    border-radius: 10px;
+    color: var(--gold);
+    font-size: .8rem;
+    font-weight: 800;
+}
+
+
+.sites-resource-stat-label {
+    color: rgba(31, 42, 68, .62);
+    font-size: .78rem;
+    font-weight: 650;
+}
+
+
+/* =========================================================
+   Collapsible Resource Panels
+   ========================================================= */
+
+.sites-resource-panel {
+    margin-bottom: 1rem;
+    overflow: hidden;
+    background: linear-gradient( 135deg, rgba(255, 255, 255, .96), rgba(255, 255, 255, .74) );
+    border: 1px solid rgba(198, 167, 94, .16);
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(31, 42, 68, .045), inset 0 1px 1px rgba(255, 255, 255, 1);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+}
+
+
+/*
+   Remove native details marker
+*/
+
+.sites-resource-summary-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.15rem;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+}
+
+
+    .sites-resource-summary-header::-webkit-details-marker {
+        display: none;
+    }
+
+
+.sites-resource-summary-left {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+
+
+    .sites-resource-summary-left > span:last-child {
+        display: flex;
+        flex-direction: column;
+    }
+
+
+    .sites-resource-summary-left strong {
+        color: var(--navy);
+        font-size: .88rem;
+        font-weight: 750;
+    }
+
+
+    .sites-resource-summary-left small {
+        margin-top: .2rem;
+        color: rgba(31, 42, 68, .42);
+        font-size: .7rem;
+    }
+
+
+.sites-resource-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    background: var(--navy);
+    border-radius: 12px;
+    color: var(--gold);
+}
+
+
+    .sites-resource-icon svg {
+        width: 18px;
+        height: 18px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+
+.sites-resource-summary-right {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+}
+
+
+.sites-resource-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 .5rem;
+    background: rgba(198, 167, 94, .12);
+    border: 1px solid rgba(198, 167, 94, .15);
+    border-radius: 999px;
+    color: #8b7239;
+    font-size: .7rem;
+    font-weight: 750;
+}
+
+
+.sites-resource-chevron {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    background: rgba(31, 42, 68, .045);
+    border-radius: 9px;
+    color: rgba(31, 42, 68, .52);
+    transition: transform .25s ease;
+}
+
+
+.sites-resource-panel[open]
+.sites-resource-chevron {
+    transform: rotate(180deg);
+}
+
+
+/* =========================================================
+   Expand Body
+   ========================================================= */
+
+.sites-resource-body {
+    padding: .2rem 1.15rem 1.15rem;
+    border-top: 1px solid rgba(31, 42, 68, .055);
+}
+
+
+/* =========================================================
+   Link List
+   ========================================================= */
+
+.sites-links-list {
+    display: flex;
+    flex-direction: column;
+    gap: .65rem;
+    padding-top: .9rem;
+}
+
+
+.sites-link-item {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) minmax(400px, 1.8fr) auto;
+    align-items: center;
+    gap: 1rem;
+    padding: .85rem .9rem;
+    background: rgba(248, 245, 239, .62);
+    border: 1px solid rgba(31, 42, 68, .055);
+    border-radius: 13px;
+    transition: background-color .18s ease, border-color .18s ease;
+}
+
+
+    .sites-link-item:hover {
+        background: rgba(255, 255, 255, .90);
+        border-color: rgba(198, 167, 94, .17);
+    }
+
+
+.sites-link-main {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    gap: .7rem;
+}
+
+
+.sites-link-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    background: rgba(31, 42, 68, .07);
+    border-radius: 10px;
+    color: var(--navy);
+}
+
+
+    .sites-link-icon svg {
+        width: 16px;
+        height: 16px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+    }
+
+
+.sites-link-info {
+    min-width: 0;
+}
+
+
+.sites-link-name {
+    overflow: hidden;
+    color: var(--navy);
+    font-size: .8rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+.sites-link-route {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    margin-top: .25rem;
+    color: rgba(31, 42, 68, .43);
+    font-size: .67rem;
+}
+
+
+.sites-link-route-arrow {
+    color: var(--gold-dark);
+}
+
+
+/* =========================================================
+   Link Metadata
+   ========================================================= */
+
+.sites-link-meta {
+    display: grid;
+    grid-template-columns: 1.5fr .8fr .8fr;
+    gap: .7rem;
+}
+
+
+.sites-link-meta-item {
+    min-width: 0;
+}
+
+
+    .sites-link-meta-item span {
+        display: block;
+        margin-bottom: .2rem;
+        color: rgba(31, 42, 68, .36);
+        font-size: .61rem;
+        font-weight: 700;
+        letter-spacing: .035em;
+        text-transform: uppercase;
+    }
+
+
+    .sites-link-meta-item strong {
+        display: block;
+        overflow: hidden;
+        color: rgba(31, 42, 68, .73);
+        font-size: .7rem;
+        font-weight: 650;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+
+/* =========================================================
+   Resource View Action
+   ========================================================= */
+
+.sites-resource-view {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    min-height: 34px;
+    padding: 0 .7rem;
+    border: 1px solid rgba(31, 42, 68, .08);
+    border-radius: 9px;
+    background: rgba(255, 255, 255, .70);
+    color: var(--navy);
+    font-size: .7rem;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color .18s ease, border-color .18s ease, transform .18s ease;
+}
+
+
+    .sites-resource-view:hover {
+        background: var(--navy);
+        border-color: var(--navy);
+        color: #ffffff;
+        transform: translateY(-1px);
+    }
+
+
+    .sites-resource-view span {
+        color: var(--gold);
+    }
+
+
+/* =========================================================
+   MUX Grid
+   ========================================================= */
+
+.sites-mux-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .75rem;
+    padding-top: .9rem;
+}
+
+
+.sites-mux-item {
+    padding: 1rem;
+    background: rgba(248, 245, 239, .62);
+    border: 1px solid rgba(31, 42, 68, .055);
+    border-radius: 14px;
+}
+
+
+.sites-mux-header {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    margin-bottom: 1rem;
+}
+
+
+.sites-mux-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    background: var(--navy);
+    border-radius: 11px;
+    color: var(--gold);
+}
+
+
+    .sites-mux-icon svg {
+        width: 17px;
+        height: 17px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+    }
+
+
+.sites-mux-header h3 {
+    margin: 0;
+    color: var(--navy);
+    font-size: .82rem;
+    font-weight: 750;
+}
+
+
+.sites-mux-header span {
+    display: block;
+    margin-top: .22rem;
+    color: rgba(31, 42, 68, .42);
+    font-size: .67rem;
+}
+
+
+.sites-mux-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: .55rem;
+    margin-bottom: .85rem;
+}
+
+
+    .sites-mux-stats > div {
+        padding: .65rem .75rem;
+        background: rgba(255, 255, 255, .62);
+        border-radius: 10px;
+    }
+
+
+    .sites-mux-stats span {
+        display: block;
+        color: rgba(31, 42, 68, .37);
+        font-size: .62rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+
+    .sites-mux-stats strong {
+        display: block;
+        margin-top: .2rem;
+        color: var(--navy);
+        font-size: .86rem;
+        font-weight: 750;
+    }
+
+
+/* =========================================================
+   Empty Resource State
+   ========================================================= */
+
+.sites-resource-empty {
+    padding: 2.5rem 1rem 1.5rem;
+    text-align: center;
+}
+
+
+.sites-resource-empty-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    margin-bottom: .65rem;
+    background: rgba(198, 167, 94, .12);
+    border-radius: 11px;
+    color: #92783e;
+    font-weight: 700;
+}
+
+
+.sites-resource-empty strong {
+    display: block;
+    color: var(--navy);
+    font-size: .82rem;
+}
+
+
+.sites-resource-empty p {
+    max-width: 390px;
+    margin: .35rem auto 0;
+    color: rgba(31, 42, 68, .42);
+    font-size: .72rem;
+    line-height: 1.55;
+}
+
+
+/* =========================================================
+   Bottom Actions
+   ========================================================= */
+
+.sites-details-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1.3rem;
+}
+
+
+.sites-delete-link {
+    color: #b85b62;
+    font-size: .77rem;
+    font-weight: 650;
+    text-decoration: none;
+}
+
+
+    .sites-delete-link:hover {
+        color: #a34850;
+    }
+
+
+/* =========================================================
+   Responsive Site Details
+   ========================================================= */
+
+@media (max-width: 950px) {
+
+    .sites-link-item {
+        grid-template-columns: 1fr;
+    }
+
+
+    .sites-link-meta {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+
+    .sites-resource-view {
+        justify-self: start;
+    }
+}
+
+
+@media (max-width: 720px) {
+
+    .sites-details-page-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+
+    .sites-details-page-actions {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+
+    .sites-info-card {
+        flex-direction: column;
+    }
+
+
+    .sites-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+
+    .sites-resource-summary {
+        grid-template-columns: 1fr;
+    }
+
+
+    .sites-mux-grid {
+        grid-template-columns: 1fr;
+    }
+
+
+    .sites-link-meta {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+@media (max-width: 520px) {
+
+    .sites-details-page {
+        padding: 1.25rem .8rem 2rem;
+    }
+
+
+    .sites-details-page-actions {
+        flex-direction: column;
+    }
+
+
+        .sites-details-page-actions
+        .sites-primary-btn,
+        .sites-details-page-actions
+        .sites-secondary-btn {
+            width: 100%;
+        }
+
+
+    .sites-resource-summary-header {
+        padding: .9rem;
+    }
+
+
+    .sites-resource-body {
+        padding: .2rem .9rem .9rem;
+    }
+
+
+    .sites-details-bottom {
+        align-items: stretch;
+        flex-direction: column;
+        gap: .8rem;
+    }
+}
+/* =========================================================
+   Add / Edit Site
+   ========================================================= */
+
+.sites-form-page {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 3.5rem;
+}
+
+
+/* =========================================================
+   Header
+   ========================================================= */
+
+.sites-form-header {
+    margin-bottom: 1.35rem;
+}
+
+
+.sites-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    margin-bottom: 1.1rem;
+    color: rgba(31, 42, 68, .52);
+    font-size: .78rem;
+    font-weight: 650;
+    text-decoration: none;
+    transition: color .18s ease, transform .18s ease;
+}
+
+
+    .sites-back-link:hover {
+        color: var(--navy);
+        transform: translateX(-2px);
+    }
+
+
+.sites-form-heading {
+    display: flex;
+    align-items: center;
+    gap: .9rem;
+}
+
+
+.sites-form-heading-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    flex: 0 0 48px;
+    background: var(--navy);
+    border-radius: 14px;
+    color: var(--gold);
+    box-shadow: 0 8px 20px rgba(31, 42, 68, .14);
+}
+
+
+    .sites-form-heading-icon svg {
+        width: 20px;
+        height: 20px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+
+.sites-form-title {
+    margin: 0;
+    color: var(--navy);
+    font-size: 1.65rem;
+    font-weight: 800;
+    letter-spacing: -.03em;
+}
+
+
+.sites-form-subtitle {
+    margin: .3rem 0 0;
+    color: rgba(31, 42, 68, .48);
+    font-size: .82rem;
+    line-height: 1.5;
+}
+
+
+    .sites-form-subtitle strong {
+        color: rgba(31, 42, 68, .72);
+        font-weight: 700;
+    }
+
+
+/* =========================================================
+   Main Form Card
+   ========================================================= */
+
+.sites-form-card-modern {
+    position: relative;
+    padding: 0;
+    overflow: hidden;
+}
+
+
+    .sites-form-card-modern::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 32px;
+        right: 32px;
+        height: 2px;
+        background: linear-gradient( 90deg, transparent, rgba(198, 167, 94, .62), transparent );
+    }
+
+
+/* =========================================================
+   Form Section
+   ========================================================= */
+
+.sites-form-section {
+    padding: 1.6rem;
+}
+
+
+.sites-form-section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: .65rem;
+    margin-bottom: 1.4rem;
+}
+
+
+.sites-form-section-mark {
+    width: 4px;
+    height: 34px;
+    flex: 0 0 4px;
+    background: var(--gold);
+    border-radius: 999px;
+}
+
+
+.sites-form-section-header h2 {
+    margin: 0;
+    color: var(--navy);
+    font-size: .92rem;
+    font-weight: 750;
+}
+
+
+.sites-form-section-header p {
+    margin: .25rem 0 0;
+    color: rgba(31, 42, 68, .42);
+    font-size: .72rem;
+}
+
+
+/* =========================================================
+   Grid
+   ========================================================= */
+
+.sites-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.2rem 1rem;
+}
+
+
+.sites-form-group {
+    margin: 0;
+}
+
+
+.sites-form-group-wide {
+    grid-column: 1 / -1;
+}
+
+
+/* =========================================================
+   Labels
+   ========================================================= */
+
+.sites-form-label {
+    display: block;
+    margin-bottom: .45rem;
+    color: rgba(31, 42, 68, .70);
+    font-size: .74rem;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   Inputs
+   ========================================================= */
+
+.sites-form-control {
+    width: 100%;
+    height: 46px;
+    padding: 0 .9rem;
+    background: rgba(255, 255, 255, .70);
+    border: 1px solid rgba(31, 42, 68, .10);
+    border-radius: 11px;
+    color: var(--navy);
+    font-size: .86rem;
+    outline: none;
+    box-shadow: inset 0 1px 2px rgba(31, 42, 68, .025);
+    transition: background-color .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+
+
+    .sites-form-control::placeholder {
+        color: rgba(31, 42, 68, .30);
+    }
+
+
+    .sites-form-control:hover {
+        border-color: rgba(31, 42, 68, .16);
+    }
+
+
+    .sites-form-control:focus {
+        background: #ffffff;
+        border-color: rgba(198, 167, 94, .78);
+        box-shadow: 0 0 0 3px rgba(198, 167, 94, .12), inset 0 1px 2px rgba(31, 42, 68, .02);
+    }
+
+
+/* =========================================================
+   Hints / Validation
+   ========================================================= */
+
+.sites-form-hint {
+    margin-top: .38rem;
+    color: rgba(31, 42, 68, .37);
+    font-size: .67rem;
+}
+
+
+.sites-validation {
+    display: block;
+    margin-top: .35rem;
+    color: #b6565e;
+    font-size: .69rem;
+}
+
+
+.sites-validation-summary {
+    margin: 1.3rem 1.6rem 0;
+    padding: 0;
+    color: #b6565e;
+    font-size: .75rem;
+}
+
+
+    .sites-validation-summary:empty {
+        display: none;
+    }
+
+
+    .sites-validation-summary ul {
+        margin: 0;
+        padding: .8rem 1rem .8rem 1.8rem;
+        background: rgba(208, 93, 101, .07);
+        border: 1px solid rgba(208, 93, 101, .12);
+        border-radius: 11px;
+    }
+
+
+/* =========================================================
+   Readonly Site ID
+   ========================================================= */
+
+.sites-readonly-field {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 46px;
+    padding: 0 .85rem 0 .9rem;
+    background: rgba(232, 220, 200, .20);
+    border: 1px solid rgba(31, 42, 68, .07);
+    border-radius: 11px;
+}
+
+
+.sites-readonly-value {
+    color: var(--navy);
+    font-size: .86rem;
+    font-weight: 700;
+}
+
+
+.sites-readonly-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 24px;
+    padding: 0 .55rem;
+    background: rgba(198, 167, 94, .13);
+    border: 1px solid rgba(198, 167, 94, .15);
+    border-radius: 999px;
+    color: #8c743d;
+    font-size: .62rem;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   Form Actions
+   ========================================================= */
+
+.sites-form-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: .65rem;
+    padding: 1rem 1.6rem;
+    border-top: 1px solid rgba(31, 42, 68, .065);
+    background: rgba(248, 245, 239, .42);
+}
+
+
+.sites-secondary-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0 1rem;
+    border: 1px solid rgba(31, 42, 68, .09);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, .62);
+    color: rgba(31, 42, 68, .62);
+    font-size: .78rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background-color .18s ease, color .18s ease, border-color .18s ease;
+}
+
+
+    .sites-secondary-btn:hover {
+        background: #ffffff;
+        border-color: rgba(198, 167, 94, .22);
+        color: var(--navy);
+    }
+
+
+.sites-save-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .45rem;
+    min-height: 42px;
+    padding: 0 1.05rem;
+    border: 1px solid var(--navy);
+    border-radius: 10px;
+    background: var(--navy);
+    color: #ffffff;
+    font-size: .78rem;
+    font-weight: 700;
+    box-shadow: 0 6px 16px rgba(31, 42, 68, .13);
+    cursor: pointer;
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+
+
+    .sites-save-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 9px 20px rgba(31, 42, 68, .17);
+    }
+
+
+.sites-save-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background: rgba(198, 167, 94, .17);
+    border-radius: 6px;
+    color: var(--gold);
+    font-size: .9rem;
+}
+
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+@media (max-width: 650px) {
+
+    .sites-form-page {
+        padding: 1.25rem .8rem 2rem;
+    }
+
+
+    .sites-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+
+    .sites-form-group-wide {
+        grid-column: auto;
+    }
+
+
+    .sites-form-section {
+        padding: 1.2rem;
+    }
+
+
+    .sites-form-actions {
+        align-items: stretch;
+        flex-direction: column-reverse;
+        padding: 1rem 1.2rem;
+    }
+
+
+    .sites-secondary-btn,
+    .sites-save-btn {
+        width: 100%;
+    }
+}
+/* =========================================================
+   Delete Site
+   ========================================================= */
+
+.sites-delete-card-modern {
+    overflow: hidden;
+    padding: 0;
+}
+
+
+/* =========================================================
+   Delete Header Icon
+   ========================================================= */
+
+.sites-delete-heading-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    flex: 0 0 48px;
+    background: rgba(186, 82, 91, .10);
+    border: 1px solid rgba(186, 82, 91, .14);
+    border-radius: 14px;
+    color: #b5525b;
+}
+
+
+    .sites-delete-heading-icon svg {
+        width: 20px;
+        height: 20px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+
+/* =========================================================
+   Warning
+   ========================================================= */
+
+.sites-delete-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: .8rem;
+    margin: 1.4rem 1.6rem 0;
+    padding: .95rem 1rem;
+    background: rgba(186, 82, 91, .065);
+    border: 1px solid rgba(186, 82, 91, .12);
+    border-radius: 12px;
+}
+
+
+.sites-delete-warning-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    background: rgba(186, 82, 91, .12);
+    border-radius: 9px;
+    color: #ad4d56;
+    font-size: .8rem;
+    font-weight: 800;
+}
+
+
+.sites-delete-warning strong {
+    display: block;
+    color: #99464e;
+    font-size: .78rem;
+    font-weight: 750;
+}
+
+
+.sites-delete-warning p {
+    margin: .25rem 0 0;
+    color: rgba(127, 55, 61, .70);
+    font-size: .7rem;
+    line-height: 1.55;
+}
+
+
+/* =========================================================
+   Delete Content
+   ========================================================= */
+
+.sites-delete-content {
+    padding: 1.5rem 1.6rem;
+}
+
+
+/* =========================================================
+   Site Summary
+   ========================================================= */
+
+.sites-delete-summary-modern {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .8rem;
+}
+
+
+.sites-delete-field {
+    padding: .9rem 1rem;
+    background: rgba(232, 220, 200, .17);
+    border: 1px solid rgba(31, 42, 68, .055);
+    border-radius: 11px;
+}
+
+
+.sites-detail-label {
+    display: block;
+    margin-bottom: .3rem;
+    color: rgba(31, 42, 68, .40);
+    font-size: .63rem;
+    font-weight: 750;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+}
+
+
+.sites-detail-value {
+    display: block;
+    overflow: hidden;
+    color: var(--navy);
+    font-size: .84rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   Danger Button
+   ========================================================= */
+
+.sites-danger-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .45rem;
+    min-height: 42px;
+    padding: 0 1rem;
+    border: 1px solid #b5525b;
+    border-radius: 10px;
+    background: #b5525b;
+    color: #ffffff;
+    font-size: .78rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(181, 82, 91, .14);
+    transition: transform .2s ease, background-color .2s ease, box-shadow .2s ease;
+}
+
+
+    .sites-danger-btn:hover {
+        background: #a54952;
+        transform: translateY(-1px);
+        box-shadow: 0 9px 20px rgba(181, 82, 91, .19);
+    }
+
+
+.sites-danger-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background: rgba(255, 255, 255, .13);
+    border-radius: 6px;
+    font-size: .9rem;
+}
+
+
+/* =========================================================
+   Delete Responsive
+   ========================================================= */
+
+@media (max-width: 650px) {
+
+    .sites-delete-summary-modern {
+        grid-template-columns: 1fr;
+    }
+
+
+    .sites-delete-warning {
+        margin: 1rem 1.2rem 0;
+    }
+
+
+    .sites-delete-content {
+        padding: 1.2rem;
+    }
+}
+.sites-details-header-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .55rem;
+}
+
+
+@media (max-width: 650px) {
+
+    .sites-details-header-actions {
+        width: 100%;
+    }
+}
