@@ -1,0 +1,162 @@
+﻿@model CommunicationProject.ViewModels.CustomerPathUsageViewModel
+
+@{
+    string dialogId =
+        $"path-status-{Model.CustomerConnectionId}";
+
+    string returnUrl =
+        Context.Request.Path.ToString() +
+        Context.Request.QueryString.ToString() +
+        "#" +
+        ViewData["PathBodyId"];
+}
+
+<dialog id="@dialogId"
+        class="path-status-dialog"
+        aria-labelledby="@(dialogId)-title">
+
+    <form asp-controller="SearchPath"
+          asp-action="ChangeE1Status"
+          method="post">
+
+        <input type="hidden"
+               name="CustomerConnectionId"
+               value="@Model.CustomerConnectionId" />
+
+        <input type="hidden"
+               name="ReturnUrl"
+               value="@returnUrl" />
+
+        <div class="path-status-dialog-header">
+            <div>
+                <h2 id="@(dialogId)-title">
+                    Change E1 status
+                </h2>
+
+                <p>
+                    Customer:
+                    <strong>@Model.CustomerName</strong>
+                </p>
+            </div>
+
+            <button type="button"
+                    data-path-status-close
+                    aria-label="Close status dialog">
+                ×
+            </button>
+        </div>
+
+        <p>
+            Connected and Wrong affect only checked endpoints.
+            Available releases each selected physical E1 pair from the
+            customer's path, including its opposite endpoint and LTU assignments.
+        </p>
+
+        <div class="path-status-selection-actions">
+            <button type="button"
+                    data-path-status-select-all>
+                Select all
+            </button>
+
+            <button type="button"
+                    data-path-status-clear>
+                Clear selection
+            </button>
+
+            <span data-path-status-count
+                  aria-live="polite">
+                0 selected
+            </span>
+        </div>
+
+        <fieldset class="path-status-endpoints">
+            <legend>
+                E1 endpoints in this customer's path
+            </legend>
+
+            @foreach (var endpoint in Model.StatusEndpoints)
+            {
+                <label class="path-status-endpoint-choice">
+                    <input type="checkbox"
+                           name="E1Ids"
+                           value="@endpoint.E1Id"
+                           data-current-status="@endpoint.Status" />
+
+                    <span>
+                        <strong>
+                            Site @endpoint.SiteId —
+                            @endpoint.DisplayText
+                        </strong>
+
+                        <small>
+                            @endpoint.LinkName ·
+                            Current status: @endpoint.Status
+                        </small>
+                    </span>
+                </label>
+            }
+        </fieldset>
+
+        <div class="path-status-fields">
+            <label>
+                New status
+
+                <select name="Status" required data-path-new-status>
+                    <option value="">Select status</option>
+                    <option value="Available">Available</option>
+                    <option value="Wrong">Wrong</option>
+                    <option value="Connected">Connected</option>
+                </select>
+            </label>
+
+            <label>
+                Visitor name
+
+                <input type="text"
+                       name="VisitorName"
+                       maxlength="200"
+                       required />
+            </label>
+
+            <label>
+                Visit date
+
+                <input type="date"
+                       name="VisitDate"
+                       value="@DateTime.Today.ToString("yyyy-MM-dd")"
+                       required />
+            </label>
+
+            <label class="path-status-description">
+                Description / notes
+
+                <textarea name="Description"
+                          rows="3"
+                          maxlength="1000"
+                          data-path-status-description></textarea>
+
+                <small>
+                    Required for Connected. Use notes to explain an incorrect
+                    point or why an E1 was released.
+                </small>
+            </label>
+        </div>
+
+        <p class="path-status-error"
+           data-path-status-error
+           role="alert"
+           hidden></p>
+
+        <div class="path-status-dialog-footer">
+            <button type="button"
+                    data-path-status-close>
+                Cancel
+            </button>
+
+            <button type="submit"
+                    class="path-manage-btn">
+                Save selected E1s
+            </button>
+        </div>
+    </form>
+</dialog>

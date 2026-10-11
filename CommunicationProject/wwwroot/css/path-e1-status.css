@@ -1,0 +1,253 @@
+﻿.path-e1-status-list {
+    display: grid;
+    gap: .65rem;
+    margin-top: .85rem;
+}
+
+.path-e1-status-item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding: .8rem 1rem;
+    border: 1px solid #dbe3ed;
+    border-radius: .7rem;
+    background: #fff;
+}
+
+.path-e1-status-identity {
+    display: grid;
+    gap: .2rem;
+    min-width: 0;
+}
+
+    .path-e1-status-identity small {
+        color: #526175;
+        overflow-wrap: anywhere;
+    }
+
+.path-e1-status-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    align-items: center;
+}
+
+.path-status-dialog {
+    width: min(760px, calc(100vw - 2rem));
+    max-height: calc(100vh - 2rem);
+    padding: 1.4rem;
+    border: 0;
+    border-radius: 1rem;
+    background: #fff;
+    color: #17253a;
+    box-shadow: 0 20px 65px #10203b33;
+}
+
+    .path-status-dialog::backdrop {
+        background: #10203b99;
+    }
+
+.path-status-dialog-header,
+.path-status-dialog-footer,
+.path-status-selection-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .6rem;
+}
+
+    .path-status-dialog-header h2 {
+        font-size: 1.4rem;
+        margin: 0 0 .35rem;
+    }
+
+    .path-status-dialog-header button {
+        font-size: 1.6rem;
+        line-height: 1;
+    }
+
+.path-status-dialog button {
+    cursor: pointer;
+}
+
+    .path-status-dialog button:not(.path-manage-btn) {
+        border: 1px solid #cbd5e1;
+        border-radius: .5rem;
+        padding: .45rem .7rem;
+        background: #f8fafc;
+        color: inherit;
+    }
+
+.path-status-selection-actions {
+    justify-content: flex-start;
+    margin: 1rem 0 .6rem;
+}
+
+.path-status-endpoints {
+    border: 1px solid #dbe3ed;
+    border-radius: .7rem;
+    padding: .6rem;
+    max-height: 260px;
+    overflow: auto;
+}
+
+    .path-status-endpoints legend {
+        float: none;
+        width: auto;
+        font-size: .9rem;
+        padding: 0 .3rem;
+    }
+
+.path-status-endpoint-choice {
+    display: flex;
+    gap: .65rem;
+    align-items: flex-start;
+    padding: .65rem;
+    cursor: pointer;
+    border-radius: .4rem;
+}
+
+    .path-status-endpoint-choice:has(input:checked) {
+        background: #eff6ff;
+    }
+
+    .path-status-endpoint-choice input {
+        margin-top: .25rem;
+    }
+
+    .path-status-endpoint-choice span {
+        display: grid;
+        gap: .25rem;
+        overflow-wrap: anywhere;
+    }
+
+    .path-status-endpoint-choice small,
+    .path-status-description small {
+        color: #526175;
+    }
+
+.path-status-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .85rem;
+    margin: 1rem 0;
+}
+
+    .path-status-fields label {
+        display: grid;
+        gap: .35rem;
+    }
+
+    .path-status-fields input,
+    .path-status-fields select,
+    .path-status-fields textarea {
+        width: 100%;
+        padding: .55rem .7rem;
+        border: 1px solid #cbd5e1;
+        border-radius: .45rem;
+        font: inherit;
+    }
+
+.path-status-description {
+    grid-column: 1 / -1;
+}
+
+.path-status-error {
+    color: #b91c1c;
+}
+
+.path-status-dialog-footer {
+    justify-content: flex-end;
+    margin-top: .85rem;
+}
+
+.path-status-dialog :focus-visible,
+.path-e1-status-list :focus-visible {
+    outline: 3px solid #93c5fd;
+    outline-offset: 2px;
+}
+
+@media (max-width: 540px) {
+    .path-status-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .path-status-dialog {
+        padding: 1rem;
+    }
+}
+/* Compact E1 controls inside the existing site card. */
+
+.path-flow-site-info .path-e1-status-list {
+    gap: 0;
+    margin-top: .6rem;
+    border-top: 1px solid #e5e9ef;
+}
+
+.path-flow-site-info .path-e1-status-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: .4rem .6rem;
+    padding: .5rem 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+}
+
+    .path-flow-site-info .path-e1-status-item + .path-e1-status-item {
+        border-top: 1px solid #eef1f5;
+    }
+
+.path-flow-site-info .path-e1-status-identity {
+    gap: .12rem;
+}
+
+    .path-flow-site-info .path-e1-status-identity strong {
+        color: #263248;
+        font-size: .7rem;
+        font-weight: 650;
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+    }
+
+    .path-flow-site-info .path-e1-status-identity small {
+        color: #8993a4;
+        font-size: .6rem;
+        line-height: 1.3;
+    }
+
+        /* The site card already displays the link names. */
+        .path-flow-site-info .path-e1-status-identity small:last-child {
+            display: none;
+        }
+
+.path-flow-site-info .path-e1-status-actions {
+    justify-content: flex-end;
+    gap: .3rem;
+}
+
+.path-flow-site-info .path-status-badge {
+    padding: .2rem .4rem;
+    font-size: .58rem;
+    white-space: nowrap;
+}
+
+.path-flow-site-info .path-manage-btn {
+    min-height: 26px;
+    padding: .2rem .4rem;
+    font-size: .58rem;
+}
+
+@media (max-width: 540px) {
+    .path-flow-site-info .path-e1-status-item {
+        grid-template-columns: 1fr;
+    }
+
+    .path-flow-site-info .path-e1-status-actions {
+        justify-content: flex-start;
+    }
+}

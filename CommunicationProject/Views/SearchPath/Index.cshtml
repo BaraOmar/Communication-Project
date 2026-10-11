@@ -10,6 +10,10 @@
     <link rel="stylesheet"
           href="~/css/searchpath.css"
           asp-append-version="true" />
+
+    <link rel="stylesheet"
+          href="~/css/path-e1-status.css"
+          asp-append-version="true" />
 }
 
 
@@ -494,7 +498,38 @@
                                             }
 
                                         </div>
+                                        <div class="path-e1-status-list">
+                                            @foreach (var customer in path.Customers)
+                                            {
+                                                @foreach (var endpoint in customer.StatusEndpoints.Where(endpoint =>
+                                                    string.Equals(endpoint.SiteId, currentSiteId, StringComparison.OrdinalIgnoreCase)))
+                                                {
+                                                    <div class="path-e1-status-item">
+                                                        <div class="path-e1-status-identity">
+                                                            <small>Customer: @customer.CustomerName</small>
+                                                            <strong>@endpoint.DisplayText</strong>
+                                                            <small>@endpoint.LinkName</small>
+                                                        </div>
 
+                                                        <div class="path-e1-status-actions">
+                                                            <span class="path-status-badge path-status-@endpoint.Status.ToString().ToLowerInvariant()">
+                                                                @endpoint.Status
+                                                            </span>
+
+                                                            @if (User.IsInRole("Admin") || User.IsInRole("Operator"))
+                                                            {
+                                                                <button type="button"
+                                                                        class="path-manage-btn"
+                                                                        data-path-status-dialog="path-status-@customer.CustomerConnectionId"
+                                                                        data-path-status-e1="@endpoint.E1Id">
+                                                                    Change status
+                                                                </button>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                }
+                                            }
+                                        </div>
                                     </div>
 
 
@@ -564,8 +599,10 @@
 
 
                                                     <!-- Status + Manage -->
-
-                                                    <div class="
+                                                    <small class="path-readable-cross-note">
+                                                        Customer: @item.Customer.CustomerName
+                                                    </small>
+                                                   @*  <div class="
                                                         path-readable-cross-actions">
 
                                                         @if (
@@ -647,13 +684,15 @@
                                                             </a>
                                                         }
 
-                                                    </div>
+                                                    </div> *@
 
                                                 </div>
                                             }
 
                                         </div>
                                     }
+
+                                  
 
                                 </div>
 
@@ -946,7 +985,15 @@
                     </div>
 
                 </div>
+                @if (User.IsInRole("Admin") || User.IsInRole("Operator"))
+                {
+                    ViewData["PathBodyId"] = pathBodyId;
 
+                    @foreach (var customer in path.Customers.Where(customer => customer.StatusEndpoints.Count > 0))
+                    {
+                        <partial name="_PathE1StatusDialog" model="customer" />
+                    }
+                }
             </article>
         }
 
@@ -1178,7 +1225,7 @@
 
 
 @section Scripts {
-
+    <script src="~/js/path-e1-status.js" asp-append-version="true"></script>
     <script>
         (() => {
 

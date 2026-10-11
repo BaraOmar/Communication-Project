@@ -16,7 +16,7 @@ namespace CommunicationProject.Controllers
         AppRoles.Admin + "," +
         AppRoles.Operator + "," +
         AppRoles.Viewer)]
-    public class SearchPathController : Controller
+    public partial class SearchPathController : Controller
     {
         private readonly CommunicationDbContext _context;
 
@@ -80,7 +80,7 @@ namespace CommunicationProject.Controllers
 
         .OrderBy(path =>
             path.CreatedAt)
-
+        .ThenBy(path => path.Id)
         .ToListAsync();
 
 
@@ -405,8 +405,18 @@ namespace CommunicationProject.Controllers
                                     var outgoingE1 =
                                         currentSegment.E1;
 
-
-                                    if (incomingE1 == null)
+                                    // Show only adjacent route segments with a real reciprocal join.
+                                    if (incomingE1 == null ||
+                                        currentSegment.CommunicationPathSegment.Order !=
+                                            previousSegment.CommunicationPathSegment.Order + 1 ||
+                                        !string.Equals(
+                                            previousSegment.CommunicationPathSegment
+                                                .CommunicationLink.SiteToId,
+                                            currentSegment.CommunicationPathSegment
+                                                .CommunicationLink.SiteFromId,
+                                            StringComparison.OrdinalIgnoreCase) ||
+                                        incomingE1.JoinE1Id != outgoingE1.Id ||
+                                        outgoingE1.JoinE1Id != incomingE1.Id)
                                     {
                                         continue;
                                     }
@@ -516,6 +526,11 @@ namespace CommunicationProject.Controllers
                                 {
                                     CustomerConnectionId =
                                         connection.Id,
+                                    StatusEndpoints =
+        BuildStatusEndpoints(
+            connection,
+            stmPortLookup),
+
 
                                     ManageE1Id =
     customerSegments.Count > 0

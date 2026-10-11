@@ -63,6 +63,9 @@ namespace CommunicationProject.ViewModels
     public class CustomerPathUsageViewModel
     {
         public Guid CustomerConnectionId { get; set; }
+
+        public List<PathE1EndpointViewModel> StatusEndpoints { get; set; }
+    = new();
         public Guid? ManageE1Id { get; set; }
 
         public string CustomerName { get; set; } =
