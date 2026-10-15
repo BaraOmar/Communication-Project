@@ -1,0 +1,148 @@
+﻿@model CommunicationProject.ViewModels.SiteDetailsViewModel
+
+@{
+    var filters = new[]
+    {
+        (Value: "", Text: "All"),
+        (Value: "available", Text: "Available"),
+        (Value: "wrong", Text: "Wrong"),
+        (Value: "connected", Text: "Connected")
+    };
+}
+
+<details id="site-e1s" class="sites-resource-panel">
+    <summary class="sites-resource-summary-header">
+        <span class="sites-resource-summary-left">
+            <span class="sites-resource-icon">E1</span>
+            <span>
+                <strong>E1s</strong>
+                <small>E1s at this site, including SDH and PDH</small>
+            </span>
+        </span>
+
+        <span class="sites-resource-summary-right">
+            <span class="sites-resource-count">
+                @Model.E1TotalItems
+            </span>
+            <span class="sites-resource-chevron">↓</span>
+        </span>
+    </summary>
+
+    <div class="sites-resource-body">
+        <nav class="site-e1-filters"
+             aria-label="Filter E1s by status">
+            @foreach (var filter in filters)
+            {
+                bool active =
+                    (Model.E1Status ?? "") == filter.Value;
+
+                <a asp-controller="Sites"
+                       asp-action="Details"
+                       asp-route-id="@Model.Site.Id"
+                       asp-route-e1Status="@filter.Value"
+                       asp-route-e1PageNumber="1"
+                       asp-fragment="site-e1s"
+                       class="site-e1-filter @(active ? "is-active" : "")"
+                       aria-current="@(active ? "page" : null)">
+                    @filter.Text
+                </a>
+            }
+        </nav>
+
+        @if (Model.E1s.Count == 0)
+        {
+            <div class="sites-resource-empty">
+                <strong>No E1s found</strong>
+                <p>No E1s at this site match the selected filter.</p>
+            </div>
+        }
+        else
+        {
+            <div class="site-e1-table-wrap">
+                <table class="site-e1-table">
+                    <caption class="visually-hidden">
+                        E1 channels at site @Model.Site.Id
+                    </caption>
+
+                    <thead>
+                        <tr>
+                            <th scope="col">E1</th>
+                            <th scope="col">STM</th>
+                            <th scope="col">Link</th>
+                            <th scope="col">Remote site</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Details</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var e1 in Model.E1s)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@e1.E1Number</strong>
+                                </td>
+                                <td>
+                                    @(e1.Stm == null
+                                        ? "PDH"
+                                        : $"STM {e1.Stm.Number}")
+                                </td>
+                                <td>@e1.Link.Name</td>
+                                <td>@e1.Link.SiteToId</td>
+                                <td>
+                                    <span class="site-e1-status status-@e1.Status.ToString().ToLowerInvariant()">
+                                        @e1.Status
+                                    </span>
+                                </td>
+                                <td>
+                                    <a asp-controller="E1s"
+                                           asp-action="Details"
+                                           asp-route-id="@e1.Id"
+                                           class="sites-resource-view">
+                                        View E1
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <nav class="site-e1-pagination"
+                 aria-label="E1 pages">
+                <span>
+                    @Model.E1TotalItems E1s ·
+                    Page @Model.E1PageNumber of @Model.E1TotalPages
+                </span>
+
+                <div>
+                    @if (Model.E1PageNumber > 1)
+                    {
+                        <a asp-controller="Sites"
+                               asp-action="Details"
+                               asp-route-id="@Model.Site.Id"
+                               asp-route-e1Status="@Model.E1Status"
+                               asp-route-e1PageNumber="@(Model.E1PageNumber - 1)"
+                               asp-fragment="site-e1s"
+                               class="sites-secondary-btn">
+                            Previous
+                        </a>
+                    }
+
+                    @if (Model.E1PageNumber < Model.E1TotalPages)
+                    {
+                        <a asp-controller="Sites"
+                               asp-action="Details"
+                               asp-route-id="@Model.Site.Id"
+                               asp-route-e1Status="@Model.E1Status"
+                               asp-route-e1PageNumber="@(Model.E1PageNumber + 1)"
+                               asp-fragment="site-e1s"
+                               class="sites-secondary-btn">
+                            Next
+                        </a>
+                    }
+                </div>
+            </nav>
+        }
+    </div>
+</details>

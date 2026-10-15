@@ -83,6 +83,39 @@ new()
         "STM-Capacity",
         "Link Type"
     ]
-}
+},
+                new()
+        {
+            Key = "communication-links",
+            Name = "Communication Links",
+            Description =
+                "Import communication links, STM capacity, and link types.",
+
+            HeaderRow = 1,
+
+            RequiredColumns =
+            [
+                "Site from",
+                "Site to",
+                "STM-Capacity",
+                "Link Type"
+            ]
+        },
+
+        new()
+        {
+            Key = "communication-paths",
+            Name = "Communication Paths",
+            Description =
+                "Import customer paths and their E1 cross-connections.",
+
+            HeaderRow = 1,
+
+RequiredColumns =
+[
+    "Current Site",
+    "Cross Connection"
+]
+        }
     ];
 }

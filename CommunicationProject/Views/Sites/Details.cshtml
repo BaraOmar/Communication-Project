@@ -626,7 +626,14 @@
 
     </details>
 
+    <div id="site-e1-container">
+        <p id="site-e1-error"
+           class="sites-validation"
+           role="status"
+           hidden></p>
 
+        <partial name="_SiteE1s" model="Model" />
+    </div>
     <!-- =====================================================
          FOOT ACTIONS
          ===================================================== -->
@@ -652,3 +659,8 @@
     </div>
 
 </div>
+
+@section Scripts {
+    <script src="~/js/site-e1s.js"
+            asp-append-version="true"></script>
+}

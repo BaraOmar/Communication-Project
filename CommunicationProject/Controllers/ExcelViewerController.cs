@@ -3,6 +3,9 @@ using CommunicationProject.Services.CommunicationLinks.Import;
 using CommunicationProject.Services.ExcelImport;
 using CommunicationProject.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using CommunicationProject.Security;
+using CommunicationProject.Services.CommunicationPaths.Import;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CommunicationProject.Controllers;
 
@@ -12,14 +15,23 @@ namespace CommunicationProject.Controllers;
 public class ExcelViewerController : Controller
 {
     private readonly ExcelCommunicationLinkImportService
-    _communicationLinkImportService;
+        _communicationLinkImportService;
+
+    private readonly ExcelCommunicationPathImportService
+        _communicationPathImportService;
+
+    private readonly ILogger<ExcelViewerController> _logger;
 
     public ExcelViewerController(
-    ExcelCommunicationLinkImportService communicationLinkImportService)
+        ExcelCommunicationLinkImportService communicationLinkImportService,
+        ExcelCommunicationPathImportService communicationPathImportService,
+        ILogger<ExcelViewerController> logger)
     {
-        _communicationLinkImportService =
-            communicationLinkImportService;
+        _communicationLinkImportService = communicationLinkImportService;
+        _communicationPathImportService = communicationPathImportService;
+        _logger = logger;
     }
+
     private const long MaximumFileSize =
         10L * 1024L * 1024L;
 
@@ -195,6 +207,63 @@ public class ExcelViewerController : Controller
         {
             TempData["ErrorMessage"] =
                 "The Communication Links data could not be imported.";
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = AppRoles.Admin + "," + AppRoles.Operator)]
+    [RequestFormLimits(ValueCountLimit = 100_000)]
+    public async Task<IActionResult> ImportCommunicationPaths(
+        ExcelFileUploadItemViewModel fileItem,
+        string? customerName,
+        CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid ||
+            fileItem.ProfileKey != "communication-paths" ||
+            fileItem.Headers.Count == 0 ||
+            fileItem.Rows.Count == 0)
+        {
+            TempData["ErrorMessage"] =
+                "Upload a valid Communication Paths file first.";
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        try
+        {
+            var rows = ExcelSiteCrossConnectionParser.Parse(fileItem);
+
+            var result = await _communicationPathImportService
+                .ImportCrossConnectionsAsync(
+                    rows,
+                    customerName,
+                    cancellationToken);
+
+            if (result.Succeeded)
+            {
+                TempData["SuccessMessage"] = result.Message;
+
+                return RedirectToAction("Index", "SearchPath");
+            }
+
+            TempData["ErrorMessage"] = result.Message;
+        }
+        catch (InvalidDataException exception)
+        {
+            TempData["ErrorMessage"] = exception.Message;
+        }
+        catch (Exception exception)
+            when (exception is not OperationCanceledException)
+        {
+            _logger.LogError(
+                exception,
+                "Communication Paths import failed.");
+
+            TempData["ErrorMessage"] =
+                "The paths could not be imported. Check the application log.";
         }
 
         return RedirectToAction(nameof(Index));

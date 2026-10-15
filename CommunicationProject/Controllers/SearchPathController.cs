@@ -398,7 +398,7 @@ namespace CommunicationProject.Controllers
                                     var currentSegment =
                                         customerSegments[i];
 
-
+                                  
                                     var incomingE1 =
                                         previousSegment.E1.ConnectedE1;
 

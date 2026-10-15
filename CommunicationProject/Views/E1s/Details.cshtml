@@ -45,9 +45,11 @@
     <!-- Page Header -->
     <div class="e1-details-top">
 
-        <a asp-action="Index"
-               class="e1-back-link">
-            ← E1 Channels
+        <a asp-controller="E1s"
+               asp-action="Index"
+               class="e1-back-link js-back-link"
+               data-fallback-url="@Url.Action("Index", "E1s")">
+            ← Back
         </a>
 
         <h1 class="e1-details-title">

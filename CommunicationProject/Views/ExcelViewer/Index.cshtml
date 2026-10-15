@@ -1,5 +1,5 @@
 ﻿@model CommunicationProject.ViewModels.ExcelUploadViewModel
-
+@using CommunicationProject.Security
 @{
     ViewData["Title"] = "Excel Sheet";
 }
@@ -261,16 +261,37 @@
                     </table>
 
                 </div>
-                @if (fileItem.ProfileKey == "communication-links")
+                @if (fileItem.ProfileKey == "communication-links" ||
+                     (fileItem.ProfileKey == "communication-paths" &&
+                      (User.IsInRole(AppRoles.Admin) ||
+                       User.IsInRole(AppRoles.Operator))))
                 {
+                    var importAction = fileItem.ProfileKey == "communication-paths"
+                        ? "ImportCommunicationPaths"
+                        : "ImportCommunicationLinks";
                     <div class="card-footer bg-white py-3">
 
                         <form asp-controller="ExcelViewer"
-                              asp-action="ImportCommunicationLinks"
+                              asp-action="@importAction"
                               method="post">
 
                             @Html.AntiForgeryToken()
+                            @if (fileItem.ProfileKey == "communication-paths")
+                            {
+                                <div class="mb-3">
+                                    <label for="path-import-customer"
+                                           class="form-label">
+                                        Customer name
+                                    </label>
 
+                                    <input id="path-import-customer"
+                                           name="customerName"
+                                           class="form-control"
+                                           maxlength="200"
+                                           placeholder="e.g. REG-A"
+                                           required />
+                                </div>
+                            }
                             <input type="hidden"
                                    name="ProfileKey"
                                    value="@fileItem.ProfileKey" />
@@ -307,7 +328,9 @@
                                 <button type="submit"
                                         class="btn btn-success px-4">
 
-                                    Import to Database
+                                    @(fileItem.ProfileKey == "communication-paths"
+    ? "Import Paths"
+    : "Import to Database")
 
                                 </button>
 

@@ -103,132 +103,124 @@ namespace CommunicationProject.Controllers
         // GET: Sites/Details/5
         // GET: Sites/Details/5
         public async Task<IActionResult> Details(
-            string id)
+            string id,
+            string? e1Status = null,
+            int e1PageNumber = 1,
+            bool e1Only = false)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
                 return NotFound();
             }
 
-
             id = id.Trim();
 
-
-            /* =====================================================
-               Site
-               ===================================================== */
-
-            var site =
-                await _context.Sites
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(site =>
-                        site.Id == id);
-
+            var site = await _context.Sites
+                .AsNoTracking()
+                .FirstOrDefaultAsync(site => site.Id == id);
 
             if (site == null)
             {
                 return NotFound();
             }
 
+            // Local SDH and PDH E1 inventory.
+            var e1Query = _context.E1s
+                .AsNoTracking()
+                .Where(e1 => e1.Link.SiteFromId == id);
 
-            /* =====================================================
-               Communication Links
-               ===================================================== */
+            e1Status = e1Status?.Trim().ToLowerInvariant();
 
-            /*
-             * Only show the primary logical record so the same
-             * communication link does not appear twice.
-             */
-            var links =
-                await _context.CommunicationLinks
-                    .AsNoTracking()
+            E1.E1OperationalStatus? selectedStatus = e1Status switch
+            {
+                "available" => E1.E1OperationalStatus.Available,
+                "wrong" => E1.E1OperationalStatus.Wrong,
+                "connected" => E1.E1OperationalStatus.Connected,
+                _ => null
+            };
 
-                    .Where(link =>
-                        link.IsPrimary &&
-                        (
-                            link.SiteFromId == id ||
-                            link.SiteToId == id
-                        ))
+            if (selectedStatus.HasValue)
+            {
+                var status = selectedStatus.Value;
 
-                    .Include(link =>
-                        link.LinkType)
+                e1Query = e1Query.Where(e1 => e1.Status == status);
+            }
+            else
+            {
+                e1Status = null;
+            }
 
-                    .Include(link =>
-                        link.SiteFrom)
+            const int e1PageSize = 25;
 
-                    .Include(link =>
-                        link.SiteTo)
+            int e1TotalItems = await e1Query.CountAsync();
 
-                    .OrderBy(link =>
-                        link.Name)
+            int e1TotalPages = (int)Math.Ceiling(
+                e1TotalItems / (double)e1PageSize);
 
-                    .ToListAsync();
+            e1PageNumber = Math.Clamp(
+                e1PageNumber,
+                1,
+                Math.Max(1, e1TotalPages));
 
+            var e1s = await e1Query
+                .OrderBy(e1 => e1.Link.SiteToId)
+                .ThenBy(e1 => e1.Link.Name)
+                .ThenBy(e1 => e1.LinkId)
+                .ThenBy(e1 => e1.StmId)
+                .ThenBy(e1 => e1.E1Number.Length)
+                .ThenBy(e1 => e1.E1Number)
+                .ThenBy(e1 => e1.Id)
+                .Skip((e1PageNumber - 1) * e1PageSize)
+                .Take(e1PageSize)
+                .Include(e1 => e1.Link)
+                .Include(e1 => e1.Stm)
+                .ToListAsync();
 
-            /* =====================================================
-               MUX Equipment
-               ===================================================== */
+            var model = new SiteDetailsViewModel
+            {
+                Site = site,
+                E1s = e1s,
+                E1Status = e1Status,
+                E1PageNumber = e1PageNumber,
+                E1PageSize = e1PageSize,
+                E1TotalItems = e1TotalItems
+            };
 
-            var muxes =
-                await _context.Muxes
-                    .AsNoTracking()
+            // Filter and pagination requests return only the E1 panel.
+            if (e1Only)
+            {
+                return PartialView("_SiteE1s", model);
+            }
 
-                    .Where(mux =>
-                        mux.SiteId == id)
+            // Load the remaining resources for a full-page request.
+            model.Links = await _context.CommunicationLinks
+                .AsNoTracking()
+                .Where(link =>
+                    link.IsPrimary &&
+                    (
+                        link.SiteFromId == id ||
+                        link.SiteToId == id
+                    ))
+                .Include(link => link.LinkType)
+                .Include(link => link.SiteFrom)
+                .Include(link => link.SiteTo)
+                .OrderBy(link => link.Name)
+                .ToListAsync();
 
-                    .Include(mux =>
-                        mux.MuxType)
+            model.Muxes = await _context.Muxes
+                .AsNoTracking()
+                .Where(mux => mux.SiteId == id)
+                .Include(mux => mux.MuxType)
+                .Include(mux => mux.Cards)
+                    .ThenInclude(card => card.Ports)
+                .OrderBy(mux => mux.Name)
+                .ToListAsync();
 
-                    .Include(mux =>
-                        mux.Cards)
-
-                        .ThenInclude(card =>
-                            card.Ports)
-
-                    .OrderBy(mux =>
-                        mux.Name)
-
-                    .ToListAsync();
-
-
-            /* =====================================================
-               SDH Availability
-               ===================================================== */
-
-            /*
-             * The directional link whose SiteFromId equals this
-             * site owns the STM resources physically at this site.
-             */
-            bool hasSdhLinks =
-                await _context.CommunicationLinks
-                    .AsNoTracking()
-
-                    .AnyAsync(link =>
-                        link.SiteFromId == id &&
-
-                        link.LinkType.Name == "SDH");
-
-
-            /* =====================================================
-               View Model
-               ===================================================== */
-
-            var model =
-                new SiteDetailsViewModel
-                {
-                    Site =
-                        site,
-
-                    Links =
-                        links,
-
-                    Muxes =
-                        muxes,
-
-                    HasSdhLinks =
-                        hasSdhLinks
-                };
-
+            model.HasSdhLinks = await _context.CommunicationLinks
+                .AsNoTracking()
+                .AnyAsync(link =>
+                    link.SiteFromId == id &&
+                    link.LinkType.Name == "SDH");
 
             return View(model);
         }

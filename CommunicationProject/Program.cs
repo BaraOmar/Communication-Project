@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
-
+using CommunicationProject.Services.CommunicationPaths.Import;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -106,6 +106,8 @@ builder.Services.AddScoped<
     CommunicationLinkImportService>();
 
 builder.Services.AddScoped<ExcelCommunicationLinkImportService>();
+
+builder.Services.AddScoped<ExcelCommunicationPathImportService>();
 
 
 var app = builder.Build();

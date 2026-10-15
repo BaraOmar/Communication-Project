@@ -1,7 +1,7 @@
 ﻿/* =========================================================
    Sites Module
+ 
    ========================================================= */
-
 .sites-page {
     max-width: 1280px;
     margin: 0 auto;
@@ -2915,3 +2915,88 @@
         width: 100%;
     }
 }
+/* Site E1 inventory */
+.site-e1-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    padding: 1rem 0;
+}
+
+.site-e1-filter {
+    padding: .5rem .9rem;
+    border: 1px solid rgba(31, 42, 68, .12);
+    border-radius: 999px;
+    color: var(--navy);
+    background: #fff;
+    font-size: .8rem;
+    font-weight: 650;
+    text-decoration: none;
+}
+
+    .site-e1-filter:hover,
+    .site-e1-filter.is-active {
+        background: var(--navy);
+        border-color: var(--navy);
+        color: #fff;
+    }
+
+.site-e1-table-wrap {
+    overflow-x: auto;
+}
+
+.site-e1-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--navy);
+    font-size: .82rem;
+}
+
+    .site-e1-table th,
+    .site-e1-table td {
+        padding: .8rem .65rem;
+        border-bottom: 1px solid rgba(31, 42, 68, .08);
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    .site-e1-table th {
+        background: rgba(248, 245, 239, .7);
+        font-weight: 700;
+    }
+
+.site-e1-status {
+    display: inline-block;
+    padding: .3rem .65rem;
+    border-radius: 999px;
+    background: #edf0f5;
+    color: #475569;
+    font-size: .75rem;
+    font-weight: 700;
+}
+
+    .site-e1-status.status-connected {
+        background: #e8f5ed;
+        color: #226640;
+    }
+
+    .site-e1-status.status-wrong {
+        background: #fbeaec;
+        color: #a33d49;
+    }
+
+.site-e1-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .8rem;
+    padding-top: 1rem;
+    color: var(--navy);
+    font-size: .8rem;
+}
+
+    .site-e1-pagination > div {
+        display: flex;
+        gap: .5rem;
+    }
