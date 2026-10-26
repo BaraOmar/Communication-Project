@@ -12,10 +12,7 @@ namespace CommunicationProject.Models;
  *
  * لكنه يمنع إنشاء زوج آخر بالاسم نفسه.
  */
-[Index(
-    nameof(Name),
-    nameof(IsPrimary),
-    IsUnique = true)]
+
 
 
 
@@ -37,6 +34,8 @@ public class CommunicationLink : IValidatableObject
         ErrorMessage = "Link name cannot exceed 200 characters.")]
     [Display(Name = "Link Name")]
     public string Name { get; set; } = string.Empty;
+
+    public bool AllowDuplicateName { get; set; }
 
     [Required]
     [Display(Name = "Link Type")]

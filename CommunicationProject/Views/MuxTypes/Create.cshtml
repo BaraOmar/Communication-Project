@@ -89,7 +89,7 @@
 
                     <div>
                         <span>CARD CATEGORY</span>
-                        <h2>Power</h2>
+                        <h2>LTU</h2>
                     </div>
 
                 </div>
@@ -97,15 +97,15 @@
 
                 <div class="mux-type-field">
 
-                    <label asp-for="PowerCardCount">
+                    <label asp-for="LtuCardCount">
                     </label>
 
-                    <input asp-for="PowerCardCount"
+                    <input asp-for="LtuCardCount"
                            class="mux-type-input mux-capacity-input"
                            min="0"
                            max="100" />
 
-                    <span asp-validation-for="PowerCardCount"
+                    <span asp-validation-for="LtuCardCount"
                           class="mux-type-field-error">
                     </span>
 
@@ -114,15 +114,15 @@
 
                 <div class="mux-type-field">
 
-                    <label asp-for="PowerPortsPerCard">
+                    <label asp-for="LtuPortsPerCard">
                     </label>
 
-                    <input asp-for="PowerPortsPerCard"
+                    <input asp-for="LtuPortsPerCard"
                            class="mux-type-input mux-capacity-input"
                            min="0"
                            max="1000" />
 
-                    <span asp-validation-for="PowerPortsPerCard"
+                    <span asp-validation-for="LtuPortsPerCard"
                           class="mux-type-field-error">
                     </span>
 
@@ -130,13 +130,8 @@
 
 
                 <div class="mux-type-card-total">
-
-                    <span>Total Power Ports</span>
-
-                    <strong id="powerTotal">
-                        0
-                    </strong>
-
+                    <span>Total LTU Ports</span>
+                    <strong id="ltuTotal">0</strong>
                 </div>
 
             </section>
@@ -209,69 +204,6 @@
 
 
 
-            <!-- E1 -->
-
-            <section class="mux-type-hardware-card">
-
-                <div class="mux-type-hardware-header">
-
-                    <div class="mux-type-hardware-icon">
-                        E1
-                    </div>
-
-                    <div>
-                        <span>CARD CATEGORY</span>
-                        <h2>E1</h2>
-                    </div>
-
-                </div>
-
-
-                <div class="mux-type-field">
-
-                    <label asp-for="E1CardCount">
-                    </label>
-
-                    <input asp-for="E1CardCount"
-                           class="mux-type-input mux-capacity-input"
-                           min="0"
-                           max="100" />
-
-                    <span asp-validation-for="E1CardCount"
-                          class="mux-type-field-error">
-                    </span>
-
-                </div>
-
-
-                <div class="mux-type-field">
-
-                    <label asp-for="E1PortsPerCard">
-                    </label>
-
-                    <input asp-for="E1PortsPerCard"
-                           class="mux-type-input mux-capacity-input"
-                           min="0"
-                           max="1000" />
-
-                    <span asp-validation-for="E1PortsPerCard"
-                          class="mux-type-field-error">
-                    </span>
-
-                </div>
-
-
-                <div class="mux-type-card-total">
-
-                    <span>Total E1 Ports</span>
-
-                    <strong id="e1Total">
-                        0
-                    </strong>
-
-                </div>
-
-            </section>
 
         </div>
 
@@ -309,8 +241,8 @@
                 </div>
 
                 <div>
-                    <span>E1 Capacity</span>
-                    <strong id="summaryE1Ports">0</strong>
+                    <span>LTU / E1 Capacity</span>
+                    <strong id="summaryLtuPorts">0</strong>
                 </div>
 
             </div>
@@ -346,175 +278,69 @@
 
 
 @section Scripts {
-
     <partial name="_ValidationScriptsPartial" />
-
 
     <script>
         (() => {
-
             const fields = {
-
-                powerCount:
-                    document.getElementById(
-                        "PowerCardCount"),
-
-                powerPorts:
-                    document.getElementById(
-                        "PowerPortsPerCard"),
-
-                stmCount:
-                    document.getElementById(
-                        "StmCardCount"),
-
-                stmPorts:
-                    document.getElementById(
-                        "StmPortsPerCard"),
-
-                e1Count:
-                    document.getElementById(
-                        "E1CardCount"),
-
-                e1Ports:
-                    document.getElementById(
-                        "E1PortsPerCard")
+                ltuCount: document.getElementById("LtuCardCount"),
+                ltuPorts: document.getElementById("LtuPortsPerCard"),
+                stmCount: document.getElementById("StmCardCount"),
+                stmPorts: document.getElementById("StmPortsPerCard")
             };
 
-
             function number(input) {
-
-                return Math.max(
-                    0,
-                    Number(input.value) || 0);
-
+                return Math.max(0, Number(input.value) || 0);
             }
 
+            function configurePorts(countInput, portsInput) {
+                const hasCards = number(countInput) > 0;
 
-            function configurePortsInput(
-                countInput,
-                portsInput) {
-
-                const hasCards =
-                    number(countInput) > 0;
-
-
-                portsInput.disabled =
-                    !hasCards;
-
+                portsInput.disabled = !hasCards;
 
                 if (!hasCards) {
                     portsInput.value = 0;
                 }
-
             }
-
 
             function updateSummary() {
+                configurePorts(fields.ltuCount, fields.ltuPorts);
+                configurePorts(fields.stmCount, fields.stmPorts);
 
-                configurePortsInput(
-                    fields.powerCount,
-                    fields.powerPorts);
+                const ltuCount = number(fields.ltuCount);
+                const stmCount = number(fields.stmCount);
 
-                configurePortsInput(
-                    fields.stmCount,
-                    fields.stmPorts);
-
-                configurePortsInput(
-                    fields.e1Count,
-                    fields.e1Ports);
-
-
-                const powerCount =
-                    number(fields.powerCount);
-
-                const powerPorts =
-                    number(fields.powerPorts);
-
-                const stmCount =
-                    number(fields.stmCount);
-
-                const stmPorts =
-                    number(fields.stmPorts);
-
-                const e1Count =
-                    number(fields.e1Count);
-
-                const e1Ports =
-                    number(fields.e1Ports);
-
-
-                const powerTotal =
-                    powerCount * powerPorts;
+                const ltuTotal =
+                    ltuCount * number(fields.ltuPorts);
 
                 const stmTotal =
-                    stmCount * stmPorts;
+                    stmCount * number(fields.stmPorts);
 
-                const e1Total =
-                    e1Count * e1Ports;
+                document.getElementById("ltuTotal").textContent =
+                    ltuTotal;
 
-
-                document.getElementById(
-                    "powerTotal")
-                    .textContent =
-                    powerTotal;
-
-
-                document.getElementById(
-                    "stmTotal")
-                    .textContent =
+                document.getElementById("stmTotal").textContent =
                     stmTotal;
 
+                document.getElementById("totalCards").textContent =
+                    ltuCount + stmCount;
 
-                document.getElementById(
-                    "e1Total")
-                    .textContent =
-                    e1Total;
+                document.getElementById("totalPorts").textContent =
+                    ltuTotal + stmTotal;
 
+                document.getElementById("summaryLtuPorts").textContent =
+                    ltuTotal;
 
-                document.getElementById(
-                    "totalCards")
-                    .textContent =
-                    powerCount +
-                    stmCount +
-                    e1Count;
-
-
-                document.getElementById(
-                    "totalPorts")
-                    .textContent =
-                    powerTotal +
-                    stmTotal +
-                    e1Total;
-
-
-                document.getElementById(
-                    "summaryStmPorts")
-                    .textContent =
+                document.getElementById("summaryStmPorts").textContent =
                     stmTotal;
-
-
-                document.getElementById(
-                    "summaryE1Ports")
-                    .textContent =
-                    e1Total;
-
             }
 
-
-            document.querySelectorAll(
-                ".mux-capacity-input")
+            document.querySelectorAll(".mux-capacity-input")
                 .forEach(input => {
-
-                    input.addEventListener(
-                        "input",
-                        updateSummary);
-
+                    input.addEventListener("input", updateSummary);
                 });
 
-
             updateSummary();
-
         })();
     </script>
-
 }

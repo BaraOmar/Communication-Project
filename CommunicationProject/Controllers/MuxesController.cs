@@ -107,19 +107,15 @@ public class MuxesController : Controller
         else
         {
             int totalCards =
-                muxType.PowerCardCount +
-                muxType.StmCardCount +
-                muxType.E1CardCount;
+                muxType.LtuCardCount +
+                muxType.StmCardCount;
 
             bool invalidCapacity =
-                (muxType.PowerCardCount > 0 &&
-                 muxType.PowerPortsPerCard <= 0) ||
+                (muxType.LtuCardCount > 0 &&
+                 muxType.LtuPortsPerCard <= 0) ||
 
                 (muxType.StmCardCount > 0 &&
-                 muxType.StmPortsPerCard <= 0) ||
-
-                (muxType.E1CardCount > 0 &&
-                 muxType.E1PortsPerCard <= 0);
+                 muxType.StmPortsPerCard <= 0);
 
             if (totalCards == 0 ||
                 invalidCapacity)
@@ -166,9 +162,9 @@ public class MuxesController : Controller
 
         AddCards(
             mux,
-            CardCategory.Power,
-            muxType.PowerCardCount,
-            muxType.PowerPortsPerCard,
+            CardCategory.LTU,
+            muxType.LtuCardCount,
+            muxType.LtuPortsPerCard,
             ref nextSlotNumber);
 
         AddCards(
@@ -178,12 +174,6 @@ public class MuxesController : Controller
             muxType.StmPortsPerCard,
             ref nextSlotNumber);
 
-        AddCards(
-            mux,
-            CardCategory.E1,
-            muxType.E1CardCount,
-            muxType.E1PortsPerCard,
-            ref nextSlotNumber);
 
 
         _context.Muxes.Add(mux);
@@ -600,11 +590,11 @@ public class MuxesController : Controller
 
 
             int firstStmSlot =
-                muxType.PowerCardCount + 1;
+                muxType.LtuCardCount + 1;
 
 
             int lastStmSlot =
-                muxType.PowerCardCount +
+                muxType.LtuCardCount +
                 muxType.StmCardCount;
 
 
@@ -765,9 +755,9 @@ public class MuxesController : Controller
 
         AddCards(
             mux,
-            CardCategory.Power,
-            muxType.PowerCardCount,
-            muxType.PowerPortsPerCard,
+            CardCategory.LTU,
+            muxType.LtuCardCount,
+            muxType.LtuPortsPerCard,
             ref nextSlotNumber);
 
 
@@ -779,12 +769,6 @@ public class MuxesController : Controller
             ref nextSlotNumber);
 
 
-        AddCards(
-            mux,
-            CardCategory.E1,
-            muxType.E1CardCount,
-            muxType.E1PortsPerCard,
-            ref nextSlotNumber);
 
 
         /* =====================================================
@@ -969,7 +953,7 @@ public class MuxesController : Controller
             new List<object>();
 
         int firstStmSlot =
-            muxType.PowerCardCount + 1;
+            muxType.LtuCardCount + 1;
 
         for (int cardNumber = 1;
              cardNumber <= muxType.StmCardCount;
@@ -1062,14 +1046,13 @@ public class MuxesController : Controller
                             type.Id.ToString(),
 
                         Text =
-                            type.Name +
-                            " — " +
-                            (
-                                type.PowerCardCount +
-                                type.StmCardCount +
-                                type.E1CardCount
-                            ) +
-                            " cards"
+    type.Name +
+    " — " +
+    (
+        type.LtuCardCount +
+        type.StmCardCount
+    ) +
+    " cards"
                     })
                 .ToList();
     }
@@ -1269,10 +1252,10 @@ public class MuxesController : Controller
         if (muxType is not null)
         {
             int firstStmSlot =
-                muxType.PowerCardCount + 1;
+                muxType.LtuCardCount + 1;
 
             int lastStmSlot =
-                muxType.PowerCardCount +
+                muxType.LtuCardCount +
                 muxType.StmCardCount;
 
             foreach (var assignment
@@ -1371,9 +1354,9 @@ public class MuxesController : Controller
 
         AddCards(
             mux,
-            CardCategory.Power,
-            muxType.PowerCardCount,
-            muxType.PowerPortsPerCard,
+            CardCategory.LTU,
+            muxType.LtuCardCount,
+            muxType.LtuPortsPerCard,
             ref nextSlotNumber);
 
         AddCards(
@@ -1383,12 +1366,7 @@ public class MuxesController : Controller
             muxType.StmPortsPerCard,
             ref nextSlotNumber);
 
-        AddCards(
-            mux,
-            CardCategory.E1,
-            muxType.E1CardCount,
-            muxType.E1PortsPerCard,
-            ref nextSlotNumber);
+
 
 
         foreach (var assignment

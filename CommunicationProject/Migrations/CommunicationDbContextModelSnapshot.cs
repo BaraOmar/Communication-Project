@@ -97,6 +97,9 @@ namespace CommunicationProject.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<bool>("AllowDuplicateName")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Capacity")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
@@ -136,10 +139,12 @@ namespace CommunicationProject.Migrations
                     b.HasIndex("SiteToId");
 
                     b.HasIndex("Name", "IsPrimary")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[AllowDuplicateName] = 0");
 
                     b.HasIndex("LinkTypeId", "SiteFromId", "SiteToId", "Name")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[AllowDuplicateName] = 0");
 
                     b.ToTable("CommunicationLinks");
                 });
@@ -493,22 +498,16 @@ namespace CommunicationProject.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("E1CardCount")
+                    b.Property<int>("LtuCardCount")
                         .HasColumnType("int");
 
-                    b.Property<int>("E1PortsPerCard")
+                    b.Property<int>("LtuPortsPerCard")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("PowerCardCount")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PowerPortsPerCard")
-                        .HasColumnType("int");
 
                     b.Property<int>("StmCardCount")
                         .HasColumnType("int");
@@ -527,22 +526,18 @@ namespace CommunicationProject.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111111"),
-                            E1CardCount = 0,
-                            E1PortsPerCard = 0,
+                            LtuCardCount = 0,
+                            LtuPortsPerCard = 0,
                             Name = "Ericsson",
-                            PowerCardCount = 0,
-                            PowerPortsPerCard = 0,
                             StmCardCount = 0,
                             StmPortsPerCard = 0
                         },
                         new
                         {
                             Id = new Guid("22222222-2222-2222-2222-222222222222"),
-                            E1CardCount = 0,
-                            E1PortsPerCard = 0,
+                            LtuCardCount = 0,
+                            LtuPortsPerCard = 0,
                             Name = "OSP",
-                            PowerCardCount = 0,
-                            PowerPortsPerCard = 0,
                             StmCardCount = 0,
                             StmPortsPerCard = 0
                         });

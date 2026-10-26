@@ -450,6 +450,26 @@ else if (inventoryStatus == "not-generated")
 
         await ValidateCreateSitesAsync(model);
 
+        string? selectedPdhName = null;
+
+        if (model.Technology == LinkTechnology.PDH &&
+            model.PdhNameTypeId.HasValue &&
+            model.PdhNameTypeId.Value != Guid.Empty)
+        {
+            selectedPdhName = await _context.LinkTypes
+                .AsNoTracking()
+                .Where(type => type.Id == model.PdhNameTypeId.Value)
+                .Select(type => type.Name)
+                .FirstOrDefaultAsync();
+
+            if (string.IsNullOrWhiteSpace(selectedPdhName))
+            {
+                ModelState.AddModelError(
+                    nameof(model.PdhNameTypeId),
+                    "The selected PDH link name no longer exists.");
+            }
+        }
+
         if (!ModelState.IsValid)
         {
             await LoadCreateDropdownsAsync(model);
@@ -470,9 +490,11 @@ else if (inventoryStatus == "not-generated")
                     technology);
 
             string linkName =
-                await GenerateLinkNameAsync(
-                    model.SiteFromId,
-                    model.SiteToId);
+                technology == LinkTechnology.SDH
+                    ? await GenerateLinkNameAsync(
+                        model.SiteFromId,
+                        model.SiteToId)
+                    : selectedPdhName!;
 
             var primaryLink =
                 new CommunicationLink
@@ -482,6 +504,7 @@ else if (inventoryStatus == "not-generated")
                     LinkTypeId = linkType.Id,
                     SiteFromId = model.SiteFromId,
                     SiteToId = model.SiteToId,
+                    AllowDuplicateName = technology == LinkTechnology.PDH,
                     IsPrimary = true
                 };
 
@@ -493,6 +516,7 @@ else if (inventoryStatus == "not-generated")
                     LinkTypeId = linkType.Id,
                     SiteFromId = model.SiteToId,
                     SiteToId = model.SiteFromId,
+                    AllowDuplicateName = technology == LinkTechnology.PDH,
                     IsPrimary = false
                 };
 
@@ -674,10 +698,37 @@ else if (inventoryStatus == "not-generated")
 
         await ValidateEditReferencesAsync(submittedLink);
 
+        bool allowDuplicateName = await _context.LinkTypes
+            .AsNoTracking()
+            .AnyAsync(type =>
+                type.Id == submittedLink.LinkTypeId &&
+                type.Name == "PDH");
+
+        if (allowDuplicateName)
+        {
+            string? selectedPdhName = await _context.LinkTypes
+                .AsNoTracking()
+                .Where(type => type.Name == submittedLink.Name)
+                .Select(type => type.Name)
+                .FirstOrDefaultAsync();
+
+            if (string.IsNullOrWhiteSpace(selectedPdhName))
+            {
+                ModelState.AddModelError(
+                    nameof(CommunicationLink.Name),
+                    "Select a PDH link name from the dropdown.");
+            }
+            else
+            {
+                submittedLink.Name = selectedPdhName;
+            }
+        }
+
         if (reverseLink != null)
         {
             await ValidateLogicalDuplicateAsync(
                 submittedLink.Name,
+                allowDuplicateName,
                 primaryLink.Id);
         }
 
@@ -704,6 +755,9 @@ else if (inventoryStatus == "not-generated")
             reverseLink.SiteFromId = submittedLink.SiteToId;
             reverseLink.SiteToId = submittedLink.SiteFromId;
             reverseLink.IsPrimary = false;
+
+            primaryLink.AllowDuplicateName = allowDuplicateName;
+            reverseLink.AllowDuplicateName = allowDuplicateName;
 
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
@@ -1012,6 +1066,7 @@ else if (inventoryStatus == "not-generated")
         if (model.Technology == LinkTechnology.SDH)
         {
             model.PdhE1Count = null;
+            model.PdhNameTypeId = null;
         }
         else if (model.Technology == LinkTechnology.PDH)
         {
@@ -1129,17 +1184,25 @@ else if (inventoryStatus == "not-generated")
     }
 
     private async Task ValidateLogicalDuplicateAsync(
-    string name,
-    Guid? excludedPrimaryId = null)
+        string name,
+        bool allowDuplicateName,
+        Guid? excludedPrimaryId = null)
     {
-        bool duplicateName =
-            await _context.CommunicationLinks
-                .AsNoTracking()
-                .AnyAsync(existing =>
-                    existing.IsPrimary &&
-                    existing.Name == name &&
-                    (!excludedPrimaryId.HasValue ||
-                     existing.Id != excludedPrimaryId.Value));
+        if (allowDuplicateName)
+        {
+            return;
+        }
+
+        bool duplicateName = await _context.CommunicationLinks
+            .AsNoTracking()
+            .AnyAsync(existing =>
+                existing.IsPrimary &&
+                !existing.AllowDuplicateName &&
+                existing.Name == name &&
+                (
+                    !excludedPrimaryId.HasValue ||
+                    existing.Id != excludedPrimaryId.Value
+                ));
 
         if (duplicateName)
         {
@@ -1161,6 +1224,16 @@ else if (inventoryStatus == "not-generated")
                 Text = site.Id
             })
             .ToListAsync();
+
+        model.PdhNameOptions = await _context.LinkTypes
+            .AsNoTracking()
+            .OrderBy(type => type.Name)
+            .Select(type => new SelectListItem
+            {
+                Value = type.Id.ToString(),
+                Text = type.Name
+            })
+            .ToListAsync();
     }
 
     private async Task LoadDropdownsAsync(
@@ -1170,6 +1243,18 @@ else if (inventoryStatus == "not-generated")
             .AsNoTracking()
             .OrderBy(type => type.Name)
             .ToListAsync();
+
+        ViewData["IsPdhLink"] =
+    selectedLink != null &&
+    linkTypes.Any(type =>
+        type.Id == selectedLink.LinkTypeId &&
+        type.Name == "PDH");
+
+        ViewData["PdhNameOptions"] = new SelectList(
+            linkTypes,
+            nameof(LinkType.Name),
+            nameof(LinkType.Name),
+            selectedLink?.Name);
 
         ViewData["LinkTypeId"] = new SelectList(
             linkTypes,
@@ -1480,6 +1565,7 @@ else if (inventoryStatus == "not-generated")
                 .AsNoTracking()
                 .Where(link =>
                     link.IsPrimary &&
+!link.AllowDuplicateName &&
                     (
                         link.SiteFromId == siteFromId &&
                         link.SiteToId == siteToId

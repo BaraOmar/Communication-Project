@@ -198,17 +198,9 @@
                         string categoryClass =
                             card.Category switch
                             {
-                                CardCategory.Power =>
-                                    "mux-rack-card-power",
-
-                                CardCategory.STM =>
-                                    "mux-rack-card-stm",
-
-                                CardCategory.E1 =>
-                                    "mux-rack-card-e1",
-
-                                _ =>
-                                    string.Empty
+                                CardCategory.STM => "mux-rack-card-stm",
+                                CardCategory.LTU => "mux-rack-card-e1",
+                                _ => string.Empty
                             };
 
 
@@ -268,7 +260,7 @@
                                                     when port.StmId.HasValue
                                                         => "STM",
 
-                                                CardCategory.E1
+                                                CardCategory.LTU
                                                     when port.E1Id.HasValue
                                                         => "E1",
 
@@ -313,7 +305,7 @@
                                             }
                                             else if (
                                                 card.Category ==
-                                                CardCategory.E1)
+                                                CardCategory.LTU)
                                             {
                                                 actionUrl =
                                                     Url.Action(

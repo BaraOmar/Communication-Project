@@ -299,7 +299,7 @@ public class MuxPortsController : Controller
         /*
          * Only E1-category cards can contain E1 channels.
          */
-        if (port.MuxCard.Category != CardCategory.E1)
+        if (port.MuxCard.Category != CardCategory.LTU)
         {
             TempData["ErrorMessage"] =
                 "E1 channels can only be assigned to E1 cards.";
@@ -426,7 +426,7 @@ public class MuxPortsController : Controller
          * Only E1 cards may contain E1 channels.
          */
         if (port.MuxCard.Category !=
-            CardCategory.E1)
+            CardCategory.LTU)
         {
             ModelState.AddModelError(
                 string.Empty,

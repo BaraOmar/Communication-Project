@@ -131,17 +131,17 @@ public class CommunicationDbContext
          *
          * But another logical link cannot use the same name.
          */
+        // Enforce unique names for SDH and other non-repeatable links.
         modelBuilder.Entity<CommunicationLink>()
             .HasIndex(link => new
             {
                 link.Name,
                 link.IsPrimary
             })
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("[AllowDuplicateName] = 0");
 
-        /*
-         * Prevent duplicate directional routes.
-         */
+        // Permit PDH links with identical names and endpoints.
         modelBuilder.Entity<CommunicationLink>()
             .HasIndex(link => new
             {
@@ -150,7 +150,8 @@ public class CommunicationDbContext
                 link.SiteToId,
                 link.Name
             })
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("[AllowDuplicateName] = 0");
     }
 
     private static void ConfigureStm(

@@ -83,9 +83,8 @@
 
                         <tr>
                             <th>MUX Type</th>
-                            <th>Power</th>
+                            <th>LTU</th>
                             <th>STM</th>
-                            <th>E1</th>
                             <th>Total Cards</th>
                             <th>Total Ports</th>
                         </tr>
@@ -97,27 +96,17 @@
 
                         @foreach (var type in muxTypes)
                         {
-                            int powerPorts =
-                                type.PowerCardCount *
-                                type.PowerPortsPerCard;
+                            int ltuPorts =
+                                type.LtuCardCount * type.LtuPortsPerCard;
 
                             int stmPorts =
-                                type.StmCardCount *
-                                type.StmPortsPerCard;
-
-                            int e1Ports =
-                                type.E1CardCount *
-                                type.E1PortsPerCard;
+                                type.StmCardCount * type.StmPortsPerCard;
 
                             int totalCards =
-                                type.PowerCardCount +
-                                type.StmCardCount +
-                                type.E1CardCount;
+                                type.LtuCardCount + type.StmCardCount;
 
                             int totalPorts =
-                                powerPorts +
-                                stmPorts +
-                                e1Ports;
+                                ltuPorts + stmPorts;
 
 
                             <tr>
@@ -153,18 +142,18 @@
 
                                 <td>
 
-                                    @if (type.PowerCardCount > 0)
+                                    @if (type.LtuCardCount > 0)
                                     {
                                         <div class="mux-type-capacity">
 
                                             <strong>
-                                                @type.PowerCardCount
+                                                @type.LtuCardCount
                                                 ×
-                                                @type.PowerPortsPerCard
+                                                @type.LtuPortsPerCard
                                             </strong>
 
                                             <span>
-                                                @powerPorts total ports
+                                                @ltuPorts  total ports
                                             </span>
 
                                         </div>
@@ -209,34 +198,6 @@
                                 </td>
 
 
-                                <!-- E1 -->
-
-                                <td>
-
-                                    @if (type.E1CardCount > 0)
-                                    {
-                                        <div class="mux-type-capacity">
-
-                                            <strong>
-                                                @type.E1CardCount
-                                                ×
-                                                @type.E1PortsPerCard
-                                            </strong>
-
-                                            <span>
-                                                @e1Ports total ports
-                                            </span>
-
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <span class="mux-type-none">
-                                            None
-                                        </span>
-                                    }
-
-                                </td>
 
 
                                 <!-- Total Cards -->

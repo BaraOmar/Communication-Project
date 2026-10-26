@@ -84,6 +84,9 @@ public class CreateCrossConnectionViewModel
     [Display(Name = "Outgoing E1")]
     public Guid? OutgoingE1Id { get; set; }
 
+    [Display(Name = "LTU Card / Port")]
+    public Guid? LtuPortId { get; set; }
+
     /* =====================================================
        Customer
        ===================================================== */

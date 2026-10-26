@@ -347,7 +347,7 @@ namespace CommunicationProject.Controllers
                         .Where(port =>
                             port.E1Id.HasValue &&
                             port.MuxCard.Category ==
-                                CardCategory.E1)
+                                CardCategory.LTU)
                         .ToDictionary(
                             port => port.E1Id!.Value,
                             port => port);
@@ -422,36 +422,78 @@ namespace CommunicationProject.Controllers
                                     }
 
 
-                                    string incomingSide =
-                                        BuildStmE1Display(
-                                            incomingE1,
-                                            stmPortLookup);
+                                    string crossSiteId =
+    currentSegment.CommunicationPathSegment
+        .CommunicationLink.SiteFromId;
 
+                                    bool incomingIsSdh = incomingE1.StmId.HasValue;
+                                    bool outgoingIsSdh = outgoingE1.StmId.HasValue;
 
-                                    string outgoingSide =
-                                        BuildStmE1Display(
-                                            outgoingE1,
-                                            stmPortLookup);
+                                    bool isMixed = incomingIsSdh != outgoingIsSdh;
 
+                                    if (isMixed)
+                                    {
+                                        var sdhE1 = incomingIsSdh
+                                            ? incomingE1
+                                            : outgoingE1;
 
-                                    crossConnections.Add(
-                                        new CustomerPathCrossConnectionViewModel
+                                        var pdhE1 = incomingIsSdh
+                                            ? outgoingE1
+                                            : incomingE1;
+
+                                        string pdhLinkName = incomingIsSdh
+                                            ? currentSegment.CommunicationPathSegment
+                                                .CommunicationLink.Name
+                                            : previousSegment.CommunicationPathSegment
+                                                .CommunicationLink.Name;
+
+                                        string ltuSide;
+
+                                        if (ltuPortLookup.TryGetValue(
+                                            sdhE1.Id,
+                                            out var intermediateLtuPort))
                                         {
-                                            SiteId =
-                                                currentSegment
-                                                    .CommunicationPathSegment
-                                                    .CommunicationLink
-                                                    .SiteFromId,
+                                            ltuSide =
+                                                $"LTU {intermediateLtuPort.MuxCard.SlotNumber} " +
+                                                $"Port {intermediateLtuPort.PortNumber}";
+                                        }
+                                        else
+                                        {
+                                            ltuSide = "LTU (Not assigned)";
+                                        }
 
-                                            IncomingSide =
-                                                incomingSide,
+                                        crossConnections.Add(
+                                            new CustomerPathCrossConnectionViewModel
+                                            {
+                                                SiteId = crossSiteId,
 
-                                            OutgoingSide =
-                                                outgoingSide,
+                                                IncomingSide =
+                                                    BuildStmE1Display(sdhE1, stmPortLookup),
 
-                                            IsPhysicalTermination =
-                                                false
-                                        });
+                                                OutgoingSide = ltuSide,
+
+                                                SecondLine =
+                                                    $"{ltuSide} * {pdhLinkName} {pdhE1.E1Number}",
+
+                                                IsPhysicalTermination = false
+                                            });
+                                    }
+                                    else
+                                    {
+                                        crossConnections.Add(
+                                            new CustomerPathCrossConnectionViewModel
+                                            {
+                                                SiteId = crossSiteId,
+
+                                                IncomingSide =
+                                                    BuildStmE1Display(incomingE1, stmPortLookup),
+
+                                                OutgoingSide =
+                                                    BuildStmE1Display(outgoingE1, stmPortLookup),
+
+                                                IsPhysicalTermination = false
+                                            });
+                                    }
                                 }
 
 

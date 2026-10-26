@@ -71,9 +71,8 @@ public class MuxTypesController : Controller
         }
 
 
-        if (model.PowerCardCount == 0 &&
-            model.StmCardCount == 0 &&
-            model.E1CardCount == 0)
+        if (model.LtuCardCount == 0 &&
+            model.StmCardCount == 0)
         {
             ModelState.AddModelError(
                 string.Empty,
@@ -82,10 +81,10 @@ public class MuxTypesController : Controller
 
 
         ValidateCardCapacity(
-            model.PowerCardCount,
-            model.PowerPortsPerCard,
-            nameof(model.PowerPortsPerCard),
-            "Power");
+            model.LtuCardCount,
+            model.LtuPortsPerCard,
+            nameof(model.LtuPortsPerCard),
+            "LTU");
 
         ValidateCardCapacity(
             model.StmCardCount,
@@ -93,11 +92,6 @@ public class MuxTypesController : Controller
             nameof(model.StmPortsPerCard),
             "STM");
 
-        ValidateCardCapacity(
-            model.E1CardCount,
-            model.E1PortsPerCard,
-            nameof(model.E1PortsPerCard),
-            "E1");
 
 
         if (!ModelState.IsValid)
@@ -111,26 +105,11 @@ public class MuxTypesController : Controller
             Id = Guid.NewGuid(),
             Name = model.Name,
 
-            PowerCardCount =
-                model.PowerCardCount,
+            LtuCardCount = model.LtuCardCount,
+            LtuPortsPerCard = model.LtuPortsPerCard,
 
-            PowerPortsPerCard =
-                model.PowerPortsPerCard,
-
-            StmCardCount =
-                model.StmCardCount,
-
-            StmPortsPerCard =
-                model.StmPortsPerCard,
-
-            E1CardCount =
-                model.E1CardCount,
-
-            E1PortsPerCard =
-                model.E1PortsPerCard,
-
-            // Temporary until the old shelf workflow is removed.
-
+            StmCardCount = model.StmCardCount,
+            StmPortsPerCard = model.StmPortsPerCard
         };
 
 

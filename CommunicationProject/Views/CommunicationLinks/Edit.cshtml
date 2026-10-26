@@ -67,8 +67,24 @@
                             Link name
                         </label>
 
-                        <input asp-for="Name"
-                               class="links-form-control" />
+                        @if (ViewData["IsPdhLink"] is true)
+                        {
+                            <select asp-for="Name"
+                                    asp-items="ViewBag.PdhNameOptions"
+                                    class="links-form-select"
+                                    required>
+                                <option value="">Select PDH link name</option>
+                            </select>
+
+                            <small>
+                                Current saved name: @Model.Name
+                            </small>
+                        }
+                        else
+                        {
+                            <input asp-for="Name"
+                                   class="links-form-control" />
+                        }
 
                         <span asp-validation-for="Name"
                               class="links-validation">

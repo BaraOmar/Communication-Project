@@ -8,11 +8,8 @@
     bool isStmCard =
         Model.Category == CardCategory.STM;
 
-    bool isE1Card =
-        Model.Category == CardCategory.E1;
-
-    bool isPowerCard =
-        Model.Category == CardCategory.Power;
+    bool isLtuCard =
+        Model.Category == CardCategory.LTU;
 
     bool canManage =
         User.IsInRole(AppRoles.Admin) ||
@@ -32,11 +29,9 @@
             port.Status == MuxPortStatus.Available);
 
     string cardClass =
-        isE1Card
+        isLtuCard
             ? "mux-card-detail-e1"
-            : isPowerCard
-                ? "mux-card-detail-power"
-                : "mux-card-detail-stm";
+            : "mux-card-detail-stm";
 }
 
 @section Styles {
@@ -486,7 +481,7 @@
                     }
 
 
-                    @if (isE1Card)
+                    @if (isLtuCard)
                     {
                         <div class="mux-card-resource">
 
@@ -544,7 +539,7 @@
                                     </strong>
 
                                     <span>
-                                        This E1 port is available.
+                                        This LTU port is available.
                                     </span>
 
                                 </div>
@@ -564,30 +559,7 @@
                     }
 
 
-                    @if (isPowerCard)
-                    {
-                        <div class="mux-card-resource">
-
-                            <span class="mux-card-resource-label">
-                                Power Port
-                            </span>
-
-                            <div class="mux-card-resource-empty">
-
-                                <strong>
-                                    Port @port.PortNumber
-                                </strong>
-
-                                <span>
-                                    Power card ports do not require
-                                    STM or E1 assignment.
-                                </span>
-
-                            </div>
-
-                        </div>
-                    }
-
+               
                 </div>
             }
 

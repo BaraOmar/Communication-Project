@@ -18,12 +18,12 @@ public class MuxType
         new List<Mux>();
 
     [Range(0, 100)]
-    [Display(Name = "Number of Power Cards")]
-    public int PowerCardCount { get; set; }
+    [Display(Name = "Number of LTU Cards")]
+    public int LtuCardCount { get; set; }
 
     [Range(0, 1000)]
-    [Display(Name = "Ports per Power Card")]
-    public int PowerPortsPerCard { get; set; }
+    [Display(Name = "Ports per LTU Card")]
+    public int LtuPortsPerCard { get; set; }
 
     [Range(0, 100)]
     [Display(Name = "Number of STM Cards")]
@@ -33,13 +33,7 @@ public class MuxType
     [Display(Name = "Ports per STM Card")]
     public int StmPortsPerCard { get; set; }
 
-    [Range(0, 100)]
-    [Display(Name = "Number of E1 Cards")]
-    public int E1CardCount { get; set; }
 
-    [Range(0, 1000)]
-    [Display(Name = "Ports per E1 Card")]
-    public int E1PortsPerCard { get; set; }
 
 
 }

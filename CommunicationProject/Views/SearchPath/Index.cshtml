@@ -411,7 +411,32 @@
                             <!-- =================================
                                  SITE NODE
                                  ================================= -->
+                            string siteOptionsId =
+                                $"site-options-{path.PathId:N}-{i}";
 
+                            var siteReleases = path.Customers
+                                .SelectMany(customer =>
+                                    customer.E1s
+                                        .Where(e1 =>
+                                            string.Equals(
+                                                e1.SiteFrom,
+                                                currentSiteId,
+                                                StringComparison.OrdinalIgnoreCase) ||
+                                            string.Equals(
+                                                e1.SiteTo,
+                                                currentSiteId,
+                                                StringComparison.OrdinalIgnoreCase))
+                                        .Select(e1 => new
+                                        {
+                                            customer.CustomerName,
+                                            E1 = e1
+                                        }))
+                                .DistinctBy(item => item.E1.CustomerConnectionSegmentId)
+                                .ToList();
+
+                            <!-- =================================
+     SITE NODE
+     ================================= -->
                             <div class="path-flow-site">
 
                                 <!-- Circle -->
@@ -429,17 +454,33 @@
 
                                 <!-- Site + Cross Connection -->
 
-                                <div class="
-                                    path-flow-node-content
-                                    @(i > 0 && nodeCrossConnections.Any()
-                                                 ? "has-cross"
-                                                 : "")">
+                                <div class="path-flow-node-content">
 
 
                                     <!-- =============================
              Site Information
              ============================= -->
+                                    <button type="button"
+                                            class="path-manage-btn path-site-options-trigger"
+                                            data-site-options-dialog="@siteOptionsId">
+                                        Site options
+                                    </button>
 
+                                    <dialog id="@siteOptionsId"
+                                            class="path-site-options-dialog"
+                                            aria-labelledby="@(siteOptionsId)-title">
+
+                                        <div class="path-site-options-header">
+                                            <h2 id="@(siteOptionsId)-title">
+                                                Site @currentSiteId options
+                                            </h2>
+
+                                            <button type="button"
+                                                    data-site-options-close
+                                                    aria-label="Close site options">
+                                                ×
+                                            </button>
+                                        </div>
                                     <div class="path-flow-site-info">
 
                                         <div class="path-flow-site-top">
@@ -531,7 +572,42 @@
                                             }
                                         </div>
                                     </div>
+                                        @if (User.IsInRole("Admin") ||
+         User.IsInRole("Operator"))
+                                        {
+                                            <div class="path-site-options-releases">
+                                                <h3>Release E1</h3>
 
+                                                @foreach (var release in siteReleases)
+                                                {
+                                                    <form asp-controller="SearchPath"
+                                                          asp-action="ReleaseCustomerE1"
+                                                          method="post"
+                                                          class="path-site-release-row"
+                                                          onsubmit="return confirm('Release this physical E1 pair?');">
+
+                                                        @Html.AntiForgeryToken()
+
+                                                        <input type="hidden"
+                                                               name="customerConnectionSegmentId"
+                                                               value="@release.E1.CustomerConnectionSegmentId" />
+
+                                                        <span>
+                                                            @release.CustomerName —
+                                                            @release.E1.SiteFrom → @release.E1.SiteTo —
+                                                            E1 @release.E1.E1Number
+                                                        </span>
+
+                                                        <button type="submit"
+                                                                class="path-release-btn">
+                                                            Release E1
+                                                        </button>
+                                                    </form>
+                                                }
+                                            </div>
+                                        }
+
+                                    </dialog>
 
                                     <!-- =============================
              Cross Connection
@@ -573,15 +649,19 @@
                                                         </div>
 
 
-                                                        <!-- Exact old formula -->
+                                                        <div class="path-readable-cross-formula">
+                                                            <div>
+                                                                @item.CrossConnection.DisplayText
+                                                            </div>
 
-                                                        <div class="
-                                                            path-readable-cross-formula">
-
-                                                            @(item.CrossConnection.DisplayText)
-
+                                                            @if (!string.IsNullOrWhiteSpace(
+                                                                item.CrossConnection.SecondLine))
+                                                            {
+                                                                <div>
+                                                                    @item.CrossConnection.SecondLine
+                                                                </div>
+                                                            }
                                                         </div>
-
 
                                                         @if (
                                                             item.CrossConnection
@@ -812,7 +892,6 @@
                                             <div class="path-flow-link">
 
                                                 <div>
-
                                                     <span class="path-flow-small-label">
                                                         Communication Link
                                                     </span>
@@ -820,9 +899,7 @@
                                                     <strong>
                                                         @currentLink
                                                     </strong>
-
                                                 </div>
-
 
                                                 <span class="path-flow-direction">
                                                     @currentSiteId → @nextSiteId
@@ -830,40 +907,10 @@
 
                                             </div>
 
+                                        </div>
 
                                             <!-- Release belongs to this physical link/E1 segment -->
-                                            @if (User.IsInRole("Admin") ||
-                                                     User.IsInRole("Operator"))
-                                            {
-                                                <div class="path-flow-release-actions">
 
-                                                    @foreach (var segment in segmentE1s)
-                                                    {
-                                                        <form asp-action="ReleaseCustomerE1"
-                                                              method="post"
-                                                              class="path-inline-form"
-                                                              onsubmit="return confirm('Release this physical E1 pair?');">
-
-                                                            @Html.AntiForgeryToken()
-
-                                                            <input type="hidden"
-                                                                   name="customerConnectionSegmentId"
-                                                                   value="@segment.E1.CustomerConnectionSegmentId" />
-
-                                                            <button type="submit"
-                                                                    class="path-release-btn">
-
-                                                                Release E1
-
-                                                            </button>
-
-                                                        </form>
-                                                    }
-
-                                                </div>
-                                            }
-
-                                        </div>
 
 
                                         <!-- =========================================
@@ -1312,5 +1359,27 @@
 
         })();
     </script>
+                <script>
+                    (() => {
+                        document.querySelectorAll("[data-site-options-dialog]")
+                            .forEach(button => {
+                                button.addEventListener("click", () => {
+                                    const dialog = document.getElementById(
+                                        button.dataset.siteOptionsDialog
+                                    );
 
+                                    if (dialog && !dialog.open) {
+                                        dialog.showModal();
+                                    }
+                                });
+                            });
+
+                        document.querySelectorAll("[data-site-options-close]")
+                            .forEach(button => {
+                                button.addEventListener("click", () => {
+                                    button.closest("dialog")?.close();
+                                });
+                            });
+                    })();
+                </script>
 }

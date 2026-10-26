@@ -198,7 +198,8 @@
 
 
                 <!-- Generated Name -->
-                <div class="links-generated-name">
+                <div id="generatedNameSection"
+                     class="links-generated-name">
 
                     <span class="links-generated-name-label">
                         Generated name
@@ -421,7 +422,24 @@
                     </span>
 
                 </div>
+                <div class="links-form-group">
 
+                    <label asp-for="PdhNameTypeId"
+                           class="links-form-label">
+                        PDH Link Name
+                    </label>
+
+                    <select asp-for="PdhNameTypeId"
+                            asp-items="Model.PdhNameOptions"
+                            id="PdhNameTypeId"
+                            class="links-form-control">
+                        <option value="">Select link type name</option>
+                    </select>
+
+                    <span asp-validation-for="PdhNameTypeId"
+                          class="links-validation"></span>
+
+                </div>
 
                 <div class="links-form-group">
 
@@ -522,31 +540,25 @@
 
 
         function updateTechnologyFields() {
+            const isSdh = technology.value === "SDH";
+            const isPdh = technology.value === "PDH";
 
-            const isSdh =
-                technology.value === "SDH";
+            sdhConfiguration.classList.toggle("d-none", !isSdh);
+            pdhConfiguration.classList.toggle("d-none", !isPdh);
 
-            const isPdh =
-                technology.value === "PDH";
+            generatedNameSection.classList.toggle("d-none", !isSdh);
 
+            sdhCardCount.disabled = !isSdh;
+            sdhCardCount.required = isSdh;
 
-            sdhConfiguration.classList.toggle(
-                "d-none",
-                !isSdh);
+            stmCount.disabled = !isSdh;
+            stmCount.required = isSdh;
 
-            pdhConfiguration.classList.toggle(
-                "d-none",
-                !isPdh);
+            pdhE1Count.disabled = !isPdh;
+            pdhE1Count.required = isPdh;
 
-
-            sdhCardCount.disabled =
-                !isSdh;
-
-            stmCount.disabled =
-                !isSdh;
-
-            pdhE1Count.disabled =
-                !isPdh;
+            pdhNameSelect.disabled = !isPdh;
+            pdhNameSelect.required = isPdh;
         }
 
 
@@ -620,7 +632,11 @@
                 updateSiteOptions();
             });
 
+                    const generatedNameSection =
+            document.getElementById("generatedNameSection");
 
+        const pdhNameSelect =
+            document.getElementById("PdhNameTypeId");
         updateTechnologyFields();
         updateGeneratedName();
         updateSiteOptions();

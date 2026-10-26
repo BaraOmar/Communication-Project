@@ -1693,3 +1693,62 @@
         height: 1px;
         background: #e2e7ee;
     }
+
+.path-site-options-trigger {
+    justify-self: start;
+}
+
+.path-site-options-dialog {
+    width: min(700px, calc(100vw - 2rem));
+    max-height: 85vh;
+    overflow: auto;
+    margin: auto;
+    padding: 1.25rem;
+    border: 1px solid #dce3ec;
+    border-radius: 14px;
+    background: #fff;
+    color: #263248;
+    box-sizing: border-box;
+}
+
+    .path-site-options-dialog::backdrop {
+        background: rgb(20 30 45 / 45%);
+    }
+
+.path-site-options-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+    .path-site-options-header h2 {
+        margin: 0;
+        font-size: 1.1rem;
+    }
+
+    .path-site-options-header button {
+        border: 0;
+        background: transparent;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+
+.path-site-options-dialog .path-flow-site-info {
+    height: auto;
+}
+
+.path-site-options-releases {
+    margin-top: 1rem;
+}
+
+.path-site-release-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .75rem;
+    padding: .75rem 0;
+    border-top: 1px solid #e5e9ef;
+}

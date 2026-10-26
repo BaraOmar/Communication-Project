@@ -126,4 +126,6 @@ public class CustomerPathCrossConnectionViewModel
 
     public string DisplayText =>
         $"{IncomingSide} * {OutgoingSide}";
+
+    public string SecondLine { get; set; } = string.Empty;
 }

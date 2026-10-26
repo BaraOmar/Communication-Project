@@ -12,6 +12,12 @@ public sealed class CommunicationLinkCreateViewModel
     [Display(Name = "Link Technology")]
     public LinkTechnology? Technology { get; set; }
 
+    [Display(Name = "PDH Link Name")]
+    public Guid? PdhNameTypeId { get; set; }
+
+    [ValidateNever]
+    public List<SelectListItem> PdhNameOptions { get; set; } = new();
+
 
     [Required(ErrorMessage = "Source site is required.")]
     [Display(Name = "Site From")]
@@ -82,6 +88,14 @@ public sealed class CommunicationLinkCreateViewModel
 
         if (Technology == LinkTechnology.PDH)
         {
+            if (!PdhNameTypeId.HasValue ||
+    PdhNameTypeId.Value == Guid.Empty)
+            {
+                yield return new ValidationResult(
+                    "Select the PDH link name.",
+                    new[] { nameof(PdhNameTypeId) });
+            }
+
             if (!PdhE1Count.HasValue ||
                 PdhE1Count.Value < 1 ||
                 PdhE1Count.Value > 1000)

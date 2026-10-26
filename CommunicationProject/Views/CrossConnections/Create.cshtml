@@ -20,7 +20,10 @@
                 Model.OutgoingResourceKey,
 
             outgoingE1Id =
-                Model.OutgoingE1Id?.ToString()
+    Model.OutgoingE1Id?.ToString(),
+
+            ltuPortId =
+    Model.LtuPortId?.ToString()
         });
 }
 
@@ -413,7 +416,27 @@
                     </span>
 
                 </div>
+                <div id="ltuSection"
+                     class="cross-field"
+                     hidden>
 
+                    <label asp-for="LtuPortId">
+                        LTU Card / Port
+                    </label>
+
+                    <select asp-for="LtuPortId"
+                            id="ltuPortSelect"
+                            class="cross-select"
+                            disabled>
+                        <option value="">Select LTU card / port</option>
+                    </select>
+
+                    <span asp-validation-for="LtuPortId"
+                          class="cross-field-error"></span>
+
+                    <p id="ltuMessage" role="status"></p>
+
+                </div>
             </section>
 
         </div>
@@ -1680,101 +1703,171 @@
                 }
 
             }
+                    const ltuSection = document.getElementById("ltuSection");
+        const ltuPortSelect = document.getElementById("ltuPortSelect");
+        const ltuMessage = document.getElementById("ltuMessage");
 
+        const ltuUrl =
+            '@Url.Action("GetAvailableLtuPorts", "CrossConnections")';
+
+        let ltuRequestVersion = 0;
+
+        function resetLtuSelection() {
+            ltuRequestVersion++;
+
+            ltuSection.hidden = true;
+            ltuPortSelect.required = false;
+            ltuPortSelect.disabled = true;
+
+            ltuPortSelect.replaceChildren(
+                new Option("Select LTU card / port", "")
+            );
+
+            ltuMessage.textContent = "";
+        }
+
+        async function refreshLtuPorts(selectedPortId = "") {
+            const preferredPortId =
+                selectedPortId || ltuPortSelect.value;
+
+            resetLtuSelection();
+
+            const requestVersion = ltuRequestVersion;
+
+            const incomingKey = incomingResourceSelect.value;
+            const outgoingKey = outgoingResourceSelect.value;
+
+            const incomingSdh = incomingKey.startsWith("STM:");
+            const outgoingSdh = outgoingKey.startsWith("STM:");
+
+            const incomingPdh = incomingKey.startsWith("PDH:");
+            const outgoingPdh = outgoingKey.startsWith("PDH:");
+
+            const isMixed =
+                (incomingSdh && outgoingPdh) ||
+                (incomingPdh && outgoingSdh);
+
+            if (!isMixed) {
+                return;
+            }
+
+            ltuSection.hidden = false;
+            ltuPortSelect.disabled = false;
+            ltuPortSelect.required = true;
+
+            const sdhE1Id = incomingSdh
+                ? incomingE1Select.value
+                : outgoingE1Select.value;
+
+            if (!sdhE1Id) {
+                // ltuMessage.textContent =
+                //     "Select the SDH E1 to load LTU ports.";
+                return;
+            }
+
+            ltuMessage.textContent = "Loading LTU ports...";
+
+            try {
+                const ports = await getJson(ltuUrl, {
+                    siteId: siteSelect.value,
+                    sdhE1Id: sdhE1Id
+                });
+
+                // Ignore a response for an older selection.
+                if (requestVersion !== ltuRequestVersion) {
+                    return;
+                }
+
+                ports.forEach(port => {
+                    ltuPortSelect.add(
+                        new Option(port.text, port.value)
+                    );
+                });
+
+                const preferred = ports.find(port =>
+                    String(port.value) === preferredPortId
+                );
+
+                const assigned = ports.find(port => port.selected);
+
+                ltuPortSelect.value =
+                    preferred?.value || assigned?.value || "";
+
+                // ltuMessage.textContent = ports.length
+                //     ? "An LTU port is required for this connection."
+                //     : "No suitable LTU ports are available at this site.";
+            }
+            catch (error) {
+                if (requestVersion !== ltuRequestVersion) {
+                    return;
+                }
+
+                console.error(error);
+
+                ltuMessage.textContent =
+                    "Unable to load LTU ports. Change the selection to retry.";
+            }
+        }
 
             /* =================================================
                Events
                ================================================= */
 
-            siteSelect.addEventListener(
-                "change",
-                async () => {
+        siteSelect.addEventListener("change", async () => {
+            resetLtuSelection();
+            updateSiteTrigger();
 
-                    updateSiteTrigger();
+            await loadResources();
+            await refreshLtuPorts();
+        });
 
+        incomingResourceSelect.addEventListener("change", async () => {
+            resetLtuSelection();
+            updateResourceAvailability("incoming");
 
-                    await loadResources();
+            await loadE1s("incoming");
+            await refreshLtuPorts();
+        });
 
-                });
+        outgoingResourceSelect.addEventListener("change", async () => {
+            resetLtuSelection();
+            updateResourceAvailability("outgoing");
 
+            await loadE1s("outgoing");
+            await refreshLtuPorts();
+        });
 
-            incomingResourceSelect
-                .addEventListener(
-                    "change",
-                    async () => {
+        incomingE1Select.addEventListener("change", async () => {
+            updateCustomerFromIncomingE1();
+            await refreshLtuPorts();
+        });
 
-                        updateResourceAvailability(
-                            "incoming");
-
-
-                        await loadE1s(
-                            "incoming");
-
-                    });
-
-
-            outgoingResourceSelect
-                .addEventListener(
-                    "change",
-                    async () => {
-
-                        updateResourceAvailability(
-                            "outgoing");
-
-
-                        await loadE1s(
-                            "outgoing");
-
-                    });
-
-
-            incomingE1Select
-                .addEventListener(
-                    "change",
-                    updateCustomerFromIncomingE1);
-
-
+        outgoingE1Select.addEventListener("change", async () => {
+            await refreshLtuPorts();
+        });
             /* =================================================
                Restore Values After Validation
                ================================================= */
 
-            async function restoreSelections() {
+                    async function restoreSelections() {
+            updateSiteTrigger();
 
-                /*
-                 * Always synchronize custom control
-                 * with the real <select>.
-                 */
-
-                updateSiteTrigger();
-
-
-                if (!initialValues.siteId) {
-                    return;
-                }
-
-
-                siteSelect.value =
-                    initialValues.siteId;
-
-
-                updateSiteTrigger();
-
-
-                await loadResources(
-                    initialValues
-                        .incomingResourceKey,
-
-                    initialValues
-                        .outgoingResourceKey,
-
-                    initialValues
-                        .incomingE1Id,
-
-                    initialValues
-                        .outgoingE1Id);
-
+            if (!initialValues.siteId) {
+                return;
             }
 
+            siteSelect.value = initialValues.siteId;
+            updateSiteTrigger();
+
+            await loadResources(
+                initialValues.incomingResourceKey,
+                initialValues.outgoingResourceKey,
+                initialValues.incomingE1Id,
+                initialValues.outgoingE1Id
+            );
+
+            await refreshLtuPorts(initialValues.ltuPortId || "");
+        }
 
             restoreSelections();
 

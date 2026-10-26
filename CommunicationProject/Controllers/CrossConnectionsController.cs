@@ -38,6 +38,75 @@ public class CrossConnectionsController : Controller
         return View(model);
     }
 
+    [HttpGet]
+    public async Task<IActionResult> GetAvailableLtuPorts(
+    string? siteId,
+    Guid? sdhE1Id)
+    {
+        siteId = siteId?.Trim();
+
+        if (string.IsNullOrWhiteSpace(siteId) ||
+            !sdhE1Id.HasValue ||
+            sdhE1Id.Value == Guid.Empty)
+        {
+            return Json(Array.Empty<object>());
+        }
+
+        // The SDH E1 must belong to the selected local site.
+        bool validE1 = await _context.E1s
+            .AsNoTracking()
+            .AnyAsync(e1 =>
+                e1.Id == sdhE1Id.Value &&
+                e1.StmId != null &&
+                e1.Link.SiteFromId == siteId);
+
+        if (!validE1)
+        {
+            return Json(Array.Empty<object>());
+        }
+
+        // Reuse its existing LTU assignment when extending a path.
+        Guid? assignedPortId = await _context.MuxPorts
+            .AsNoTracking()
+            .Where(port => port.E1Id == sdhE1Id.Value)
+            .Select(port => (Guid?)port.Id)
+            .SingleOrDefaultAsync();
+
+        var ports = await _context.MuxPorts
+            .AsNoTracking()
+            .Where(port =>
+                port.MuxCard.Category == CardCategory.LTU &&
+                port.MuxCard.Mux.SiteId == siteId &&
+                port.StmId == null &&
+                (
+                    assignedPortId.HasValue
+                        ? port.Id == assignedPortId.Value &&
+                          (
+                              port.Status == MuxPortStatus.Available ||
+                              port.Status == MuxPortStatus.Connected
+                          )
+                        : port.E1Id == null &&
+                          port.Status == MuxPortStatus.Available
+                ))
+            .OrderBy(port => port.MuxCard.Mux.Name)
+            .ThenBy(port => port.MuxCard.SlotNumber)
+            .ThenBy(port => port.PortNumber)
+            .Select(port => new
+            {
+                value = port.Id,
+
+                text =
+                    port.MuxCard.Mux.Name +
+                    " — LTU #" + port.MuxCard.SlotNumber +
+                    " Port #" + port.PortNumber,
+
+                selected = port.E1Id == sdhE1Id.Value
+            })
+            .ToListAsync();
+
+        return Json(ports);
+    }
+
     /*
      * Returns only the sites directly connected to the selected
      * cross-connection site.
@@ -422,6 +491,12 @@ e1.ConnectedE1!.ConnectionType !=
 
             ValidateIncomingE1(model, incomingE1);
             ValidateOutgoingE1(model, outgoingE1);
+
+            MuxPort? ltuPort = await ValidateLtuAssignmentAsync(
+    model,
+    incomingE1,
+    outgoingE1);
+
             if (incomingE1 != null &&
                 incomingE1.CrossConnectionState !=
                     E1CrossConnectionState.Available &&
@@ -1151,6 +1226,16 @@ e1.ConnectedE1!.ConnectionType !=
                             assignment.E1.Id
                     });
             }
+            if (ltuPort != null)
+            {
+                var sdhE1 = incomingE1!.StmId.HasValue
+                    ? incomingE1
+                    : outgoingE1!;
+
+                ltuPort.E1Id = sdhE1.Id;
+                ltuPort.Status = MuxPortStatus.Connected;
+            }
+
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
 
@@ -1196,6 +1281,92 @@ e1.ConnectedE1!.ConnectionType !=
         await LoadSiteOptionsAsync(model);
 
         return View(model);
+    }
+
+    private async Task<MuxPort?> ValidateLtuAssignmentAsync(
+    CreateCrossConnectionViewModel model,
+    E1? incomingE1,
+    E1? outgoingE1)
+    {
+        if (incomingE1 == null || outgoingE1 == null)
+        {
+            return null;
+        }
+
+        bool isMixed =
+            incomingE1.StmId.HasValue != outgoingE1.StmId.HasValue;
+
+        // Keep SDH ↔ SDH and PDH ↔ PDH unchanged.
+        if (!isMixed)
+        {
+            return null;
+        }
+
+        if (!model.LtuPortId.HasValue ||
+            model.LtuPortId.Value == Guid.Empty)
+        {
+            ModelState.AddModelError(
+                nameof(model.LtuPortId),
+                "Select an LTU card and port for the SDH / PDH connection.");
+
+            return null;
+        }
+
+        var sdhE1 = incomingE1.StmId.HasValue
+            ? incomingE1
+            : outgoingE1;
+
+        var port = await _context.MuxPorts
+            .Include(item => item.MuxCard)
+                .ThenInclude(card => card.Mux)
+            .FirstOrDefaultAsync(item =>
+                item.Id == model.LtuPortId.Value);
+
+        if (port == null ||
+            port.MuxCard.Category != CardCategory.LTU ||
+            port.MuxCard.Mux.SiteId != model.SiteId)
+        {
+            ModelState.AddModelError(
+                nameof(model.LtuPortId),
+                "Select an LTU port installed at the cross-connection site.");
+
+            return null;
+        }
+
+        bool assignedToThisE1 =
+            port.E1Id == sdhE1.Id;
+
+        bool validStatus = assignedToThisE1
+            ? port.Status == MuxPortStatus.Available ||
+              port.Status == MuxPortStatus.Connected
+            : port.Status == MuxPortStatus.Available;
+
+        if (port.StmId.HasValue ||
+            (port.E1Id.HasValue && !assignedToThisE1) ||
+            !validStatus)
+        {
+            ModelState.AddModelError(
+                nameof(model.LtuPortId),
+                "The selected LTU port is unavailable.");
+
+            return null;
+        }
+
+        bool assignedElsewhere = await _context.MuxPorts
+            .AnyAsync(item =>
+                item.E1Id == sdhE1.Id &&
+                item.Id != port.Id);
+
+        if (assignedElsewhere)
+        {
+            ModelState.AddModelError(
+                nameof(model.LtuPortId),
+                "This SDH E1 already has an LTU assignment. Select its existing port.");
+
+            return null;
+        }
+
+        return port;
     }
     private static void NormalizeModel(
         CreateCrossConnectionViewModel model)

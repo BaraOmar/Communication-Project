@@ -2,7 +2,6 @@
 
 public enum CardCategory
 {
-    STM,
-    E1,
-    Power
+    STM = 0,
+    LTU = 1
 }

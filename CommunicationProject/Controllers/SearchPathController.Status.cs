@@ -217,7 +217,7 @@ public partial class SearchPathController
                 .Where(port =>
                     port.E1Id.HasValue &&
                     selectedIds.Contains(port.E1Id.Value) &&
-                    port.MuxCard.Category == CardCategory.E1)
+                    port.MuxCard.Category == CardCategory.LTU)
                 .ToListAsync();
 
             foreach (var port in ports)
