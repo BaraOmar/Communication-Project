@@ -473,7 +473,7 @@ namespace CommunicationProject.Controllers
                                                 OutgoingSide = ltuSide,
 
                                                 SecondLine =
-                                                    $"{ltuSide} * {pdhLinkName} {pdhE1.E1Number}",
+    $"{ltuSide} * {pdhLinkName} Port {pdhE1.E1Number}",
 
                                                 IsPhysicalTermination = false
                                             });
