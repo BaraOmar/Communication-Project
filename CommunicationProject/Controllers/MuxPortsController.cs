@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using static CommunicationProject.Models.E1;
+using System.Data;
+using CommunicationProject.Services.Muxes;
 
 namespace CommunicationProject.Controllers;
 
@@ -265,380 +267,353 @@ public class MuxPortsController : Controller
 
 
 
-    // GET: MuxPorts/AssignE1/{id}
-    // GET: MuxPorts/AssignE1/{id}
-    [HttpGet]
-    [Authorize(
-        Roles =
-            AppRoles.Admin + "," +
-            AppRoles.Operator)]
-    public async Task<IActionResult> AssignE1(Guid? id)
+    private IQueryable<E1> EligibleLtuE1s(MuxPort port)
     {
-        if (!id.HasValue ||
-            id.Value == Guid.Empty)
-        {
-            return NotFound();
-        }
+        Guid muxId = port.MuxCard.MuxId;
+        string siteId = port.MuxCard.Mux.SiteId;
 
-        var port = await _context.MuxPorts
+        return _context.E1s
             .AsNoTracking()
+            .Where(e1 =>
+                e1.StmId.HasValue &&
+                e1.Link.SiteFromId == siteId &&
+                e1.LinkId == e1.Stm!.LinkId &&
+                e1.ConnectionType == E1ConnectionType.Physical &&
+                e1.JoinE1Id == null &&
+                e1.CrossConnectionState != E1CrossConnectionState.CrossConnected &&
+                (
+                    e1.Status == E1OperationalStatus.Available ||
+                    e1.Status == E1OperationalStatus.Connected
+                ) &&
+                _context.MuxPorts.Any(stmPort =>
+                    stmPort.StmId == e1.StmId &&
+                    stmPort.MuxCard.Category == CardCategory.STM &&
+                    stmPort.MuxCard.MuxId == muxId) &&
+                !_context.MuxPorts.Any(other => other.E1Id == e1.Id));
+    }
 
-
-            .Include(item => item.MuxCard)
-                .ThenInclude(card => card.Mux)
-                    .ThenInclude(mux => mux.Site)
-
-            .FirstOrDefaultAsync(item =>
-                item.Id == id.Value);
-
-        if (port == null)
-        {
-            return NotFound();
+    private static int[] ConfiguredPhysicalStms(Mux mux)
+    {
+        return new[]
+            {
+            mux.FirstPhysicalStmNumber,
+            mux.SecondPhysicalStmNumber
         }
+            .Where(number =>
+                number.HasValue &&
+                number.Value >= 29 &&
+                number.Value <= 31)
+            .Select(number => number!.Value)
+            .Distinct()
+            .OrderBy(number => number)
+            .ToArray();
+    }
 
-        /*
-         * Only E1-category cards can contain E1 channels.
-         */
-        if (port.MuxCard.Category != CardCategory.LTU)
-        {
-            TempData["ErrorMessage"] =
-                "E1 channels can only be assigned to E1 cards.";
-
-            return RedirectToAction(
-                "Details",
-                "MuxCards",
-                new { id = port.MuxCardId });
-        }
-
-        /*
-         * Do not replace an already assigned E1
-         * through this action.
-         */
-        if (port.E1Id.HasValue)
-        {
-            TempData["ErrorMessage"] =
-                "This port already has an E1 assigned.";
-
-            return RedirectToAction(
-                "Details",
-                "MuxCards",
-                new { id = port.MuxCardId });
-        }
-
+    private async Task<AssignE1ToMuxPortViewModel> BuildE1AssignmentAsync(
+        MuxPort port,
+        Guid? selectedE1Id = null,
+        int? physicalStmNumber = null)
+    {
         var mux = port.MuxCard.Mux;
 
-        var model = new AssignE1ToMuxPortViewModel
+        var rows = await (
+            from e1 in EligibleLtuE1s(port)
+            join stmPort in _context.MuxPorts.AsNoTracking()
+                on e1.StmId equals stmPort.StmId
+            where stmPort.MuxCard.Category == CardCategory.STM &&
+                  stmPort.MuxCard.MuxId == mux.Id
+            orderby e1.Link.Name, stmPort.MuxCard.ShelfNumber,
+                    stmPort.MuxCard.SlotNumber, stmPort.PortNumber,
+                    e1.E1Number
+            select new
+            {
+                e1.Id,
+                e1.E1Number,
+                StmNumber = e1.Stm!.Number,
+                LinkName = e1.Link.Name,
+                ShelfNumber = stmPort.MuxCard.ShelfNumber,
+                CardNumber = stmPort.MuxCard.SlotNumber,
+                stmPort.PortNumber
+            })
+            .ToListAsync();
+
+        return new AssignE1ToMuxPortViewModel
         {
             MuxPortId = port.Id,
-
             MuxCardId = port.MuxCardId,
-
             PortNumber = port.PortNumber,
-
             MuxName = mux.Name,
+            CardCategoryName = port.MuxCard.Category.ToString(),
+            Position = MuxDisplay.LtuLabel(
+                mux.Model,
+                port.MuxCard.ShelfNumber,
+                port.MuxCard.SlotNumber,
+                port.PortNumber),
+            IsTellab = mux.Model == MuxModel.Tellab,
+            E1Id = selectedE1Id,
+            PhysicalStmNumber = physicalStmNumber,
 
-            CardCategoryName =
-    port.MuxCard.Category.ToString(),
+            E1Options = rows.Select(row => new SelectListItem
+            {
+                Value = row.Id.ToString(),
+                Text = MuxDisplay.StmLabel(
+                    mux.Model,
+                    row.ShelfNumber,
+                    row.CardNumber,
+                    row.PortNumber,
+                    row.StmNumber)
+                    + " " + MuxDisplay.E1Label(mux.Model, row.E1Number)
+                    + " — " + row.LinkName
+            }).ToList(),
 
-            E1Options = await _context.E1s
-                .AsNoTracking()
-
-                .Where(e1 =>
-
-                    /*
-                     * Only Physical E1 channels can
-                     * occupy physical MUX ports.
-                     */
-                    e1.ConnectionType ==
-                        E1ConnectionType.Physical &&
-
-                    /*
-                     * The E1 belongs to an STM.
-                     * The STM's physical location is
-                     * Link.SiteFromId.
-                     *
-                     * Therefore the E1 must be located
-                     * at the same site as the MUX.
-                     */
-                    e1.Stm.Link.SiteFromId ==
-                        mux.SiteId &&
-
-                    /*
-                     * Do not show E1s already assigned
-                     * to another MUX port.
-                     */
-                    !_context.MuxPorts.Any(
-                        otherPort =>
-                            otherPort.E1Id == e1.Id))
-
-                .OrderBy(e1 =>
-                    e1.Stm.Link.Name)
-
-                .ThenBy(e1 =>
-                    e1.Stm.Number)
-
-                .ThenBy(e1 =>
-                    e1.E1Number)
-
-                .Select(e1 =>
-                    new SelectListItem
+            PhysicalStmOptions = mux.Model == MuxModel.Tellab
+                ? ConfiguredPhysicalStms(mux)
+                    .Select(number => new SelectListItem
                     {
-                        Value = e1.Id.ToString(),
-
-                        Text =
-                            "STM " +
-                            e1.Stm.Number +
-                            " — E1 " +
-                            e1.E1Number +
-                            " — " +
-                            e1.Stm.Link.Name
+                        Value = number.ToString(),
+                        Text = $"VC4 {number - 1}"
                     })
-
-                .ToListAsync()
+                    .ToList()
+                : []
         };
+    }
 
-        return View(model);
+    [HttpGet]
+    [Authorize(Roles = AppRoles.Admin + "," + AppRoles.Operator)]
+    public async Task<IActionResult> AssignE1(Guid? id)
+    {
+        var port = await _context.MuxPorts
+            .AsNoTracking()
+            .Include(item => item.MuxCard)
+                .ThenInclude(card => card.Mux)
+            .FirstOrDefaultAsync(item => item.Id == id);
+
+        if (port == null)
+            return NotFound();
+
+        if (port.MuxCard.Category != CardCategory.LTU ||
+            port.E1Id.HasValue ||
+            port.StmId.HasValue ||
+            port.Status != MuxPortStatus.Available)
+        {
+            TempData["ErrorMessage"] = "Select an available LTU port.";
+
+            return RedirectToAction(
+                "Details", "MuxCards", new { id = port.MuxCardId });
+        }
+
+        return View(await BuildE1AssignmentAsync(port));
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(
-     Roles =
-         AppRoles.Admin + "," +
-         AppRoles.Operator)]
+    [Authorize(Roles = AppRoles.Admin + "," + AppRoles.Operator)]
     public async Task<IActionResult> AssignE1(
-     AssignE1ToMuxPortViewModel model)
+        AssignE1ToMuxPortViewModel model)
     {
-        var port = await _context.MuxPorts
+        await using var transaction =
+            await _context.Database.BeginTransactionAsync(
+                IsolationLevel.Serializable);
 
+        var port = await _context.MuxPorts
             .Include(item => item.MuxCard)
                 .ThenInclude(card => card.Mux)
-
-            .FirstOrDefaultAsync(item =>
-                item.Id == model.MuxPortId);
+            .FirstOrDefaultAsync(item => item.Id == model.MuxPortId);
 
         if (port == null)
-        {
             return NotFound();
-        }
 
-        /*
-         * Only E1 cards may contain E1 channels.
-         */
-        if (port.MuxCard.Category !=
-            CardCategory.LTU)
+        if (port.MuxCard.Category != CardCategory.LTU ||
+            port.E1Id.HasValue ||
+            port.StmId.HasValue ||
+            port.Status != MuxPortStatus.Available)
         {
-            ModelState.AddModelError(
-                string.Empty,
-                "E1 channels can only be assigned to E1 cards.");
-        }
+            TempData["ErrorMessage"] = "This LTU port is unavailable.";
 
-        /*
-         * Do not overwrite an existing E1.
-         */
-        if (port.E1Id.HasValue)
-        {
-            ModelState.AddModelError(
-                string.Empty,
-                "This port already has an E1 assigned.");
+            return RedirectToAction(
+                "Details", "MuxCards", new { id = port.MuxCardId });
         }
 
         var e1 = model.E1Id.HasValue
-            ? await _context.E1s
-                .Include(item => item.Stm)
-                    .ThenInclude(stm => stm.Link)
-
-                .FirstOrDefaultAsync(item =>
-                    item.Id == model.E1Id.Value)
+            ? await EligibleLtuE1s(port)
+                .FirstOrDefaultAsync(item => item.Id == model.E1Id.Value)
             : null;
 
         if (e1 == null)
         {
             ModelState.AddModelError(
                 nameof(model.E1Id),
-                "The selected E1 is invalid.");
+                "Select an unassigned physical E1 on this MUX. " +
+                "Joined E1s must be managed through Cross Connection.");
+        }
+
+        var mux = port.MuxCard.Mux;
+
+        if (mux.Model == MuxModel.Tellab)
+        {
+            int[] configured = ConfiguredPhysicalStms(mux);
+
+            if (configured.Length != 2 ||
+                !model.PhysicalStmNumber.HasValue ||
+                !configured.Contains(model.PhysicalStmNumber.Value))
+            {
+                ModelState.AddModelError(
+                    nameof(model.PhysicalStmNumber),
+                    "Select one of this Tellab's configured physical VC4s.");
+            }
         }
         else
         {
-            /*
-             * Only physical E1 channels may be
-             * connected to physical MUX ports.
-             */
-            if (e1.ConnectionType !=
-                E1ConnectionType.Physical)
-            {
-                ModelState.AddModelError(
-                    nameof(model.E1Id),
-                    "Only physical E1 channels can be assigned to a MUX port.");
-            }
-
-            /*
-             * E1 location comes from its STM.
-             * STM location = Link.SiteFromId.
-             *
-             * Therefore the E1 must physically
-             * belong to the same site as the MUX.
-             */
-            if (e1.Stm.Link.SiteFromId !=
-                port.MuxCard.Mux.SiteId)
-            {
-                ModelState.AddModelError(
-                    nameof(model.E1Id),
-                    "The selected E1 does not belong to this MUX site.");
-            }
-
-            /*
-             * One E1 cannot occupy multiple
-             * MUX ports.
-             */
-            bool alreadyAssigned =
-                await _context.MuxPorts
-                    .AnyAsync(otherPort =>
-                        otherPort.E1Id == e1.Id &&
-                        otherPort.Id != port.Id);
-
-            if (alreadyAssigned)
-            {
-                ModelState.AddModelError(
-                    nameof(model.E1Id),
-                    "This E1 is already assigned to another MUX port.");
-            }
+            model.PhysicalStmNumber = null;
         }
 
         if (!ModelState.IsValid)
         {
-            TempData["ErrorMessage"] =
-                "The E1 could not be assigned to this port.";
+            await transaction.RollbackAsync();
 
-            return RedirectToAction(
-                "Details",
-                "MuxCards",
-                new { id = port.MuxCardId });
+            return View(await BuildE1AssignmentAsync(
+                port, model.E1Id, model.PhysicalStmNumber));
         }
 
         port.E1Id = e1!.Id;
+        port.PhysicalStmNumber = model.PhysicalStmNumber;
+        port.Status = MuxPortStatus.Connected;
 
-        port.Status =
-            MuxPortStatus.Connected;
+        try
+        {
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+        }
+        catch (DbUpdateException)
+        {
+            await transaction.RollbackAsync();
+            _context.ChangeTracker.Clear();
 
-        await _context.SaveChangesAsync();
+            ModelState.AddModelError(
+                string.Empty,
+                "The assignment could not be saved. " +
+                "The E1 or LTU port may have been assigned by another user.");
 
-        TempData["SuccessMessage"] =
-            $"E1 {e1.E1Number} was assigned to Port {port.PortNumber}.";
+            return View(await BuildE1AssignmentAsync(
+                port, model.E1Id, model.PhysicalStmNumber));
+        }
+
+        TempData["SuccessMessage"] = "Physical E1 assigned.";
 
         return RedirectToAction(
-            "Details",
-            "MuxCards",
-            new { id = port.MuxCardId });
+            "Details", "MuxCards", new { id = port.MuxCardId });
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(
-    Roles =
-        AppRoles.Admin + "," +
-        AppRoles.Operator)]
+    [Authorize(Roles = AppRoles.Admin + "," + AppRoles.Operator)]
     public async Task<IActionResult> ReleaseStm(Guid id)
     {
+        await using var transaction =
+            await _context.Database.BeginTransactionAsync(
+                IsolationLevel.Serializable);
+
         var port = await _context.MuxPorts
-            .FirstOrDefaultAsync(item =>
-                item.Id == id);
+            .FirstOrDefaultAsync(item => item.Id == id);
 
         if (port == null)
-        {
             return NotFound();
-        }
 
         if (!port.StmId.HasValue)
         {
-            TempData["ErrorMessage"] =
-                "This port does not have an STM assigned.";
+            TempData["ErrorMessage"] = "This port has no STM assigned.";
 
             return RedirectToAction(
-                "Details",
-                "MuxCards",
-                new { id = port.MuxCardId });
+                "Details", "MuxCards", new { id = port.MuxCardId });
+        }
+
+        bool inUse = await _context.E1s.AnyAsync(e1 =>
+            e1.StmId == port.StmId &&
+            (
+                e1.ConnectionGroupId != null ||
+                e1.JoinE1Id != null ||
+                e1.Status != E1OperationalStatus.Available ||
+                e1.CrossConnectionState != E1CrossConnectionState.Available ||
+                (
+                    e1.ConnectedE1 != null &&
+                    (
+                        e1.ConnectedE1.ConnectionGroupId != null ||
+                        e1.ConnectedE1.JoinE1Id != null
+                    )
+                )
+            ));
+
+        bool hasLtuAssignments = await _context.MuxPorts.AnyAsync(item =>
+            item.E1 != null &&
+            item.E1.StmId == port.StmId);
+
+        if (inUse || hasLtuAssignments || port.E1Id.HasValue)
+        {
+            TempData["ErrorMessage"] =
+                "Release this STM's customer connections and LTU assignments first.";
+
+            return RedirectToAction(
+                "Details", "MuxCards", new { id = port.MuxCardId });
         }
 
         port.StmId = null;
+        port.PhysicalStmNumber = null;
         port.Status = MuxPortStatus.Available;
 
         await _context.SaveChangesAsync();
+        await transaction.CommitAsync();
 
-        TempData["SuccessMessage"] =
-            "The STM was released from the port successfully.";
+        TempData["SuccessMessage"] = "STM assignment released.";
 
         return RedirectToAction(
-            "Details",
-            "MuxCards",
-            new { id = port.MuxCardId });
+            "Details", "MuxCards", new { id = port.MuxCardId });
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(
-    Roles =
-        AppRoles.Admin + "," +
-        AppRoles.Operator)]
+    [Authorize(Roles = AppRoles.Admin + "," + AppRoles.Operator)]
     public async Task<IActionResult> ReleaseE1(Guid id)
     {
-        if (id == Guid.Empty)
-        {
-            return NotFound();
-        }
+        await using var transaction =
+            await _context.Database.BeginTransactionAsync(
+                IsolationLevel.Serializable);
 
         var port = await _context.MuxPorts
             .Include(item => item.E1)
-                .ThenInclude(e1 => e1!.Stm)
-            .FirstOrDefaultAsync(item =>
-                item.Id == id);
+            .FirstOrDefaultAsync(item => item.Id == id);
 
         if (port == null)
-        {
             return NotFound();
-        }
 
-        if (!port.E1Id.HasValue)
+        if (port.E1 == null)
         {
-            TempData["ErrorMessage"] =
-                "This port does not have an E1 assigned.";
+            TempData["ErrorMessage"] = "This port has no E1 assigned.";
 
             return RedirectToAction(
-                "Details",
-                "MuxCards",
-                new { id = port.MuxCardId });
+                "Details", "MuxCards", new { id = port.MuxCardId });
         }
 
-        string e1Text =
-            port.E1 == null
-                ? "E1"
-                : $"STM {port.E1.Stm.Number} — E1 {port.E1.E1Number}";
+        if (port.E1.ConnectionGroupId.HasValue ||
+            port.E1.JoinE1Id.HasValue)
+        {
+            TempData["ErrorMessage"] =
+                "Release this E1 through Search Path while it belongs to a customer connection.";
 
-        /*
-         * Release only the physical MUX mapping.
-         *
-         * Do NOT modify:
-         * - E1 Status
-         * - ConnectionGroupId
-         * - PathId
-         * - JoinE1Id
-         *
-         * The logical/end-to-end connection remains intact.
-         */
+            return RedirectToAction(
+                "Details", "MuxCards", new { id = port.MuxCardId });
+        }
+
         port.E1Id = null;
-
-        port.Status =
-            MuxPortStatus.Available;
+        port.PhysicalStmNumber = null;
+        port.Status = MuxPortStatus.Available;
 
         await _context.SaveChangesAsync();
+        await transaction.CommitAsync();
 
-        TempData["SuccessMessage"] =
-            $"{e1Text} was released from Port {port.PortNumber}.";
+        TempData["SuccessMessage"] = "E1 assignment released.";
 
         return RedirectToAction(
-            "Details",
-            "MuxCards",
-            new { id = port.MuxCardId });
+            "Details", "MuxCards", new { id = port.MuxCardId });
     }
 
 

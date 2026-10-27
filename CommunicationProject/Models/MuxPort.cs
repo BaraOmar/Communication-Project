@@ -39,6 +39,13 @@ public class MuxPort
     [ForeignKey(nameof(StmId))]
     public Stm? Stm { get; set; }
 
+    // Tellab LTU assignment only.
+    // Stores the actual selected physical STM: 29, 30, or 31.
+    // Null when no physical STM is assigned.
+    [Range(29, 31)]
+    [Display(Name = "Physical STM")]
+    public int? PhysicalStmNumber { get; set; }
+
     [NotMapped]
     public string Location =>
         MuxCard == null

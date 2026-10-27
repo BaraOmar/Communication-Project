@@ -1,92 +1,75 @@
 ﻿@model CommunicationProject.ViewModels.AssignE1ToMuxPortViewModel
 
 @{
-    ViewData["Title"] = "Assign E1";
+    ViewData["Title"] = "Assign Physical E1";
 }
 
 <div class="container py-4">
+    <h1>Assign Physical E1</h1>
+    <p>@Model.MuxName — @Model.Position</p>
 
-    <div class="card border-0 shadow-sm">
-        <div class="card-body p-4">
+    <form asp-action="AssignE1" method="post">
+        @Html.AntiForgeryToken()
+        <input asp-for="MuxPortId" type="hidden" />
 
-            <div class="mb-4">
+        <div asp-validation-summary="All"
+             class="text-danger mb-3"></div>
 
-                <h2 class="mb-1">
-                    Assign Physical E1
-                </h2>
+        <div class="mb-3">
+            <label asp-for="E1Id" class="form-label"></label>
 
-                <p class="text-muted mb-0">
-                    @Model.MuxName · @Model.CardCategoryName Card · Port @Model.PortNumber
-                </p>
+            <select asp-for="E1Id"
+                    asp-items="Model.E1Options"
+                    class="form-select">
+                <option value="">Select physical E1</option>
+            </select>
 
-            </div>
-
-
-            <form asp-action="AssignE1"
-                  method="post">
-
-                @Html.AntiForgeryToken()
-
-                <input asp-for="MuxPortId"
-                       type="hidden" />
-
-
-                <div asp-validation-summary="ModelOnly"
-                     class="alert alert-danger">
-                </div>
-
-
-                <div class="mb-4">
-
-                    <label asp-for="E1Id"
-                           class="form-label">
-                    </label>
-
-                    <select asp-for="E1Id"
-                            asp-items="Model.E1Options"
-                            class="form-select">
-
-                        <option value="">
-                            Select Physical E1
-                        </option>
-
-                    </select>
-
-                    <span asp-validation-for="E1Id"
-                          class="text-danger">
-                    </span>
-
-                    <div class="form-text">
-                        Only Physical E1 channels from this
-                        MUX site's communication link are shown.
-                    </div>
-
-                </div>
-
-
-                <div class="d-flex gap-2">
-
-                    <button type="submit"
-                            class="btn btn-primary">
-                        Assign E1
-                    </button>
-
-                    <a asp-controller="MuxCards"
-                           asp-action="Details"
-                           asp-route-id="@Model.MuxCardId"
-                           class="btn btn-outline-secondary">
-                        Cancel
-                    </a>
-
-                </div>
-
-            </form>
-
+            <span asp-validation-for="E1Id"
+                  class="text-danger"></span>
         </div>
-    </div>
 
+        @if (Model.IsTellab)
+        {
+            <div class="mb-3">
+                <label asp-for="PhysicalStmNumber"
+                       class="form-label"></label>
+
+                <select asp-for="PhysicalStmNumber"
+                        asp-items="Model.PhysicalStmOptions"
+                        class="form-select"
+                        required>
+                    <option value="">Select physical VC4</option>
+                </select>
+
+                <span asp-validation-for="PhysicalStmNumber"
+                      class="text-danger"></span>
+
+                <p class="form-text">
+                    Either configured physical VC4 can use this LTU port.
+                </p>
+            </div>
+        }
+
+        @if (!Model.E1Options.Any())
+        {
+            <p>No eligible physical E1s are available on this MUX.</p>
+        }
+
+        <button type="submit"
+                class="btn btn-primary"
+                disabled="@(!Model.E1Options.Any() ||
+                                                (Model.IsTellab && Model.PhysicalStmOptions.Count != 2))">
+            Assign E1
+        </button>
+
+        <a asp-controller="MuxCards"
+               asp-action="Details"
+               asp-route-id="@Model.MuxCardId"
+               class="btn btn-outline-secondary">
+            Cancel
+        </a>
+    </form>
 </div>
-
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

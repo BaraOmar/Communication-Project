@@ -1,11 +1,15 @@
-﻿namespace CommunicationProject.Services.CommunicationPaths.Import;
+﻿using CommunicationProject.Models;
+
+namespace CommunicationProject.Services.CommunicationPaths.Import;
 
 public sealed record ExcelStmE1Reference(
-    string StmNumber,
+    string? StmNumber,
     int ShelfNumber,
     int SlotNumber,
     int PortNumber,
-    string E1Number);
+    string E1Number,
+    string? MuxName = null,
+    MuxModel? Model = null);
 
 public sealed record ExcelSiteCrossConnectionRow(
     int DataRowNumber,

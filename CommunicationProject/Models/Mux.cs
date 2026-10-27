@@ -25,6 +25,20 @@ public class Mux
     [ForeignKey(nameof(MuxTypeId))]
     public MuxType? MuxType { get; set; }
 
+    // Copied from the type when installed.
+    [Display(Name = "MUX Model")]
+    public MuxModel Model { get; set; }
+
+    // Tellab only: two distinct selections from 29, 30, 31.
+    // Displayed physical VC4 = selected number - 1.
+    [Range(29, 31)]
+    [Display(Name = "First Physical STM")]
+    public int? FirstPhysicalStmNumber { get; set; }
+
+    [Range(29, 31)]
+    [Display(Name = "Second Physical STM")]
+    public int? SecondPhysicalStmNumber { get; set; }
+
     public ICollection<MuxCard> Cards { get; set; }
         = new List<MuxCard>();
 }

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using static CommunicationProject.Models.E1;
 using System.Data;
+using CommunicationProject.Services.Muxes;
 
 namespace CommunicationProject.Controllers
 {
@@ -209,38 +210,35 @@ namespace CommunicationProject.Controllers
 
             if (visiblePathIds.Count > 0)
             {
-                var customerConnections =
-                    await _context.CustomerConnections
-                        .AsNoTracking()
-                        .Where(connection =>
-                            visiblePathIds.Contains(
-                                connection.CommunicationPathId))
+                var customerConnections = await _context.CustomerConnections
+                    .AsNoTracking()
+                    .Where(connection =>
+                        visiblePathIds.Contains(connection.CommunicationPathId))
+                    .Include(connection => connection.Customer)
 
-                        .Include(connection =>
-                            connection.Customer)
+                    .Include(connection => connection.Segments)
+                        .ThenInclude(segment => segment.E1)
+                            .ThenInclude(e1 => e1.Stm)
 
-.Include(connection =>
-    connection.Segments)
-    .ThenInclude(segment =>
-        segment.E1)
-        .ThenInclude(e1 =>
-            e1.Stm)
-        .Include(connection =>
-    connection.Segments)
-    .ThenInclude(segment =>
-        segment.E1)
-        .ThenInclude(e1 =>
-            e1.ConnectedE1)
-            .ThenInclude(connectedE1 =>
-                connectedE1!.Stm)
-                        .Include(connection =>
-                            connection.Segments)
-                            .ThenInclude(segment =>
-                                segment.CommunicationPathSegment)
-                                .ThenInclude(pathSegment =>
-                                    pathSegment.CommunicationLink)
+                    .Include(connection => connection.Segments)
+                        .ThenInclude(segment => segment.E1)
+                            .ThenInclude(e1 => e1.Link)
 
-                        .ToListAsync();
+                    .Include(connection => connection.Segments)
+                        .ThenInclude(segment => segment.E1)
+                            .ThenInclude(e1 => e1.ConnectedE1)
+                                .ThenInclude(connectedE1 => connectedE1!.Stm)
+
+                    .Include(connection => connection.Segments)
+                        .ThenInclude(segment => segment.E1)
+                            .ThenInclude(e1 => e1.ConnectedE1)
+                                .ThenInclude(connectedE1 => connectedE1!.Link)
+
+                    .Include(connection => connection.Segments)
+                        .ThenInclude(segment => segment.CommunicationPathSegment)
+                            .ThenInclude(pathSegment => pathSegment.CommunicationLink)
+
+                    .ToListAsync();
 
                 /*
  * Collect every E1 endpoint needed by the visible
@@ -318,8 +316,8 @@ namespace CommunicationProject.Controllers
                                     port.E1Id.Value)
                             ))
 
-                        .Include(port =>
-                            port.MuxCard)
+.Include(port => port.MuxCard)
+    .ThenInclude(card => card.Mux)
 
                         .ToListAsync();
 
@@ -447,20 +445,11 @@ namespace CommunicationProject.Controllers
                                             : previousSegment.CommunicationPathSegment
                                                 .CommunicationLink.Name;
 
-                                        string ltuSide;
-
-                                        if (ltuPortLookup.TryGetValue(
-                                            sdhE1.Id,
-                                            out var intermediateLtuPort))
-                                        {
-                                            ltuSide =
-                                                $"LTU {intermediateLtuPort.MuxCard.SlotNumber} " +
-                                                $"Port {intermediateLtuPort.PortNumber}";
-                                        }
-                                        else
-                                        {
-                                            ltuSide = "LTU (Not assigned)";
-                                        }
+                                        string ltuSide = ltuPortLookup.TryGetValue(
+    sdhE1.Id,
+    out var intermediateLtuPort)
+        ? BuildLtuDisplay(intermediateLtuPort)
+        : "LTU (Not assigned)";
 
                                         crossConnections.Add(
                                             new CustomerPathCrossConnectionViewModel
@@ -524,23 +513,13 @@ namespace CommunicationProject.Controllers
                                                 stmPortLookup);
 
 
-                                        string ltuSide;
-
-                                        if (ltuPortLookup.TryGetValue(
-                                                destinationE1.Id,
-                                                out var ltuPort))
-                                        {
-                                            ltuSide =
-                                                $"LTU " +
-                                                $"(1." +
-                                                $"{ltuPort.MuxCard.SlotNumber}." +
-                                                $"{ltuPort.PortNumber})";
-                                        }
-                                        else
-                                        {
-                                            ltuSide =
-                                                "LTU (Not assigned)";
-                                        }
+                                        string ltuSide = ltuPortLookup.TryGetValue(
+                                            destinationE1.Id,
+                                            out var ltuPort)
+                                                ? BuildLtuDisplay(ltuPort)
+                                                : destinationE1.StmId.HasValue
+                                                    ? "LTU (Not assigned)"
+                                                    : string.Empty;
 
 
                                         crossConnections.Add(
@@ -1312,6 +1291,11 @@ e1.LinkId ==
                             ))
                         .ToListAsync();
 
+                await MuxRelease.ReleaseLtuAssignmentsAsync(
+    _context,
+    new[] { releasedE1, releasedConnectedE1! },
+    adjacentEndpoints);
+
                 foreach (var endpoint in adjacentEndpoints)
                 {
                     endpoint.JoinE1Id = null;
@@ -1347,28 +1331,7 @@ e1.LinkId ==
                     E1CrossConnectionState.Available;
 
 
-                var releasedE1Ids =
-                    new[]
-                    {
-                releasedE1.Id,
-                releasedConnectedE1.Id
-                    };
-
-                var muxPorts =
-                    await _context.MuxPorts
-                        .Where(port =>
-                            port.E1Id.HasValue &&
-                            releasedE1Ids.Contains(
-                                port.E1Id.Value))
-                        .ToListAsync();
-
-                foreach (var port in muxPorts)
-                {
-                    port.E1Id = null;
-
-                    port.Status =
-                        MuxPortStatus.Available;
-                }
+                
 
                 if (leftSegments.Count == 0 &&
                     rightSegments.Count == 0)
@@ -1399,50 +1362,48 @@ e1.LinkId ==
 
 
         private static string BuildStmE1Display(
-            E1 e1,
-            IReadOnlyDictionary<Guid, MuxPort> stmPortLookup)
+    E1 e1,
+    IReadOnlyDictionary<Guid, MuxPort> stmPortLookup)
         {
-            /*
-             * PDH does not have an STM.
-             *
-             * Keep it safe for now even though the new
-             * display requirement mainly targets SDH.
-             */
-            if (!e1.StmId.HasValue ||
-                e1.Stm == null)
+            if (!e1.StmId.HasValue)
+                return $"{e1.Link.Name} Port {e1.E1Number}";
+
+            if (!stmPortLookup.TryGetValue(e1.StmId.Value, out var port))
             {
-                return $"Direct (PDH) E1 ({e1.E1Number})";
+                return $"STM {e1.Stm?.Number} (Not installed) " +
+                       $"E1 ({e1.E1Number})";
             }
 
+            var card = port.MuxCard;
+            var mux = card.Mux;
 
-            string position;
+            string stm = MuxDisplay.StmLabel(
+                mux.Model,
+                card.ShelfNumber,
+                card.SlotNumber,
+                port.PortNumber,
+                e1.Stm?.Number);
 
-            if (stmPortLookup.TryGetValue(
-                    e1.StmId.Value,
-                    out var stmPort))
-            {
-                /*
-                 * Shelf is fixed to 1 for now.
-                 *
-                 * Format:
-                 * Shelf.Card.Port
-                 */
-                position =
-                    $"1." +
-                    $"{stmPort.MuxCard.SlotNumber}." +
-                    $"{stmPort.PortNumber}";
-            }
-            else
-            {
-                position =
-                    "Not assigned";
-            }
+            string channel = MuxDisplay.E1Label(
+                mux.Model,
+                e1.E1Number);
 
+            return $"{stm} {channel}";
+        }
 
-            return
-                $"STM {e1.Stm.Number} " +
-                $"({position}) " +
-                $"E1 ({e1.E1Number})";
+        private static string BuildLtuDisplay(MuxPort port)
+        {
+            var card = port.MuxCard;
+            var mux = card.Mux;
+
+            string position = MuxDisplay.LtuLabel(
+                mux.Model,
+                card.ShelfNumber,
+                card.SlotNumber,
+                port.PortNumber,
+                port.PhysicalStmNumber);
+
+            return position;
         }
         private static List<PathSearchResultViewModel>
     BuildCommunicationPathResults(

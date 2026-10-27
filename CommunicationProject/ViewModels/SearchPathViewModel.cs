@@ -125,7 +125,9 @@ public class CustomerPathCrossConnectionViewModel
     public bool IsPhysicalTermination { get; set; }
 
     public string DisplayText =>
-        $"{IncomingSide} * {OutgoingSide}";
+        string.IsNullOrWhiteSpace(OutgoingSide)
+            ? IncomingSide
+            : $"{IncomingSide} * {OutgoingSide}";
 
     public string SecondLine { get; set; } = string.Empty;
 }

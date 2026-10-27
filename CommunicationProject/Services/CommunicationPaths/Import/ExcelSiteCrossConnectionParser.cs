@@ -1,17 +1,28 @@
 ﻿using CommunicationProject.ViewModels;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using CommunicationProject.Models;
 
 namespace CommunicationProject.Services.CommunicationPaths.Import;
 
 public static class ExcelSiteCrossConnectionParser
 {
-    private static readonly Regex EndpointPattern = new(
-        @"^\s*STM\s+(?<stm>[1-9][0-9]*)\s*" +
-        @"\(\s*(?<shelf>[1-9][0-9]*)\s*\.\s*" +
-        @"(?<slot>[1-9][0-9]*)\s*\.\s*" +
+    private static readonly Regex StmPattern = Pattern(
+        @"^STM(?:\s+(?<stm>[1-9][0-9]*))?\s*" +
+        @"\(\s*(?:(?<shelf>[1-9][0-9]*)\s*\.\s*)?" +
+        @"(?<card>[1-9][0-9]*)\s*\.\s*" +
         @"(?<port>[1-9][0-9]*)\s*\)\s*" +
-        @"E1\s*\(\s*(?<e1>[1-3]\.[1-7]\.[1-3])\s*\)\s*$",
+        @"E1\s*\(\s*(?<e1>[1-3]\.[1-7]\.[1-3])\s*\)$");
+
+    private static readonly Regex TellabPattern = Pattern(
+        @"^VC4\s+(?<vc4>[0-9]+)\s+" +
+        @"E1\s*\(\s*(?<e1>[1-3]\.[1-7]\.[1-3])\s*\)$");
+
+    private static readonly Regex XmpPattern = Pattern(
+        @"^SC4\s+(?<card>II|I)\s+TU12\s+(?<tu12>[1-9][0-9]*)$");
+
+    private static Regex Pattern(string expression) => new(
+        expression,
         RegexOptions.IgnoreCase | RegexOptions.CultureInvariant,
         TimeSpan.FromSeconds(1));
 
@@ -88,50 +99,113 @@ public static class ExcelSiteCrossConnectionParser
     }
 
     private static ExcelStmE1Reference ParseEndpoint(
-        string text,
-        int rowNumber,
-        string side)
+    string text,
+    int rowNumber,
+    string side)
     {
-        var match = EndpointPattern.Match(text);
+        text = text.Trim();
+        string? muxName = null;
 
-        if (!match.Success ||
-            !int.TryParse(
-                match.Groups["stm"].Value,
-                NumberStyles.None,
-                CultureInfo.InvariantCulture,
-                out int stm) ||
-            !int.TryParse(
-                match.Groups["shelf"].Value,
-                NumberStyles.None,
-                CultureInfo.InvariantCulture,
-                out int shelf) ||
-            !int.TryParse(
-                match.Groups["slot"].Value,
-                NumberStyles.None,
-                CultureInfo.InvariantCulture,
-                out int slot) ||
-            !int.TryParse(
-                match.Groups["port"].Value,
-                NumberStyles.None,
-                CultureInfo.InvariantCulture,
-                out int port) ||
-            shelf != 1 ||
-            slot > 1000 ||
-            port > 1000)
+        const string separator = " — ";
+        int separatorIndex = text.LastIndexOf(
+            separator, StringComparison.Ordinal);
+
+        InvalidDataException Invalid() => new(
+            $"Data row {rowNumber}, {side} side: expected " +
+            "STM 1 (shelf.card.port) E1 (1.1.1), " +
+            "STM 1 (card.port) E1 (1.1.1), " +
+            "VC4 5 E1 (1.1.1), or SC4 I TU12 15. " +
+            "An optional MUX name can precede ' — '.");
+
+        if (separatorIndex >= 0)
         {
-            throw new InvalidDataException(
-                $"Data row {rowNumber}, {side} side: expected " +
-                "STM 1 (1.1.1) E1 (1.1.1). Shelf must be 1.");
+            muxName = text[..separatorIndex].Trim();
+            text = text[(separatorIndex + separator.Length)..].Trim();
+
+            if (muxName.Length is < 1 or > 100)
+                throw Invalid();
         }
 
-        return new ExcelStmE1Reference(
-            stm.ToString(CultureInfo.InvariantCulture),
-            shelf,
-            slot,
-            port,
-            match.Groups["e1"].Value);
-    }
+        var match = StmPattern.Match(text);
 
+        if (match.Success)
+        {
+            int shelf = 0;
+
+            if (match.Groups["shelf"].Success &&
+                (!int.TryParse(match.Groups["shelf"].Value, out shelf) ||
+                 shelf is < 1 or > 1000))
+            {
+                throw Invalid();
+            }
+
+            if (!int.TryParse(match.Groups["card"].Value, out int card) ||
+                !int.TryParse(match.Groups["port"].Value, out int port) ||
+                card is < 1 or > 1000 ||
+                port is < 1 or > 1000)
+            {
+                throw Invalid();
+            }
+
+            return new ExcelStmE1Reference(
+                match.Groups["stm"].Success
+                    ? match.Groups["stm"].Value
+                    : null,
+                shelf,
+                card,
+                port,
+                match.Groups["e1"].Value,
+                muxName);
+        }
+
+        match = TellabPattern.Match(text);
+
+        if (match.Success)
+        {
+            if (!int.TryParse(match.Groups["vc4"].Value, out int vc4) ||
+                vc4 is < 0 or > 15)
+            {
+                throw Invalid();
+            }
+
+            return new ExcelStmE1Reference(
+                null,
+                0,
+                1,
+                vc4 + 1,
+                match.Groups["e1"].Value,
+                muxName,
+                MuxModel.Tellab);
+        }
+
+        match = XmpPattern.Match(text);
+
+        if (match.Success)
+        {
+            if (!int.TryParse(match.Groups["tu12"].Value, out int tu12) ||
+                tu12 is < 1 or > 63)
+            {
+                throw Invalid();
+            }
+
+            int index = tu12 - 1;
+
+            string e1 = FormattableString.Invariant(
+                $"{index / 21 + 1}.{index % 21 / 3 + 1}.{index % 3 + 1}");
+
+            return new ExcelStmE1Reference(
+                null,
+                0,
+                match.Groups["card"].Value.Equals(
+                    "I", StringComparison.OrdinalIgnoreCase) ? 1 : 2,
+                1,
+                e1,
+                muxName,
+                MuxModel.Xmp);
+        }
+
+        throw Invalid();
+    }
     private static int FindColumn(
         IReadOnlyList<string> headers,
         string name)

@@ -87,6 +87,10 @@ public class CreateCrossConnectionViewModel
     [Display(Name = "LTU Card / Port")]
     public Guid? LtuPortId { get; set; }
 
+    [Range(29, 31)]
+    [Display(Name = "Physical VC4")]
+    public int? PhysicalStmNumber { get; set; }
+
     /* =====================================================
        Customer
        ===================================================== */

@@ -3,8 +3,6 @@
 
 @{
     ViewData["Title"] = "MUX Types";
-
-    var muxTypes = Model.ToList();
 }
 
 @section Styles {
@@ -14,253 +12,75 @@
 }
 
 <div class="mux-types-page">
-
-    <!-- =====================================================
-         Header
-         ===================================================== -->
-
     <div class="mux-types-header">
-
         <div>
-
-            <h1 class="mux-types-title">
-                MUX Types
-            </h1>
-
+            <h1 class="mux-types-title">MUX Types</h1>
             <p class="mux-types-subtitle">
-                Manage reusable MUX hardware configurations
-                and card capacities.
+                Default structures for site installations.
             </p>
-
         </div>
-
 
         @if (User.IsInRole(AppRoles.Admin) ||
              User.IsInRole(AppRoles.Operator))
         {
-            <a asp-action="Create"
-                   class="mux-types-primary-btn">
-
-                <span>+</span>
-
-                Add MUX Type
-
+            <a asp-action="Create" class="mux-types-primary-btn">
+                + Add MUX Type
             </a>
         }
-
     </div>
 
+    @foreach (var type in Model)
+    {
+        var cards = type.DefaultCards
+            .OrderBy(card => card.Section)
+            .ThenBy(card => card.ShelfNumber)
+            .ThenBy(card => card.SlotNumber)
+            .ToList();
 
-    <!-- =====================================================
-         Content
-         ===================================================== -->
+        <section class="mux-types-card">
+            <div class="mux-types-card-header">
+                <h2>@type.Name</h2>
+                <span>
+                    @cards.Count cards · @cards.Sum(card => card.PortCount) ports
+                </span>
+            </div>
 
-    <div class="mux-types-card">
-
-        <div class="mux-types-card-header">
-
-            <h2>
-                Configured Types
-            </h2>
-
-            <span class="mux-types-count">
-                @muxTypes.Count
-                @(muxTypes.Count == 1
-                    ? "type"
-                    : "types")
-            </span>
-
-        </div>
-
-
-        @if (muxTypes.Any())
-        {
             <div class="mux-types-table-wrap">
-
                 <table class="mux-types-table">
-
                     <thead>
-
                         <tr>
-                            <th>MUX Type</th>
-                            <th>LTU</th>
-                            <th>STM</th>
-                            <th>Total Cards</th>
-                            <th>Total Ports</th>
+                            <th>Category</th>
+                            <th>Section</th>
+                            <th>Shelf</th>
+                            <th>Card Number</th>
+                            <th>Ports</th>
+                            <th>Installation</th>
                         </tr>
-
                     </thead>
-
-
                     <tbody>
-
-                        @foreach (var type in muxTypes)
+                        @foreach (var card in cards)
                         {
-                            int ltuPorts =
-                                type.LtuCardCount * type.LtuPortsPerCard;
-
-                            int stmPorts =
-                                type.StmCardCount * type.StmPortsPerCard;
-
-                            int totalCards =
-                                type.LtuCardCount + type.StmCardCount;
-
-                            int totalPorts =
-                                ltuPorts + stmPorts;
-
-
                             <tr>
-
-                                <!-- Type -->
-
+                                <td>@card.Category</td>
+                                <td>@card.Section</td>
                                 <td>
-
-                                    <div class="mux-type-name-cell">
-
-                                        <div class="mux-type-icon">
-                                            M
-                                        </div>
-
-                                        <div>
-
-                                            <strong>
-                                                @type.Name
-                                            </strong>
-
-                                            <span>
-                                                Hardware profile
-                                            </span>
-
-                                        </div>
-
-                                    </div>
-
+                                    @(card.ShelfNumber == 0
+                                        ? "—"
+                                        : card.ShelfNumber.ToString())
                                 </td>
-
-
-                                <!-- Power -->
-
-                                <td>
-
-                                    @if (type.LtuCardCount > 0)
-                                    {
-                                        <div class="mux-type-capacity">
-
-                                            <strong>
-                                                @type.LtuCardCount
-                                                ×
-                                                @type.LtuPortsPerCard
-                                            </strong>
-
-                                            <span>
-                                                @ltuPorts  total ports
-                                            </span>
-
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <span class="mux-type-none">
-                                            None
-                                        </span>
-                                    }
-
-                                </td>
-
-
-                                <!-- STM -->
-
-                                <td>
-
-                                    @if (type.StmCardCount > 0)
-                                    {
-                                        <div class="mux-type-capacity">
-
-                                            <strong>
-                                                @type.StmCardCount
-                                                ×
-                                                @type.StmPortsPerCard
-                                            </strong>
-
-                                            <span>
-                                                @stmPorts total ports
-                                            </span>
-
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <span class="mux-type-none">
-                                            None
-                                        </span>
-                                    }
-
-                                </td>
-
-
-
-
-                                <!-- Total Cards -->
-
-                                <td>
-
-                                    <span class="mux-type-total">
-                                        @totalCards
-                                    </span>
-
-                                </td>
-
-
-                                <!-- Total Ports -->
-
-                                <td>
-
-                                    <span class="mux-type-total mux-type-total-primary">
-                                        @totalPorts
-                                    </span>
-
-                                </td>
-
+                                <td>@card.SlotNumber</td>
+                                <td>@card.PortCount</td>
+                                <td>@(card.IsRequired ? "Required" : "Optional")</td>
                             </tr>
                         }
-
                     </tbody>
-
                 </table>
-
             </div>
-        }
-        else
-        {
-            <div class="mux-types-empty">
+        </section>
+    }
 
-                <div class="mux-types-empty-icon">
-                    M
-                </div>
-
-                <h3>
-                    No MUX types configured
-                </h3>
-
-                <p>
-                    Create a reusable hardware profile
-                    before installing MUX equipment.
-                </p>
-
-                @if (User.IsInRole(AppRoles.Admin) ||
-                     User.IsInRole(AppRoles.Operator))
-                {
-                    <a asp-action="Create"
-                           class="mux-types-primary-btn">
-
-                        Add MUX Type
-
-                    </a>
-                }
-
-            </div>
-        }
-
-    </div>
-
+    @if (!Model.Any())
+    {
+        <p>No MUX types configured.</p>
+    }
 </div>

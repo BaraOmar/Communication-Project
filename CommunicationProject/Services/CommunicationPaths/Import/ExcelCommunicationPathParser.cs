@@ -131,7 +131,7 @@ public static class ExcelCommunicationPathParser
                         NumberStyles.None,
                         CultureInfo.InvariantCulture,
                         out int port) ||
-                    shelf < 1 ||
+                    shelf < 0 || shelf > 1000 ||
                     slot < 1 || slot > 1000 ||
                     port < 1 || port > 1000)
                 {
@@ -140,12 +140,7 @@ public static class ExcelCommunicationPathParser
                         "STMNumber must be shelf.card.port, for example 1.1.2.");
                 }
 
-                if (shelf != 1)
-                {
-                    throw new InvalidDataException(
-                        prefix +
-                        "Only shelf 1 is supported by the current MUX model.");
-                }
+
 
                 stmNumber = string.Join(
                     ".",

@@ -1,31 +1,34 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using CommunicationProject.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace CommunicationProject.ViewModels;
 
 public class CreateMuxTypeViewModel
 {
-    [Required]
-    [StringLength(100)]
-    [Display(Name = "MUX Type Name")]
-    public string Name { get; set; } = string.Empty;
+    [Required(ErrorMessage = "Select a MUX model.")]
+    [EnumDataType(typeof(MuxModel))]
+    [Display(Name = "MUX Model")]
+    public MuxModel? Model { get; set; }
 
+    public List<MuxTypeCardInputViewModel> Cards { get; set; } = [];
+}
 
-    [Range(0, 100)]
-    [Display(Name = "Number of LTU Cards")]
-    public int LtuCardCount { get; set; }
+public class MuxTypeCardInputViewModel
+{
+    [EnumDataType(typeof(CardCategory))]
+    public CardCategory Category { get; set; }
 
-    [Range(0, 1000)]
-    [Display(Name = "Ports per LTU Card")]
-    public int LtuPortsPerCard { get; set; }
-
-
-    [Range(0, 100)]
-    [Display(Name = "Number of STM Cards")]
-    public int StmCardCount { get; set; }
+    [EnumDataType(typeof(MuxSection))]
+    public MuxSection Section { get; set; }
 
     [Range(0, 1000)]
-    [Display(Name = "Ports per STM Card")]
-    public int StmPortsPerCard { get; set; }
+    public int ShelfNumber { get; set; }
 
+    [Range(1, 1000)]
+    public int SlotNumber { get; set; } = 1;
 
+    [Range(1, 1000)]
+    public int PortCount { get; set; } = 1;
+
+    public bool IsRequired { get; set; } = true;
 }

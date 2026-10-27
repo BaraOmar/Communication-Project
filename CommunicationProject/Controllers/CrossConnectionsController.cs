@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
 using static CommunicationProject.Models.E1;
+using CommunicationProject.Services.Muxes;
 
 namespace CommunicationProject.Controllers;
 
@@ -38,10 +39,41 @@ public class CrossConnectionsController : Controller
         return View(model);
     }
 
+    private Task<Mux?> GetSdhMuxAsync(Guid e1Id, string siteId)
+    {
+        return _context.MuxPorts
+            .AsNoTracking()
+            .Where(port =>
+                port.MuxCard.Category == CardCategory.STM &&
+                port.MuxCard.Mux.SiteId == siteId &&
+                port.Stm != null &&
+                port.Stm.Link.SiteFromId == siteId &&
+                port.Stm.E1Channels.Any(e1 => e1.Id == e1Id))
+            .Select(port => port.MuxCard.Mux)
+            .SingleOrDefaultAsync();
+    }
+
+    private static int[] GetPhysicalStmNumbers(Mux mux)
+    {
+        return new[]
+            {
+            mux.FirstPhysicalStmNumber,
+            mux.SecondPhysicalStmNumber
+        }
+            .Where(number =>
+                number.HasValue &&
+                number.Value >= 29 &&
+                number.Value <= 31)
+            .Select(number => number!.Value)
+            .Distinct()
+            .OrderBy(number => number)
+            .ToArray();
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetAvailableLtuPorts(
-    string? siteId,
-    Guid? sdhE1Id)
+        string? siteId,
+        Guid? sdhE1Id)
     {
         siteId = siteId?.Trim();
 
@@ -49,62 +81,63 @@ public class CrossConnectionsController : Controller
             !sdhE1Id.HasValue ||
             sdhE1Id.Value == Guid.Empty)
         {
-            return Json(Array.Empty<object>());
+            return BadRequest();
         }
 
-        // The SDH E1 must belong to the selected local site.
-        bool validE1 = await _context.E1s
-            .AsNoTracking()
-            .AnyAsync(e1 =>
-                e1.Id == sdhE1Id.Value &&
-                e1.StmId != null &&
-                e1.Link.SiteFromId == siteId);
+        var mux = await GetSdhMuxAsync(sdhE1Id.Value, siteId);
 
-        if (!validE1)
-        {
-            return Json(Array.Empty<object>());
-        }
+        if (mux == null)
+            return NotFound();
 
-        // Reuse its existing LTU assignment when extending a path.
-        Guid? assignedPortId = await _context.MuxPorts
+        int[] physicalNumbers = GetPhysicalStmNumbers(mux);
+
+        if (mux.Model == MuxModel.Tellab && physicalNumbers.Length != 2)
+            return BadRequest("Configure this Tellab's two physical STM numbers.");
+
+        var assignedPort = await _context.MuxPorts
             .AsNoTracking()
-            .Where(port => port.E1Id == sdhE1Id.Value)
-            .Select(port => (Guid?)port.Id)
-            .SingleOrDefaultAsync();
+            .FirstOrDefaultAsync(port => port.E1Id == sdhE1Id.Value);
 
         var ports = await _context.MuxPorts
             .AsNoTracking()
+            .Include(port => port.MuxCard)
             .Where(port =>
+                port.MuxCard.MuxId == mux.Id &&
                 port.MuxCard.Category == CardCategory.LTU &&
-                port.MuxCard.Mux.SiteId == siteId &&
                 port.StmId == null &&
                 (
-                    assignedPortId.HasValue
-                        ? port.Id == assignedPortId.Value &&
-                          (
-                              port.Status == MuxPortStatus.Available ||
-                              port.Status == MuxPortStatus.Connected
-                          )
+                    assignedPort != null
+                        ? port.Id == assignedPort.Id &&
+                          (port.Status == MuxPortStatus.Available ||
+                           port.Status == MuxPortStatus.Connected)
                         : port.E1Id == null &&
                           port.Status == MuxPortStatus.Available
                 ))
-            .OrderBy(port => port.MuxCard.Mux.Name)
+            .OrderBy(port => port.MuxCard.Section)
+            .ThenBy(port => port.MuxCard.ShelfNumber)
             .ThenBy(port => port.MuxCard.SlotNumber)
             .ThenBy(port => port.PortNumber)
-            .Select(port => new
-            {
-                value = port.Id,
-
-                text =
-                    port.MuxCard.Mux.Name +
-                    " — LTU #" + port.MuxCard.SlotNumber +
-                    " Port #" + port.PortNumber,
-
-                selected = port.E1Id == sdhE1Id.Value
-            })
             .ToListAsync();
 
-        return Json(ports);
+        return Json(new
+        {
+            muxName = mux.Name,
+            muxModel = (int)mux.Model,
+            physicalStmNumbers = mux.Model == MuxModel.Tellab
+                ? physicalNumbers
+                : Array.Empty<int>(),
+            assignedPhysicalStmNumber = assignedPort?.PhysicalStmNumber,
+            ports = ports.Select(port => new
+            {
+                value = port.Id,
+                text = MuxDisplay.LtuLabel(
+                    mux.Model,
+                    port.MuxCard.ShelfNumber,
+                    port.MuxCard.SlotNumber,
+                    port.PortNumber),
+                selected = port.E1Id == sdhE1Id.Value
+            })
+        });
     }
 
     /*
@@ -381,34 +414,62 @@ e1.ConnectedE1!.ConnectionType !=
             );
         }
 
-        var options = await query
+        MuxModel? muxModel = null;
+
+        if (stmId.HasValue)
+        {
+            muxModel = await _context.MuxPorts
+                .AsNoTracking()
+                .Where(port =>
+                    port.StmId == stmId.Value &&
+                    port.Stm!.LinkId == linkId.Value &&
+                    port.MuxCard.Category == CardCategory.STM &&
+                    port.MuxCard.Mux.SiteId == port.Stm.Link.SiteFromId)
+                .Select(port => (MuxModel?)port.MuxCard.Mux.Model)
+                .SingleOrDefaultAsync();
+
+            if (!muxModel.HasValue || muxModel == MuxModel.Undefined)
+                return Json(Array.Empty<object>());
+        }
+
+        var rows = await query
             .OrderBy(e1 => e1.E1Number)
             .Select(e1 => new
             {
                 value = e1.Id,
-
-                text =
-                    e1.CrossConnectionState ==
-                        E1CrossConnectionState.ExtendExistingPath
-
-                        ? $"E1 {e1.E1Number} — {e1.ConnectionType} — Extend existing path"
-                        : $"E1 {e1.E1Number} — {e1.ConnectionType} — Available",
-
-                state = e1.CrossConnectionState.ToString(),
-
-
-                customerName =
-                    e1.ConnectionGroupId.HasValue
-                        ? _context.CustomerConnections
-                            .Where(connection =>
-                                connection.ConnectionGroupId ==
-                                e1.ConnectionGroupId.Value)
-                            .Select(connection =>
-                                connection.Customer.Name)
-                            .FirstOrDefault()
-                        : null
+                number = e1.E1Number,
+                connectionType = e1.ConnectionType,
+                state = e1.CrossConnectionState,
+                customerName = e1.ConnectionGroupId.HasValue
+                    ? _context.CustomerConnections
+                        .Where(connection =>
+                            connection.ConnectionGroupId ==
+                            e1.ConnectionGroupId.Value)
+                        .Select(connection => connection.Customer.Name)
+                        .FirstOrDefault()
+                    : null
             })
             .ToListAsync();
+
+        var options = rows.Select(row =>
+        {
+            string channel = muxModel.HasValue
+                ? MuxDisplay.E1Label(muxModel.Value, row.number)
+                : $"Port {row.number}";
+
+            string availability =
+                row.state == E1CrossConnectionState.ExtendExistingPath
+                    ? "Extend existing path"
+                    : "Available";
+
+            return new
+            {
+                row.value,
+                text = $"{channel} — {row.connectionType} — {availability}",
+                state = row.state.ToString(),
+                row.customerName
+            };
+        });
 
         return Json(options);
     }
@@ -1234,6 +1295,11 @@ e1.ConnectedE1!.ConnectionType !=
 
                 ltuPort.E1Id = sdhE1.Id;
                 ltuPort.Status = MuxPortStatus.Connected;
+
+                ltuPort.PhysicalStmNumber =
+                    ltuPort.MuxCard.Mux.Model == MuxModel.Tellab
+                        ? model.PhysicalStmNumber
+                        : null;
             }
 
             await _context.SaveChangesAsync();
@@ -1284,21 +1350,20 @@ e1.ConnectedE1!.ConnectionType !=
     }
 
     private async Task<MuxPort?> ValidateLtuAssignmentAsync(
-    CreateCrossConnectionViewModel model,
-    E1? incomingE1,
-    E1? outgoingE1)
+        CreateCrossConnectionViewModel model,
+        E1? incomingE1,
+        E1? outgoingE1)
     {
         if (incomingE1 == null || outgoingE1 == null)
-        {
             return null;
-        }
 
         bool isMixed =
             incomingE1.StmId.HasValue != outgoingE1.StmId.HasValue;
 
-        // Keep SDH ↔ SDH and PDH ↔ PDH unchanged.
         if (!isMixed)
         {
+            model.LtuPortId = null;
+            model.PhysicalStmNumber = null;
             return null;
         }
 
@@ -1307,7 +1372,7 @@ e1.ConnectedE1!.ConnectionType !=
         {
             ModelState.AddModelError(
                 nameof(model.LtuPortId),
-                "Select an LTU card and port for the SDH / PDH connection.");
+                "Select an LTU card and port.");
 
             return null;
         }
@@ -1316,29 +1381,37 @@ e1.ConnectedE1!.ConnectionType !=
             ? incomingE1
             : outgoingE1;
 
-        var port = await _context.MuxPorts
-            .Include(item => item.MuxCard)
-                .ThenInclude(card => card.Mux)
-            .FirstOrDefaultAsync(item =>
-                item.Id == model.LtuPortId.Value);
+        var mux = await GetSdhMuxAsync(sdhE1.Id, model.SiteId);
 
-        if (port == null ||
-            port.MuxCard.Category != CardCategory.LTU ||
-            port.MuxCard.Mux.SiteId != model.SiteId)
+        if (mux == null)
         {
             ModelState.AddModelError(
                 nameof(model.LtuPortId),
-                "Select an LTU port installed at the cross-connection site.");
+                "The SDH STM must be assigned to a MUX at this site.");
 
             return null;
         }
 
-        bool assignedToThisE1 =
-            port.E1Id == sdhE1.Id;
+        var port = await _context.MuxPorts
+            .Include(item => item.MuxCard)
+                .ThenInclude(card => card.Mux)
+            .FirstOrDefaultAsync(item => item.Id == model.LtuPortId.Value);
+
+        if (port == null ||
+            port.MuxCard.Category != CardCategory.LTU ||
+            port.MuxCard.MuxId != mux.Id)
+        {
+            ModelState.AddModelError(
+                nameof(model.LtuPortId),
+                "Select an LTU port on the MUX holding the selected SDH STM.");
+
+            return null;
+        }
+
+        bool assignedToThisE1 = port.E1Id == sdhE1.Id;
 
         bool validStatus = assignedToThisE1
-            ? port.Status == MuxPortStatus.Available ||
-              port.Status == MuxPortStatus.Connected
+            ? port.Status is MuxPortStatus.Available or MuxPortStatus.Connected
             : port.Status == MuxPortStatus.Available;
 
         if (port.StmId.HasValue ||
@@ -1364,6 +1437,37 @@ e1.ConnectedE1!.ConnectionType !=
                 "This SDH E1 already has an LTU assignment. Select its existing port.");
 
             return null;
+        }
+
+        if (mux.Model == MuxModel.Tellab)
+        {
+            int[] configured = GetPhysicalStmNumbers(mux);
+
+            if (configured.Length != 2 ||
+                !model.PhysicalStmNumber.HasValue ||
+                !configured.Contains(model.PhysicalStmNumber.Value))
+            {
+                ModelState.AddModelError(
+                    nameof(model.PhysicalStmNumber),
+                    "Select one of this Tellab's configured physical VC4s.");
+
+                return null;
+            }
+
+            if (assignedToThisE1 &&
+                port.PhysicalStmNumber.HasValue &&
+                port.PhysicalStmNumber != model.PhysicalStmNumber)
+            {
+                ModelState.AddModelError(
+                    nameof(model.PhysicalStmNumber),
+                    "Keep the physical VC4 of the existing LTU assignment.");
+
+                return null;
+            }
+        }
+        else
+        {
+            model.PhysicalStmNumber = null;
         }
 
         return port;
@@ -1610,202 +1714,93 @@ e1.ConnectedE1!.ConnectionType !=
         }
     }
     [HttpGet]
-    public async Task<IActionResult> GetConnectionResources(
-    string? siteId)
+    public async Task<IActionResult> GetConnectionResources(string? siteId)
     {
         siteId = siteId?.Trim();
 
         if (string.IsNullOrWhiteSpace(siteId))
-        {
             return Json(Array.Empty<object>());
-        }
 
+        var stmResources = await _context.MuxPorts
+            .AsNoTracking()
+            .Where(port =>
+                port.StmId != null &&
+                port.MuxCard.Category == CardCategory.STM &&
+                port.MuxCard.Mux.SiteId == siteId &&
+                port.Stm!.Link.SiteFromId == siteId &&
+                port.Stm.Link.LinkType.Name == "SDH" &&
+                port.MuxCard.Mux.Model != MuxModel.Undefined)
+            .Select(port => new
+            {
+                StmId = port.StmId!.Value,
+                LinkId = port.Stm!.LinkId,
+                LinkName = port.Stm.Link.Name,
+                ConnectedSiteId = port.Stm.Link.SiteToId,
+                StmNumber = port.Stm.Number,
+                MuxName = port.MuxCard.Mux.Name,
+                Model = port.MuxCard.Mux.Model,
+                Section = port.MuxCard.Section,
+                ShelfNumber = port.MuxCard.ShelfNumber,
+                CardNumber = port.MuxCard.SlotNumber,
+                port.PortNumber
+            })
+            .ToListAsync();
 
-        bool siteExists =
-            await _context.Sites
-                .AsNoTracking()
-                .AnyAsync(site =>
-                    site.Id == siteId);
+        var pdhResources = await _context.CommunicationLinks
+            .AsNoTracking()
+            .Where(link =>
+                link.SiteFromId == siteId &&
+                link.LinkType.Name == "PDH")
+            .Select(link => new
+            {
+                link.Id,
+                link.Name,
+                ConnectedSiteId = link.SiteToId
+            })
+            .ToListAsync();
 
-        if (!siteExists)
+        var resources = new List<object>();
+
+        foreach (var resource in stmResources
+            .OrderBy(item => item.MuxName)
+            .ThenBy(item => item.Section)
+            .ThenBy(item => item.ShelfNumber)
+            .ThenBy(item => item.CardNumber)
+            .ThenBy(item => item.PortNumber))
         {
-            return Json(Array.Empty<object>());
-        }
+            string position = MuxDisplay.StmLabel(
+                resource.Model,
+                resource.ShelfNumber,
+                resource.CardNumber,
+                resource.PortNumber,
+                resource.StmNumber);
 
-
-        /* =====================================================
-           SDH resources
-
-           Only show STMs that:
-
-           1. Physically belong to this site.
-           2. Are actually installed on an STM MUX port.
-           ===================================================== */
-
-        var stmResources =
-            await _context.MuxPorts
-                .AsNoTracking()
-
-                .Where(port =>
-                    port.StmId != null &&
-
-                    port.MuxCard.Category ==
-                        CardCategory.STM &&
-
-                    port.MuxCard.Mux.SiteId ==
-                        siteId &&
-
-                    port.Stm!.Link.SiteFromId ==
-                        siteId)
-
-                .Select(port => new
-                {
-                    StmId =
-                        port.StmId!.Value,
-
-                    LinkId =
-                        port.Stm!.LinkId,
-
-                    SlotNumber =
-                        port.MuxCard.SlotNumber,
-
-                    PortNumber =
-                        port.PortNumber,
-
-                    ConnectedSiteId =
-                        port.Stm.Link.SiteToId,
-
-                    LocalStmNumber =
-                        port.Stm.Number,
-
-                    RemoteStmNumber =
-                        port.Stm.ConnectedStm != null
-                            ? port.Stm.ConnectedStm.Number
-                            : port.Stm.Number
-                })
-
-                .ToListAsync();
-
-
-        /* =====================================================
-           PDH resources
-
-           PDH has no STM.
-
-           Therefore the directional link itself is the resource.
-           ===================================================== */
-
-        var pdhResources =
-            await _context.CommunicationLinks
-                .AsNoTracking()
-
-                .Where(link =>
-                    link.SiteFromId == siteId &&
-
-                    link.LinkType.Name == "PDH")
-
-                .Select(link => new
-                {
-                    LinkId =
-                        link.Id,
-
-                    LinkName =
-                        link.Name,
-
-                    ConnectedSiteId =
-                        link.SiteToId
-                })
-
-                .ToListAsync();
-
-
-        /* =====================================================
-           Build one dropdown list
-           ===================================================== */
-
-        var resources =
-            new List<object>();
-
-
-        /*
-         * Shelf number is fixed as 1 for now.
-         *
-         * Example:
-         *
-         * STM 1.2.3 [005 STM 1]
-         *
-         * 1 = Shelf
-         * 2 = Card / Slot
-         * 3 = Port
-         */
-        foreach (var stm in stmResources
-            .OrderBy(item =>
-                item.ConnectedSiteId)
-            .ThenBy(item =>
-                item.SlotNumber)
-            .ThenBy(item =>
-                item.PortNumber))
-        {
             resources.Add(new
             {
-                value =
-                    $"STM:{stm.StmId}",
-
-                text =
-                    $"STM 1.{stm.SlotNumber}.{stm.PortNumber} " +
-                    $"[{stm.ConnectedSiteId} STM {stm.RemoteStmNumber}]",
-
-                resourceType =
-                    "STM",
-
-                linkId =
-                    stm.LinkId,
-
-                stmId =
-                    stm.StmId,
-
-                connectedSiteId =
-                    stm.ConnectedSiteId
+                value = $"STM:{resource.StmId}",
+                text = $"{position} " +
+       $"[{resource.ConnectedSiteId} · {resource.LinkName}]",
+                resourceType = "STM",
+                linkId = resource.LinkId,
+                stmId = (Guid?)resource.StmId,
+                connectedSiteId = resource.ConnectedSiteId
             });
         }
 
-
-        /*
-         * Example:
-         *
-         * PDH [005 — 005 - 006 - 1]
-         *
-         * 005 = remote/connected site
-         * remaining text = actual link name
-         */
         foreach (var link in pdhResources
-            .OrderBy(item =>
-                item.ConnectedSiteId)
-            .ThenBy(item =>
-                item.LinkName))
+            .OrderBy(item => item.ConnectedSiteId)
+            .ThenBy(item => item.Name))
         {
             resources.Add(new
             {
-                value =
-                    $"PDH:{link.LinkId}",
-
-                text =
-                    $"PDH [{link.LinkName}]",
-
-                resourceType =
-                    "PDH",
-
-                linkId =
-                    link.LinkId,
-
-                stmId =
-                    (Guid?)null,
-
-                connectedSiteId =
-                    link.ConnectedSiteId
+                value = $"PDH:{link.Id}",
+                text = $"PDH [{link.Name} · {link.ConnectedSiteId}]",
+                resourceType = "PDH",
+                linkId = link.Id,
+                stmId = (Guid?)null,
+                connectedSiteId = link.ConnectedSiteId
             });
         }
-
 
         return Json(resources);
     }

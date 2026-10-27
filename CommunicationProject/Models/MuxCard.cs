@@ -21,6 +21,17 @@ public class MuxCard
     public CardCategory Category { get; set; }
 
 
+    public MuxSection Section { get; set; }
+    = MuxSection.Standard;
+
+    // Required and positive for OMS 1600 / OMS 1200.
+    // Stored as 0 for models without shelves.
+    [Range(0, 1000)]
+    [Display(Name = "Shelf Number")]
+    public int ShelfNumber { get; set; }
+
+    public bool IsRequired { get; set; }
+
     [Range(
         1,
         1000,

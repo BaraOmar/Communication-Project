@@ -1,7 +1,15 @@
 ﻿@model CommunicationProject.ViewModels.CreateMuxTypeViewModel
+@using System.Text.Json
 
 @{
     ViewData["Title"] = "Add MUX Type";
+
+    var initialCards = JsonSerializer.Serialize(
+        Model.Cards,
+        new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        });
 }
 
 @section Styles {
@@ -11,336 +19,255 @@
 }
 
 <div class="mux-type-form-page">
-
     <div class="mux-type-form-header">
-
-        <a href="@Url.Action("Index", "MuxTypes")"
-               data-fallback-url="@Url.Action("Index", "MuxTypes")"
-               class="mux-type-back js-back-link">
-            ← Back
-        </a>
-
         <h1>Add MUX Type</h1>
-
-        <p>
-            Define the physical card structure and port capacity
-            for a reusable MUX type.
-        </p>
-
+        <p>Choose a model and configure its default cards.</p>
     </div>
 
-
-    <form asp-action="Create"
-          method="post">
-
+    <form asp-action="Create" method="post" id="muxTypeForm">
         @Html.AntiForgeryToken()
 
-
-        <div asp-validation-summary="ModelOnly"
-             class="mux-type-validation">
-        </div>
-
-
-        <!-- Name -->
+        <div asp-validation-summary="All"
+             class="mux-type-validation"></div>
 
         <section class="mux-type-form-card">
+            <label asp-for="Model"></label>
 
-            <div class="mux-type-section-heading">
+            <select asp-for="Model"
+                    asp-items="@(Html.GetEnumSelectList<MuxModel>()
+                                                            .Where(item => item.Value != "0"))"
+                    class="mux-type-input">
+                <option value="">Select a model</option>
+            </select>
 
-                <span>GENERAL</span>
-
-                <h2>MUX Type Information</h2>
-
-            </div>
-
-
-            <div class="mux-type-name-field">
-
-                <label asp-for="Name">
-                </label>
-
-                <input asp-for="Name"
-                       class="mux-type-input"
-                       placeholder="Example: Ericsson AXE MUX" />
-
-                <span asp-validation-for="Name"
-                      class="mux-type-field-error">
-                </span>
-
-            </div>
-
+            <span asp-validation-for="Model"
+                  class="mux-type-field-error"></span>
         </section>
 
+        <section class="mux-type-form-card">
+            <h2>Default Cards</h2>
 
-        <!-- Hardware cards -->
+            <p id="structureHint">
+                Required cards must remain in an installed MUX.
+                Optional cards can be omitted during installation.
+            </p>
 
-        <div class="mux-type-hardware-grid">
+            <p id="loadError" class="mux-type-field-error"
+               role="alert"></p>
 
-
-            <!-- Power -->
-
-            <section class="mux-type-hardware-card">
-
-                <div class="mux-type-hardware-header">
-
-                    <div class="mux-type-hardware-icon">
-                        P
-                    </div>
-
-                    <div>
-                        <span>CARD CATEGORY</span>
-                        <h2>LTU</h2>
-                    </div>
-
-                </div>
-
-
-                <div class="mux-type-field">
-
-                    <label asp-for="LtuCardCount">
-                    </label>
-
-                    <input asp-for="LtuCardCount"
-                           class="mux-type-input mux-capacity-input"
-                           min="0"
-                           max="100" />
-
-                    <span asp-validation-for="LtuCardCount"
-                          class="mux-type-field-error">
-                    </span>
-
-                </div>
-
-
-                <div class="mux-type-field">
-
-                    <label asp-for="LtuPortsPerCard">
-                    </label>
-
-                    <input asp-for="LtuPortsPerCard"
-                           class="mux-type-input mux-capacity-input"
-                           min="0"
-                           max="1000" />
-
-                    <span asp-validation-for="LtuPortsPerCard"
-                          class="mux-type-field-error">
-                    </span>
-
-                </div>
-
-
-                <div class="mux-type-card-total">
-                    <span>Total LTU Ports</span>
-                    <strong id="ltuTotal">0</strong>
-                </div>
-
-            </section>
-
-
-
-            <!-- STM -->
-
-            <section class="mux-type-hardware-card">
-
-                <div class="mux-type-hardware-header">
-
-                    <div class="mux-type-hardware-icon">
-                        S
-                    </div>
-
-                    <div>
-                        <span>CARD CATEGORY</span>
-                        <h2>STM</h2>
-                    </div>
-
-                </div>
-
-
-                <div class="mux-type-field">
-
-                    <label asp-for="StmCardCount">
-                    </label>
-
-                    <input asp-for="StmCardCount"
-                           class="mux-type-input mux-capacity-input"
-                           min="0"
-                           max="100" />
-
-                    <span asp-validation-for="StmCardCount"
-                          class="mux-type-field-error">
-                    </span>
-
-                </div>
-
-
-                <div class="mux-type-field">
-
-                    <label asp-for="StmPortsPerCard">
-                    </label>
-
-                    <input asp-for="StmPortsPerCard"
-                           class="mux-type-input mux-capacity-input"
-                           min="0"
-                           max="1000" />
-
-                    <span asp-validation-for="StmPortsPerCard"
-                          class="mux-type-field-error">
-                    </span>
-
-                </div>
-
-
-                <div class="mux-type-card-total">
-
-                    <span>Total STM Ports</span>
-
-                    <strong id="stmTotal">
-                        0
-                    </strong>
-
-                </div>
-
-            </section>
-
-
-
-
-        </div>
-
-
-        <!-- Summary -->
-
-        <section class="mux-type-live-summary">
-
-            <div>
-
-                <span>HARDWARE SUMMARY</span>
-
-                <strong>
-                    Current configuration
-                </strong>
-
+            <div class="mux-types-table-wrap">
+                <table class="mux-types-table">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Section</th>
+                            <th class="shelf-column">Shelf</th>
+                            <th>Card Number</th>
+                            <th>Ports</th>
+                            <th>Required</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="cardRows"></tbody>
+                </table>
             </div>
 
-
-            <div class="mux-type-summary-values">
-
-                <div>
-                    <span>Total Cards</span>
-                    <strong id="totalCards">0</strong>
-                </div>
-
-                <div>
-                    <span>Total Ports</span>
-                    <strong id="totalPorts">0</strong>
-                </div>
-
-                <div>
-                    <span>STM Capacity</span>
-                    <strong id="summaryStmPorts">0</strong>
-                </div>
-
-                <div>
-                    <span>LTU / E1 Capacity</span>
-                    <strong id="summaryLtuPorts">0</strong>
-                </div>
-
-            </div>
-
+            <button type="button" id="addCard"
+                    class="mux-types-primary-btn">
+                + Add Card
+            </button>
         </section>
-
-
-        <!-- Actions -->
 
         <div class="mux-type-form-actions">
-
-            <a href="@Url.Action("Index", "MuxTypes")"
-                   data-fallback-url="@Url.Action("Index", "MuxTypes")"
-                   class="mux-type-cancel-btn js-back-link">
-
+            <a asp-action="Index" class="mux-type-cancel-btn">
                 Cancel
-
             </a>
 
-
-            <button type="submit"
+            <button type="submit" id="saveType"
                     class="mux-types-primary-btn">
-
-                Add MUX Type
-
+                Save MUX Type
             </button>
-
         </div>
-
     </form>
-
 </div>
-
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 
     <script>
         (() => {
-            const fields = {
-                ltuCount: document.getElementById("LtuCardCount"),
-                ltuPorts: document.getElementById("LtuPortsPerCard"),
-                stmCount: document.getElementById("StmCardCount"),
-                stmPorts: document.getElementById("StmPortsPerCard")
-            };
+            const modelSelect = document.getElementById("Model");
+            const body = document.getElementById("cardRows");
+            const addButton = document.getElementById("addCard");
+            const saveButton = document.getElementById("saveType");
+            const error = document.getElementById("loadError");
+            const hint = document.getElementById("structureHint");
 
-            function number(input) {
-                return Math.max(0, Number(input.value) || 0);
+            let cards = @Html.Raw(initialCards);
+            let requestVersion = 0;
+
+            const selectedModel = () => Number(modelSelect.value);
+            const usesShelves = () => [1, 2].includes(selectedModel());
+            const fixedStructure = () => [5, 6].includes(selectedModel());
+
+            function readCards() {
+                return [...body.querySelectorAll("tr")].map(row => ({
+                    category: Number(row.querySelector('[data-field="Category"]').value),
+                    section: Number(row.querySelector('[data-field="Section"]').value),
+                    shelfNumber: Number(row.querySelector('[data-field="ShelfNumber"]').value),
+                    slotNumber: Number(row.querySelector('[data-field="SlotNumber"]').value),
+                    portCount: Number(row.querySelector('[data-field="PortCount"]').value),
+                    isRequired: row.querySelector('[data-field="IsRequired"]').checked
+                }));
             }
 
-            function configurePorts(countInput, portsInput) {
-                const hasCards = number(countInput) > 0;
+            function render() {
+                const fixed = fixedStructure();
+                const shelves = usesShelves();
 
-                portsInput.disabled = !hasCards;
+                body.innerHTML = cards.map((card, index) => {
+                    const name = field => `Cards[${index}].${field}`;
 
-                if (!hasCards) {
-                    portsInput.value = 0;
-                }
+                    const hidden = (field, value) =>
+                        `<input type="hidden" name="${name(field)}"
+                            data-field="${field}" value="${value}">`;
+
+                    const number = (field, value, minimum) =>
+                        `<input type="number" name="${name(field)}"
+                            data-field="${field}" value="${value}"
+                            min="${minimum}" max="1000" required
+                            class="mux-type-input"
+                            ${fixed ? "readonly" : ""}>`;
+
+                    const category = fixed
+                        ? hidden("Category", card.category) +
+                            (card.category === 0 ? "STM" : "LTU")
+                        : `<select name="${name("Category")}"
+                                data-field="Category" class="mux-type-input">
+                              <option value="0"
+                                ${card.category === 0 ? "selected" : ""}>STM</option>
+                              <option value="1"
+                                ${card.category === 1 ? "selected" : ""}>LTU</option>
+                           </select>`;
+
+                    const sectionName =
+                        ["Standard", "Main", "Sub"][card.section];
+
+                    const required = fixed
+                        ? `<input type="checkbox" data-field="IsRequired"
+                                checked disabled>
+                           <input type="hidden" name="${name("IsRequired")}"
+                                value="true">`
+                        : `<input type="checkbox" name="${name("IsRequired")}"
+                                data-field="IsRequired" value="true"
+                                ${card.isRequired ? "checked" : ""}>
+                           <input type="hidden" name="${name("IsRequired")}"
+                                value="false">`;
+
+                    return `<tr>
+                        <td>${category}</td>
+                        <td>
+                            ${hidden("Section", card.section)}
+                            ${sectionName}
+                        </td>
+                        <td class="shelf-column" ${shelves ? "" : "hidden"}>
+                            ${shelves
+                                ? number("ShelfNumber", card.shelfNumber, 1)
+                                : hidden("ShelfNumber", 0)}
+                        </td>
+                        <td>${number("SlotNumber", card.slotNumber, 1)}</td>
+                        <td>${number("PortCount", card.portCount, 1)}</td>
+                        <td>${required}</td>
+                        <td>
+                            <button type="button" data-remove="${index}"
+                                ${fixed ? "disabled" : ""}>
+                                Remove
+                            </button>
+                        </td>
+                    </tr>`;
+                }).join("");
+
+                document.querySelectorAll(".shelf-column")
+                    .forEach(cell => cell.hidden = !shelves);
+
+                addButton.hidden = fixed || !modelSelect.value;
+                addButton.disabled = cards.length >= 100;
+
+                hint.textContent = fixed
+                    ? "This model uses its predefined card structure."
+                    : "Set each card's actual position and port count. " +
+                      "Required cards cannot be omitted during installation.";
             }
 
-            function updateSummary() {
-                configurePorts(fields.ltuCount, fields.ltuPorts);
-                configurePorts(fields.stmCount, fields.stmPorts);
+            addButton.addEventListener("click", () => {
+                cards = readCards();
 
-                const ltuCount = number(fields.ltuCount);
-                const stmCount = number(fields.stmCount);
+                if (cards.length >= 100)
+                    return;
 
-                const ltuTotal =
-                    ltuCount * number(fields.ltuPorts);
-
-                const stmTotal =
-                    stmCount * number(fields.stmPorts);
-
-                document.getElementById("ltuTotal").textContent =
-                    ltuTotal;
-
-                document.getElementById("stmTotal").textContent =
-                    stmTotal;
-
-                document.getElementById("totalCards").textContent =
-                    ltuCount + stmCount;
-
-                document.getElementById("totalPorts").textContent =
-                    ltuTotal + stmTotal;
-
-                document.getElementById("summaryLtuPorts").textContent =
-                    ltuTotal;
-
-                document.getElementById("summaryStmPorts").textContent =
-                    stmTotal;
-            }
-
-            document.querySelectorAll(".mux-capacity-input")
-                .forEach(input => {
-                    input.addEventListener("input", updateSummary);
+                cards.push({
+                    category: 0,
+                    section: 0,
+                    shelfNumber: usesShelves() ? 1 : 0,
+                    slotNumber: Math.max(0, ...cards.map(c => c.slotNumber)) + 1,
+                    portCount: 1,
+                    isRequired: true
                 });
 
-            updateSummary();
+                render();
+            });
+
+            body.addEventListener("click", event => {
+                const button = event.target.closest("[data-remove]");
+
+                if (!button || fixedStructure())
+                    return;
+
+                cards = readCards();
+                cards.splice(Number(button.dataset.remove), 1);
+                render();
+            });
+
+            modelSelect.addEventListener("change", async () => {
+                const version = ++requestVersion;
+
+                cards = [];
+                error.textContent = "";
+                render();
+
+                if (!modelSelect.value) {
+                    saveButton.disabled = false;
+                    return;
+                }
+
+                saveButton.disabled = true;
+                addButton.disabled = true;
+
+                try {
+                    const response = await fetch(
+                        '@Url.Action("GetDefaultCards", "MuxTypes")' +
+                        '?model=' + encodeURIComponent(modelSelect.value));
+
+                    if (!response.ok)
+                        throw new Error("Unable to load the model structure.");
+
+                    const data = await response.json();
+
+                    if (version !== requestVersion)
+                        return;
+
+                    cards = data.cards;
+                    render();
+                    saveButton.disabled = false;
+                } catch (problem) {
+                    if (version !== requestVersion)
+                        return;
+
+                    error.textContent = problem.message;
+                }
+            });
+
+            render();
         })();
     </script>
 }

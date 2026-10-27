@@ -1,26 +1,42 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 
 namespace CommunicationProject.ViewModels;
 
 public class AssignE1ToMuxPortViewModel
 {
-    [Required]
     public Guid MuxPortId { get; set; }
 
+    [ValidateNever]
     public Guid MuxCardId { get; set; }
+
+    [ValidateNever]
     public int PortNumber { get; set; }
 
-    public string MuxName { get; set; } =
-        string.Empty;
+    [ValidateNever]
+    public string MuxName { get; set; } = string.Empty;
 
-    public string CardCategoryName { get; set; }
-        = string.Empty;
+    [ValidateNever]
+    public string CardCategoryName { get; set; } = string.Empty;
+
+    [ValidateNever]
+    public string Position { get; set; } = string.Empty;
+
+    [ValidateNever]
+    public bool IsTellab { get; set; }
 
     [Required]
     [Display(Name = "Physical E1")]
     public Guid? E1Id { get; set; }
 
-    public List<SelectListItem> E1Options { get; set; } =
-        new();
+    [Range(29, 31)]
+    [Display(Name = "Physical VC4")]
+    public int? PhysicalStmNumber { get; set; }
+
+    [ValidateNever]
+    public List<SelectListItem> E1Options { get; set; } = [];
+
+    [ValidateNever]
+    public List<SelectListItem> PhysicalStmOptions { get; set; } = [];
 }

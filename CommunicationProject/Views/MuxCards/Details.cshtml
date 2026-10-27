@@ -1,6 +1,7 @@
 ﻿@model CommunicationProject.Models.MuxCard
 @using CommunicationProject.Models
 @using CommunicationProject.Security
+@using CommunicationProject.Services.Muxes
 
 @{
     ViewData["Title"] = "MUX Card Details";
@@ -69,7 +70,7 @@
             <div>
 
                 <span class="mux-rack-eyebrow">
-                    SHELF 1 · SLOT @Model.SlotNumber
+                    @MuxDisplay.CardPosition(Model)
                 </span>
 
                 <h1>
@@ -135,7 +136,7 @@
             </span>
 
             <strong>
-                Shelf 1 · Slot @Model.SlotNumber
+                @MuxDisplay.CardPosition(Model)
             </strong>
 
         </div>
@@ -328,9 +329,8 @@
                             <span>
                                 Shelf
                             </span>
-
                             <strong>
-                                1
+                                @(Model.ShelfNumber == 0 ? "—" : Model.ShelfNumber.ToString())
                             </strong>
 
                         </div>
@@ -397,7 +397,12 @@
 
                                     <div>
                                         <strong>
-                                            STM @port.Stm.Number
+                                            @MuxDisplay.StmLabel(
+    Model.Mux.Model,
+    Model.ShelfNumber,
+    Model.SlotNumber,
+    port.PortNumber,
+    port.Stm.Number)
                                         </strong>
 
                                         <span>

@@ -4,27 +4,16 @@
 @{
     ViewData["Title"] = "Create Cross Connection";
 
-    string initialValuesJson =
-        JsonSerializer.Serialize(new
-        {
-            siteId =
-                Model.SiteId,
-
-            incomingResourceKey =
-                Model.IncomingResourceKey,
-
-            incomingE1Id =
-                Model.IncomingE1Id?.ToString(),
-
-            outgoingResourceKey =
-                Model.OutgoingResourceKey,
-
-            outgoingE1Id =
-    Model.OutgoingE1Id?.ToString(),
-
-            ltuPortId =
-    Model.LtuPortId?.ToString()
-        });
+    string initialValuesJson = JsonSerializer.Serialize(new
+    {
+        siteId = Model.SiteId,
+        incomingResourceKey = Model.IncomingResourceKey,
+        incomingE1Id = Model.IncomingE1Id?.ToString(),
+        outgoingResourceKey = Model.OutgoingResourceKey,
+        outgoingE1Id = Model.OutgoingE1Id?.ToString(),
+        ltuPortId = Model.LtuPortId?.ToString(),
+        physicalStmNumber = Model.PhysicalStmNumber
+    });
 }
 
 
@@ -416,9 +405,22 @@
                     </span>
 
                 </div>
-                <div id="ltuSection"
-                     class="cross-field"
-                     hidden>
+                <div id="ltuSection" class="cross-field" hidden>
+                    <div id="physicalVc4Section" class="cross-field" hidden>
+                        <label asp-for="PhysicalStmNumber">
+                            Physical VC4
+                        </label>
+
+                        <select asp-for="PhysicalStmNumber"
+                                id="physicalVc4Select"
+                                class="cross-select"
+                                disabled>
+                            <option value="">Select physical VC4</option>
+                        </select>
+
+                        <span asp-validation-for="PhysicalStmNumber"
+                              class="cross-field-error"></span>
+                    </div>
 
                     <label asp-for="LtuPortId">
                         LTU Card / Port
@@ -435,7 +437,6 @@
                           class="cross-field-error"></span>
 
                     <p id="ltuMessage" role="status"></p>
-
                 </div>
             </section>
 
@@ -1703,43 +1704,68 @@
                 }
 
             }
-                    const ltuSection = document.getElementById("ltuSection");
+                            const ltuSection = document.getElementById("ltuSection");
         const ltuPortSelect = document.getElementById("ltuPortSelect");
         const ltuMessage = document.getElementById("ltuMessage");
+        const physicalVc4Section = document.getElementById("physicalVc4Section");
+        const physicalVc4Select = document.getElementById("physicalVc4Select");
 
         const ltuUrl =
             '@Url.Action("GetAvailableLtuPorts", "CrossConnections")';
 
         let ltuRequestVersion = 0;
+        let physicalVc4Required = false;
+        let ltuOptionsLoaded = false;
+
+        function updateLtuEnabled() {
+            ltuPortSelect.disabled =
+                !ltuOptionsLoaded ||
+                (physicalVc4Required && !physicalVc4Select.value);
+        }
 
         function resetLtuSelection() {
             ltuRequestVersion++;
+            physicalVc4Required = false;
+            ltuOptionsLoaded = false;
 
             ltuSection.hidden = true;
             ltuPortSelect.required = false;
             ltuPortSelect.disabled = true;
-
             ltuPortSelect.replaceChildren(
                 new Option("Select LTU card / port", "")
+            );
+
+            physicalVc4Section.hidden = true;
+            physicalVc4Select.required = false;
+            physicalVc4Select.disabled = true;
+            physicalVc4Select.replaceChildren(
+                new Option("Select physical VC4", "")
             );
 
             ltuMessage.textContent = "";
         }
 
-        async function refreshLtuPorts(selectedPortId = "") {
+        async function refreshLtuPorts(
+            selectedPortId = "",
+            selectedPhysicalStmNumber = ""
+        ) {
             const preferredPortId =
                 selectedPortId || ltuPortSelect.value;
+
+            const preferredPhysicalNumber =
+                selectedPhysicalStmNumber !== null &&
+                selectedPhysicalStmNumber !== ""
+                    ? String(selectedPhysicalStmNumber)
+                    : physicalVc4Select.value;
 
             resetLtuSelection();
 
             const requestVersion = ltuRequestVersion;
-
             const incomingKey = incomingResourceSelect.value;
             const outgoingKey = outgoingResourceSelect.value;
 
             const incomingSdh = incomingKey.startsWith("STM:");
             const outgoingSdh = outgoingKey.startsWith("STM:");
-
             const incomingPdh = incomingKey.startsWith("PDH:");
             const outgoingPdh = outgoingKey.startsWith("PDH:");
 
@@ -1747,12 +1773,10 @@
                 (incomingSdh && outgoingPdh) ||
                 (incomingPdh && outgoingSdh);
 
-            if (!isMixed) {
+            if (!isMixed)
                 return;
-            }
 
             ltuSection.hidden = false;
-            ltuPortSelect.disabled = false;
             ltuPortSelect.required = true;
 
             const sdhE1Id = incomingSdh
@@ -1760,54 +1784,102 @@
                 : outgoingE1Select.value;
 
             if (!sdhE1Id) {
-                // ltuMessage.textContent =
-                //     "Select the SDH E1 to load LTU ports.";
+                ltuMessage.textContent =
+                    "Select the SDH E1 to load its MUX's LTU ports.";
                 return;
             }
 
             ltuMessage.textContent = "Loading LTU ports...";
 
             try {
-                const ports = await getJson(ltuUrl, {
+                const data = await getJson(ltuUrl, {
                     siteId: siteSelect.value,
                     sdhE1Id: sdhE1Id
                 });
 
-                // Ignore a response for an older selection.
-                if (requestVersion !== ltuRequestVersion) {
+                if (requestVersion !== ltuRequestVersion)
                     return;
+
+                const ports = data.ports || [];
+                physicalVc4Required = Number(data.muxModel) === 5;
+
+                if (physicalVc4Required) {
+                    physicalVc4Section.hidden = false;
+                    physicalVc4Select.disabled = false;
+                    physicalVc4Select.required = true;
+
+                    const assignedNumber =
+                        data.assignedPhysicalStmNumber == null
+                            ? ""
+                            : String(data.assignedPhysicalStmNumber);
+
+                    for (const number of data.physicalStmNumbers || []) {
+                        const value = String(number);
+                        const option = new Option(
+                            `VC4 ${Number(number) - 1}`,
+                            value
+                        );
+
+                        // Existing assignments retain their physical VC4.
+                        option.disabled =
+                            Boolean(assignedNumber) &&
+                            value !== assignedNumber;
+
+                        physicalVc4Select.add(option);
+                    }
+
+                    const preferred =
+                        assignedNumber || preferredPhysicalNumber;
+
+                    const validOption = [
+                        ...physicalVc4Select.options
+                    ].find(option =>
+                        option.value === preferred &&
+                        !option.disabled
+                    );
+
+                    physicalVc4Select.value =
+                        validOption ? validOption.value : "";
                 }
 
-                ports.forEach(port => {
+                for (const port of ports) {
                     ltuPortSelect.add(
-                        new Option(port.text, port.value)
+                        new Option(port.text, String(port.value))
                     );
-                });
+                }
 
-                const preferred = ports.find(port =>
+                const assignedPort = ports.find(port => port.selected);
+
+                const preferredPort = ports.find(port =>
                     String(port.value) === preferredPortId
                 );
 
-                const assigned = ports.find(port => port.selected);
+                ltuPortSelect.value = String(
+                    assignedPort?.value || preferredPort?.value || ""
+                );
 
-                ltuPortSelect.value =
-                    preferred?.value || assigned?.value || "";
+                ltuOptionsLoaded = ports.length > 0;
+                updateLtuEnabled();
 
-                // ltuMessage.textContent = ports.length
-                //     ? "An LTU port is required for this connection."
-                //     : "No suitable LTU ports are available at this site.";
+                ltuMessage.textContent = ports.length
+                    ? physicalVc4Required
+                        ? `${data.muxName} — select a physical VC4, then an LTU port.`
+                        : `${data.muxName} — select an LTU port.`
+                    : `${data.muxName} has no available LTU ports.`;
             }
             catch (error) {
-                if (requestVersion !== ltuRequestVersion) {
+                if (requestVersion !== ltuRequestVersion)
                     return;
-                }
 
                 console.error(error);
 
                 ltuMessage.textContent =
-                    "Unable to load LTU ports. Change the selection to retry.";
+                    "Unable to load LTU ports. Check the MUX configuration " +
+                    "or change the selection to retry.";
             }
         }
+
+        physicalVc4Select.addEventListener("change", updateLtuEnabled);
 
             /* =================================================
                Events
@@ -1866,7 +1938,10 @@
                 initialValues.outgoingE1Id
             );
 
-            await refreshLtuPorts(initialValues.ltuPortId || "");
+                    await refreshLtuPorts(
+            initialValues.ltuPortId || "",
+            initialValues.physicalStmNumber ?? ""
+        );
         }
 
             restoreSelections();

@@ -405,6 +405,14 @@ namespace CommunicationProject.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int?>("FirstPhysicalStmNumber")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Model")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
                     b.Property<Guid?>("MuxTypeId")
                         .HasColumnType("uniqueidentifier");
 
@@ -412,6 +420,9 @@ namespace CommunicationProject.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<int?>("SecondPhysicalStmNumber")
+                        .HasColumnType("int");
 
                     b.Property<string>("SiteId")
                         .IsRequired()
@@ -421,7 +432,8 @@ namespace CommunicationProject.Migrations
 
                     b.HasIndex("MuxTypeId");
 
-                    b.HasIndex("SiteId");
+                    b.HasIndex("SiteId", "Name")
+                        .IsUnique();
 
                     b.ToTable("Muxes");
                 });
@@ -437,15 +449,26 @@ namespace CommunicationProject.Migrations
                         .HasMaxLength(32)
                         .HasColumnType("nvarchar(32)");
 
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("bit");
+
                     b.Property<Guid>("MuxId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Section")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<int>("ShelfNumber")
+                        .HasColumnType("int");
 
                     b.Property<int>("SlotNumber")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MuxId", "SlotNumber")
+                    b.HasIndex("MuxId", "Section", "ShelfNumber", "SlotNumber")
                         .IsUnique();
 
                     b.ToTable("MuxCards");
@@ -462,6 +485,9 @@ namespace CommunicationProject.Migrations
 
                     b.Property<Guid>("MuxCardId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("PhysicalStmNumber")
+                        .HasColumnType("int");
 
                     b.Property<int>("PortNumber")
                         .HasColumnType("int");
@@ -498,22 +524,15 @@ namespace CommunicationProject.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("LtuCardCount")
-                        .HasColumnType("int");
-
-                    b.Property<int>("LtuPortsPerCard")
-                        .HasColumnType("int");
+                    b.Property<string>("Model")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("StmCardCount")
-                        .HasColumnType("int");
-
-                    b.Property<int>("StmPortsPerCard")
-                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -521,26 +540,45 @@ namespace CommunicationProject.Migrations
                         .IsUnique();
 
                     b.ToTable("MuxTypes");
+                });
 
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
-                            LtuCardCount = 0,
-                            LtuPortsPerCard = 0,
-                            Name = "Ericsson",
-                            StmCardCount = 0,
-                            StmPortsPerCard = 0
-                        },
-                        new
-                        {
-                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
-                            LtuCardCount = 0,
-                            LtuPortsPerCard = 0,
-                            Name = "OSP",
-                            StmCardCount = 0,
-                            StmPortsPerCard = 0
-                        });
+            modelBuilder.Entity("CommunicationProject.Models.MuxTypeCard", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("MuxTypeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("PortCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Section")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<int>("ShelfNumber")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SlotNumber")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MuxTypeId", "Section", "ShelfNumber", "SlotNumber")
+                        .IsUnique();
+
+                    b.ToTable("MuxTypeCards");
                 });
 
             modelBuilder.Entity("CommunicationProject.Models.SdhLinkCard", b =>
@@ -886,7 +924,8 @@ namespace CommunicationProject.Migrations
                 {
                     b.HasOne("CommunicationProject.Models.MuxType", "MuxType")
                         .WithMany("Muxes")
-                        .HasForeignKey("MuxTypeId");
+                        .HasForeignKey("MuxTypeId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("CommunicationProject.Models.Site", "Site")
                         .WithMany()
@@ -933,6 +972,17 @@ namespace CommunicationProject.Migrations
                     b.Navigation("MuxCard");
 
                     b.Navigation("Stm");
+                });
+
+            modelBuilder.Entity("CommunicationProject.Models.MuxTypeCard", b =>
+                {
+                    b.HasOne("CommunicationProject.Models.MuxType", "MuxType")
+                        .WithMany("DefaultCards")
+                        .HasForeignKey("MuxTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MuxType");
                 });
 
             modelBuilder.Entity("CommunicationProject.Models.SdhLinkCard", b =>
@@ -1065,6 +1115,8 @@ namespace CommunicationProject.Migrations
 
             modelBuilder.Entity("CommunicationProject.Models.MuxType", b =>
                 {
+                    b.Navigation("DefaultCards");
+
                     b.Navigation("Muxes");
                 });
 

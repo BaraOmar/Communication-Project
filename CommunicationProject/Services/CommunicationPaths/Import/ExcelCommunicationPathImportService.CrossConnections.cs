@@ -145,16 +145,35 @@ public sealed partial class ExcelCommunicationPathImportService
         var matches = await _context.E1s
             .AsNoTracking()
             .Where(e1 =>
-                e1.Link.SiteFromId == siteId &&
-                e1.E1Number == reference.E1Number &&
-                e1.Stm != null &&
-                e1.Stm.Number == reference.StmNumber &&
-                _context.MuxPorts.Any(port =>
-                    port.StmId == e1.StmId &&
-                    port.MuxCard.Category == CardCategory.STM &&
-                    port.MuxCard.Mux.SiteId == siteId &&
-                    port.MuxCard.SlotNumber == reference.SlotNumber &&
-                    port.PortNumber == reference.PortNumber))
+    e1.Link.SiteFromId == siteId &&
+    e1.E1Number == reference.E1Number &&
+    e1.Stm != null &&
+    (
+        reference.StmNumber == null ||
+        e1.Stm.Number == reference.StmNumber
+    ) &&
+    _context.MuxPorts.Any(port =>
+        port.StmId == e1.StmId &&
+        port.MuxCard.Category == CardCategory.STM &&
+        port.MuxCard.Mux.SiteId == siteId &&
+        port.MuxCard.ShelfNumber == reference.ShelfNumber &&
+        port.MuxCard.SlotNumber == reference.SlotNumber &&
+        port.PortNumber == reference.PortNumber &&
+        port.MuxCard.Section ==
+            (port.MuxCard.Mux.Model == MuxModel.Tellab
+                ? MuxSection.Main
+                : MuxSection.Standard) &&
+        (
+            reference.MuxName == null ||
+            port.MuxCard.Mux.Name == reference.MuxName
+        ) &&
+        (
+            reference.Model != null
+                ? port.MuxCard.Mux.Model == reference.Model
+                : port.MuxCard.Mux.Model != MuxModel.Tellab &&
+                  port.MuxCard.Mux.Model != MuxModel.Xmp &&
+                  port.MuxCard.Mux.Model != MuxModel.Undefined
+        )))
             .Include(e1 => e1.Link)
             .Include(e1 => e1.Stm)
             .Include(e1 => e1.ConnectedE1)
@@ -206,12 +225,13 @@ public sealed partial class ExcelCommunicationPathImportService
                 port.StmId == local.StmId &&
                 port.MuxCard.Category == CardCategory.STM &&
                 port.MuxCard.Mux.SiteId == local.Link.SiteFromId)
-            .Select(port => new
-            {
-                Slot = port.MuxCard.SlotNumber,
-                Port = port.PortNumber,
-                MuxName = port.MuxCard.Mux.Name
-            })
+.Select(port => new
+{
+    Shelf = port.MuxCard.ShelfNumber,
+    Slot = port.MuxCard.SlotNumber,
+    Port = port.PortNumber,
+    MuxName = port.MuxCard.Mux.Name
+})
             .Take(2)
             .ToListAsync(ct);
 
@@ -225,7 +245,7 @@ public sealed partial class ExcelCommunicationPathImportService
         var location = ports[0];
 
         string address = FormattableString.Invariant(
-            $"1.{location.Slot}.{location.Port}");
+            $"{location.Shelf}.{location.Slot}.{location.Port}");
 
         return new ExcelCommunicationPathRow(
             dataRow,

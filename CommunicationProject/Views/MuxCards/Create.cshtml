@@ -1,0 +1,69 @@
+﻿@model CommunicationProject.ViewModels.CreateMuxCardViewModel
+@using CommunicationProject.Services.Muxes
+
+@{
+    ViewData["Title"] = "Add MUX Card";
+}
+
+<div class="container py-4">
+    <h1>Add Card</h1>
+    <p>@Model.MuxName — @MuxStructureRules.GetName(Model.Model)</p>
+
+    <form asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+        <input asp-for="MuxId" type="hidden" />
+
+        <div asp-validation-summary="All"
+             class="text-danger mb-3"></div>
+
+        <div class="mb-3">
+            <label asp-for="Category" class="form-label"></label>
+            <select asp-for="Category"
+                    asp-items="Html.GetEnumSelectList<CardCategory>()"
+                    class="form-select"></select>
+        </div>
+
+        @if (MuxStructureRules.UsesShelves(Model.Model))
+        {
+            <div class="mb-3">
+                <label asp-for="ShelfNumber" class="form-label"></label>
+                <input asp-for="ShelfNumber"
+                       min="1" max="1000"
+                       class="form-control" />
+            </div>
+        }
+        else
+        {
+            <input type="hidden" name="ShelfNumber" value="0" />
+        }
+
+        <div class="mb-3">
+            <label asp-for="SlotNumber" class="form-label"></label>
+            <input asp-for="SlotNumber"
+                   min="1" max="1000"
+                   class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="PortCount" class="form-label"></label>
+            <input asp-for="PortCount"
+                   min="1" max="1000"
+                   class="form-control" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Add Card
+        </button>
+
+        <a asp-controller="Muxes"
+               asp-action="Details"
+               asp-route-id="@Model.MuxId"
+               class="btn btn-outline-secondary">
+            Cancel
+        </a>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

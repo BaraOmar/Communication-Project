@@ -1,6 +1,7 @@
 ﻿using CommunicationProject.Data;
 using CommunicationProject.Models;
 using CommunicationProject.Security;
+using CommunicationProject.Services.Muxes;
 using CommunicationProject.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,138 +14,107 @@ public class MuxTypesController : Controller
 {
     private readonly CommunicationDbContext _context;
 
-    public MuxTypesController(
-        CommunicationDbContext context)
+    public MuxTypesController(CommunicationDbContext context)
     {
         _context = context;
     }
 
-
-    // GET: MuxTypes
     public async Task<IActionResult> Index()
     {
-        var muxTypes = await _context.MuxTypes
+        var types = await _context.MuxTypes
             .AsNoTracking()
+            .Include(type => type.DefaultCards)
             .OrderBy(type => type.Name)
             .ToListAsync();
 
-        return View(muxTypes);
+        return View(types);
     }
 
-
-    // GET: MuxTypes/Create
     [HttpGet]
-    [Authorize(
-        Roles =
-            AppRoles.Admin + "," +
-            AppRoles.Operator)]
+    [Authorize(Roles = AppRoles.Admin + "," + AppRoles.Operator)]
     public IActionResult Create()
     {
-        return View(
-            new CreateMuxTypeViewModel());
+        return View(new CreateMuxTypeViewModel());
     }
 
+    [HttpGet]
+    public IActionResult GetDefaultCards(MuxModel model)
+    {
+        if (!MuxStructureRules.IsSupported(model))
+            return BadRequest();
 
-    // POST: MuxTypes/Create
+        return Json(new
+        {
+            cards = MuxStructureRules.GetDefaultCards(model)
+                .Select(card => new
+                {
+                    category = (int)card.Category,
+                    section = (int)card.Section,
+                    card.ShelfNumber,
+                    card.SlotNumber,
+                    card.PortCount,
+                    card.IsRequired
+                })
+        });
+    }
+
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(
-        Roles =
-            AppRoles.Admin + "," +
-            AppRoles.Operator)]
+    [Authorize(Roles = AppRoles.Admin + "," + AppRoles.Operator)]
     public async Task<IActionResult> Create(
-        CreateMuxTypeViewModel model)
+    [Bind(Prefix = "")] CreateMuxTypeViewModel model)
     {
-        model.Name =
-            model.Name?.Trim() ?? string.Empty;
+        model.Cards ??= [];
 
-        bool duplicateExists =
-            await _context.MuxTypes
-                .AnyAsync(type =>
-                    type.Name == model.Name);
+        var selectedModel = model.Model ?? MuxModel.Undefined;
 
-        if (duplicateExists)
+        var cards = model.Cards.Select(card => new MuxTypeCard
         {
-            ModelState.AddModelError(
-                nameof(model.Name),
-                "A MUX type with this name already exists.");
-        }
+            Id = Guid.NewGuid(),
+            Category = card.Category,
+            Section = card.Section,
+            ShelfNumber = card.ShelfNumber,
+            SlotNumber = card.SlotNumber,
+            PortCount = card.PortCount,
+            IsRequired = card.IsRequired
+        }).ToList();
 
+        foreach (string error in MuxStructureRules.Validate(selectedModel, cards))
+            ModelState.AddModelError(string.Empty, error);
 
-        if (model.LtuCardCount == 0 &&
-            model.StmCardCount == 0)
+        if (MuxStructureRules.IsSupported(selectedModel))
         {
-            ModelState.AddModelError(
-                string.Empty,
-                "The MUX type must contain at least one card.");
+            string name = MuxStructureRules.GetName(selectedModel);
+
+            if (await _context.MuxTypes.AnyAsync(type =>
+                type.Model == selectedModel || type.Name == name))
+            {
+                ModelState.AddModelError(
+                    nameof(model.Model),
+                    "This MUX model is already configured.");
+            }
         }
-
-
-        ValidateCardCapacity(
-            model.LtuCardCount,
-            model.LtuPortsPerCard,
-            nameof(model.LtuPortsPerCard),
-            "LTU");
-
-        ValidateCardCapacity(
-            model.StmCardCount,
-            model.StmPortsPerCard,
-            nameof(model.StmPortsPerCard),
-            "STM");
-
-
 
         if (!ModelState.IsValid)
-        {
             return View(model);
-        }
-
 
         var muxType = new MuxType
         {
             Id = Guid.NewGuid(),
-            Name = model.Name,
-
-            LtuCardCount = model.LtuCardCount,
-            LtuPortsPerCard = model.LtuPortsPerCard,
-
-            StmCardCount = model.StmCardCount,
-            StmPortsPerCard = model.StmPortsPerCard
+            Name = MuxStructureRules.GetName(selectedModel),
+            Model = selectedModel,
+            DefaultCards = cards
         };
 
+        foreach (var card in cards)
+            card.MuxTypeId = muxType.Id;
 
         _context.MuxTypes.Add(muxType);
-
         await _context.SaveChangesAsync();
-
 
         TempData["SuccessMessage"] =
             $"MUX type '{muxType.Name}' was created successfully.";
 
         return RedirectToAction(nameof(Index));
-    }
-
-
-    private void ValidateCardCapacity(
-        int cardCount,
-        int portsPerCard,
-        string portsPropertyName,
-        string categoryName)
-    {
-        if (cardCount > 0 &&
-            portsPerCard <= 0)
-        {
-            ModelState.AddModelError(
-                portsPropertyName,
-                $"Enter the number of ports for each {categoryName} card.");
-        }
-
-        if (cardCount == 0 &&
-            portsPerCard > 0)
-        {
-            ModelState.AddModelError(
-                portsPropertyName,
-                $"{categoryName} ports must be 0 when there are no {categoryName} cards.");
-        }
     }
 }

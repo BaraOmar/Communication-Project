@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
 using static CommunicationProject.Models.E1;
+using CommunicationProject.Services.Muxes;
 
 namespace CommunicationProject.Controllers;
 
@@ -332,6 +333,11 @@ public partial class SearchPathController
                 ))
             .ToListAsync();
 
+        await MuxRelease.ReleaseLtuAssignmentsAsync(
+    _context,
+    releasedE1s,
+    adjacentEndpoints);
+
         foreach (var endpoint in adjacentEndpoints)
         {
             endpoint.JoinE1Id = null;
@@ -361,17 +367,7 @@ public partial class SearchPathController
             // permanent physical pairing.
         }
 
-        var ports = await _context.MuxPorts
-            .Where(port =>
-                port.E1Id.HasValue &&
-                pairIds.Contains(port.E1Id.Value))
-            .ToListAsync();
 
-        foreach (var port in ports)
-        {
-            port.E1Id = null;
-            port.Status = MuxPortStatus.Available;
-        }
 
         if (segments.Count == connection.Segments.Count)
         {

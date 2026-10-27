@@ -1,38 +1,36 @@
 ﻿using CommunicationProject.Data;
 using CommunicationProject.Models;
 using CommunicationProject.Security;
+using CommunicationProject.Services.Muxes;
 using CommunicationProject.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 namespace CommunicationProject.Controllers;
 
-[Authorize(
-    Roles =
-        AppRoles.Admin + "," +
-        AppRoles.Operator + "," +
-        AppRoles.Viewer)]
+[Authorize(Roles =
+    AppRoles.Admin + "," +
+    AppRoles.Operator + "," +
+    AppRoles.Viewer)]
 public class MuxesController : Controller
 {
     private readonly CommunicationDbContext _context;
 
-    public MuxesController(
-        CommunicationDbContext context)
+    public MuxesController(CommunicationDbContext context)
     {
         _context = context;
     }
 
-
-    // GET: Muxes
     public async Task<IActionResult> Index()
     {
         var muxes = await _context.Muxes
             .AsNoTracking()
-.Include(mux => mux.Site)
-.Include(mux => mux.MuxType)
-.Include(mux => mux.Cards)
+            .Include(mux => mux.Site)
+            .Include(mux => mux.MuxType)
+            .Include(mux => mux.Cards)
             .OrderBy(mux => mux.Site.Name)
             .ThenBy(mux => mux.Name)
             .ToListAsync();
@@ -40,1463 +38,427 @@ public class MuxesController : Controller
         return View(muxes);
     }
 
-
-    // GET: Muxes/Create
     [HttpGet]
-    [Authorize(
-        Roles =
-            AppRoles.Admin + "," +
-            AppRoles.Operator)]
-    public async Task<IActionResult> Create()
+    [Authorize(Roles = AppRoles.Admin + "," + AppRoles.Operator)]
+    public async Task<IActionResult> Create(string? siteId)
     {
-        var model = new CreateMuxViewModel();
+        if (!string.IsNullOrWhiteSpace(siteId))
+            return RedirectToAction(nameof(InstallForSite), new { siteId });
 
-        await PopulateOptionsAsync(model);
+        var model = new CreateMuxViewModel
+        {
+            SiteOptions = await _context.Sites
+                .AsNoTracking()
+                .OrderBy(site => site.Id)
+                .Select(site => new SelectListItem
+                {
+                    Value = site.Id,
+                    Text = site.Id + " - " + site.Name
+                })
+                .ToListAsync()
+        };
 
         return View(model);
     }
 
-
-    // POST: Muxes/Create
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    [Authorize(
-        Roles =
-            AppRoles.Admin + "," +
-            AppRoles.Operator)]
-    public async Task<IActionResult> Create(
-        CreateMuxViewModel model)
-    {
-        model.Name =
-            model.Name?.Trim() ?? string.Empty;
-
-        model.SiteId =
-            model.SiteId?.Trim() ?? string.Empty;
-
-
-        bool siteExists =
-            await _context.Sites
-                .AsNoTracking()
-                .AnyAsync(site =>
-                    site.Id == model.SiteId);
-
-        if (!siteExists)
-        {
-            ModelState.AddModelError(
-                nameof(model.SiteId),
-                "The selected site is invalid.");
-        }
-
-
-        MuxType? muxType = null;
-
-        if (model.MuxTypeId.HasValue)
-        {
-            muxType = await _context.MuxTypes
-                .AsNoTracking()
-                .FirstOrDefaultAsync(type =>
-                    type.Id == model.MuxTypeId.Value);
-        }
-
-        if (muxType == null)
-        {
-            ModelState.AddModelError(
-                nameof(model.MuxTypeId),
-                "The selected MUX type is invalid.");
-        }
-        else
-        {
-            int totalCards =
-                muxType.LtuCardCount +
-                muxType.StmCardCount;
-
-            bool invalidCapacity =
-                (muxType.LtuCardCount > 0 &&
-                 muxType.LtuPortsPerCard <= 0) ||
-
-                (muxType.StmCardCount > 0 &&
-                 muxType.StmPortsPerCard <= 0);
-
-            if (totalCards == 0 ||
-                invalidCapacity)
-            {
-                ModelState.AddModelError(
-                    nameof(model.MuxTypeId),
-                    "The selected MUX type does not have a valid card and port configuration.");
-            }
-        }
-
-
-        bool duplicateExists =
-            await _context.Muxes
-                .AnyAsync(mux =>
-                    mux.SiteId == model.SiteId &&
-                    mux.Name == model.Name);
-
-        if (duplicateExists)
-        {
-            ModelState.AddModelError(
-                nameof(model.Name),
-                "A MUX with this name already exists at this site.");
-        }
-
-
-        if (!ModelState.IsValid)
-        {
-            await PopulateOptionsAsync(model);
-
-            return View(model);
-        }
-
-
-        var mux = new Mux
-        {
-            Id = Guid.NewGuid(),
-            Name = model.Name,
-            SiteId = model.SiteId,
-            MuxTypeId = muxType!.Id
-        };
-
-
-        int nextSlotNumber = 1;
-
-        AddCards(
-            mux,
-            CardCategory.LTU,
-            muxType.LtuCardCount,
-            muxType.LtuPortsPerCard,
-            ref nextSlotNumber);
-
-        AddCards(
-            mux,
-            CardCategory.STM,
-            muxType.StmCardCount,
-            muxType.StmPortsPerCard,
-            ref nextSlotNumber);
-
-
-
-        _context.Muxes.Add(mux);
-
-        await _context.SaveChangesAsync();
-
-
-        TempData["SuccessMessage"] =
-            $"MUX '{mux.Name}' was installed with " +
-            $"{mux.Cards.Count} cards and " +
-            $"{mux.Cards.Sum(card => card.Ports.Count)} ports.";
-
-        return RedirectToAction(
-            nameof(Details),
-            new { id = mux.Id });
-    }
-    // GET: Muxes/InstallForSite
     [HttpGet]
-    [Authorize(
-        Roles =
-            AppRoles.Admin + "," +
-            AppRoles.Operator)]
-    public async Task<IActionResult> InstallForSite(
+    [Authorize(Roles = AppRoles.Admin + "," + AppRoles.Operator)]
+    public async Task<IActionResult> InstallForSdhLink(
+        Guid linkId,
         string? siteId)
     {
-        siteId =
-            siteId?.Trim() ?? string.Empty;
+        siteId = siteId?.Trim();
 
+        var link = await _context.CommunicationLinks
+            .AsNoTracking()
+            .FirstOrDefaultAsync(item =>
+                (item.Id == linkId || item.ConnectedLinkId == linkId) &&
+                item.SiteFromId == siteId &&
+                item.LinkType.Name == "SDH");
 
-        if (string.IsNullOrWhiteSpace(siteId))
-        {
+        if (link == null)
             return NotFound();
-        }
 
-
-        /*
-         * Make sure the site exists.
-         */
-        var site =
-            await _context.Sites
-                .AsNoTracking()
-                .FirstOrDefaultAsync(item =>
-                    item.Id == siteId);
-
-
-        if (site is null)
-        {
-            return NotFound();
-        }
-
-
-        /*
-         * Only allow this workflow when the site
-         * actually has at least one SDH link.
-         *
-         * Because CommunicationLink is directional,
-         * the resources physically belonging to this
-         * site are stored on the record where:
-         *
-         * SiteFromId == siteId
-         */
-        bool hasSdhLink =
-            await _context.CommunicationLinks
-                .AsNoTracking()
-                .AnyAsync(link =>
-                    link.SiteFromId == siteId &&
-
-                    link.LinkType.Name == "SDH");
-
-
-        if (!hasSdhLink)
-        {
-            TempData["ErrorMessage"] =
-                "This site does not have any SDH links.";
-
-            return RedirectToAction(
-                "Details",
-                "Sites",
-                new { id = siteId });
-        }
-
-
-        /*
-         * Load all SDH STMs physically belonging
-         * to this site.
-         *
-         * IMPORTANT:
-         * Exclude STMs that are already installed
-         * on another MUX port.
-         */
-        var stmAssignments =
-            await _context.Stms
-                .AsNoTracking()
-
-                .Where(stm =>
-                    stm.Link.SiteFromId == siteId &&
-
-                    stm.Link.LinkType.Name == "SDH" &&
-
-                    !_context.MuxPorts.Any(port =>
-                        port.StmId == stm.Id))
-
-                .OrderBy(stm =>
-                    stm.Link.SiteToId)
-
-                .ThenBy(stm =>
-                    stm.Link.Name)
-
-                .ThenBy(stm =>
-                    stm.Number)
-
-                .Select(stm =>
-                    new SiteSdhStmPortAssignmentViewModel
-                    {
-                        StmId =
-                            stm.Id,
-
-                        StmNumber =
-                            stm.Number,
-
-                        LinkName =
-                            stm.Link.Name,
-
-                        RemoteSiteId =
-                            stm.Link.SiteToId
-                    })
-
-                .ToListAsync();
-
-
-        /*
-         * Generate a sensible default MUX name.
-         *
-         * Example:
-         * 001 MUX 1
-         * 001 MUX 2
-         */
-        int existingMuxCount =
-            await _context.Muxes
-                .AsNoTracking()
-                .CountAsync(mux =>
-                    mux.SiteId == siteId);
-
-
-        var model =
-            new InstallSiteMuxViewModel
-            {
-                SiteId =
-                    site.Id,
-
-                SiteName =
-                    site.Name,
-
-                MuxName =
-                    $"{site.Id} MUX {existingMuxCount + 1}",
-
-                StmAssignments =
-                    stmAssignments
-            };
-
-
-        await PopulateInstallMuxTypeOptionsAsync(
-            model);
-
-
-        return View(
-            "InstallForSite",
-            model);
+        return RedirectToAction(
+            nameof(InstallForSite),
+            new { siteId = link.SiteFromId });
     }
-    // POST: Muxes/InstallForSite
+
+    [HttpGet]
+    [Authorize(Roles = AppRoles.Admin + "," + AppRoles.Operator)]
+    public async Task<IActionResult> InstallForSite(string? siteId)
+    {
+        siteId = siteId?.Trim();
+
+        var site = await _context.Sites
+            .AsNoTracking()
+            .FirstOrDefaultAsync(item => item.Id == siteId);
+
+        if (site == null)
+            return NotFound();
+
+        int number = await _context.Muxes
+            .CountAsync(mux => mux.SiteId == site.Id) + 1;
+
+        string name;
+
+        do
+        {
+            name = $"{site.Id} MUX {number++}";
+        }
+        while (await _context.Muxes.AnyAsync(mux =>
+            mux.SiteId == site.Id && mux.Name == name));
+
+        var model = new InstallSiteMuxViewModel
+        {
+            SiteId = site.Id,
+            SiteName = site.Name,
+            MuxName = name
+        };
+
+        await PopulateInstallationAsync(model);
+
+        return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetInstallationTemplate(Guid muxTypeId)
+    {
+        var type = await _context.MuxTypes
+            .AsNoTracking()
+            .Include(item => item.DefaultCards)
+            .FirstOrDefaultAsync(item => item.Id == muxTypeId);
+
+        if (type == null ||
+            !MuxStructureRules.IsSupported(type.Model))
+            return NotFound();
+
+        return Json(new
+        {
+            model = (int)type.Model,
+            cards = type.DefaultCards
+                .OrderBy(card => card.Section)
+                .ThenBy(card => card.ShelfNumber)
+                .ThenBy(card => card.SlotNumber)
+                .Select(card => new
+                {
+                    category = (int)card.Category,
+                    section = (int)card.Section,
+                    shelfNumber = card.ShelfNumber,
+                    slotNumber = card.SlotNumber,
+                    portCount = card.PortCount,
+                    isRequired = card.IsRequired
+                })
+        });
+    }
+
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(
-        Roles =
-            AppRoles.Admin + "," +
-            AppRoles.Operator)]
+    [Authorize(Roles = AppRoles.Admin + "," + AppRoles.Operator)]
     public async Task<IActionResult> InstallForSite(
         InstallSiteMuxViewModel model)
     {
-        model.SiteId =
-            model.SiteId?.Trim() ?? string.Empty;
+        model.SiteId = model.SiteId?.Trim() ?? string.Empty;
+        model.MuxName = model.MuxName?.Trim() ?? string.Empty;
+        model.Cards ??= [];
+        model.StmAssignments ??= [];
 
-        model.MuxName =
-            model.MuxName?.Trim() ?? string.Empty;
+        var site = await _context.Sites
+            .AsNoTracking()
+            .FirstOrDefaultAsync(item => item.Id == model.SiteId);
 
-
-        /* =====================================================
-           Validate Site
-           ===================================================== */
-
-        var site =
-            await _context.Sites
-                .AsNoTracking()
-                .FirstOrDefaultAsync(item =>
-                    item.Id == model.SiteId);
-
-
-        if (site is null)
-        {
+        if (site == null)
             return NotFound();
-        }
 
+        model.SiteName = site.Name;
 
-        model.SiteName =
-            site.Name;
+        var type = await _context.MuxTypes
+            .AsNoTracking()
+            .Include(item => item.DefaultCards)
+            .FirstOrDefaultAsync(item => item.Id == model.MuxTypeId);
 
-
-        bool hasSdhLink =
-            await _context.CommunicationLinks
-                .AsNoTracking()
-                .AnyAsync(link =>
-                    link.SiteFromId == model.SiteId &&
-                    link.LinkType.Name == "SDH");
-
-
-        if (!hasSdhLink)
+        var definitions = model.Cards.Select(card => new MuxTypeCard
         {
-            ModelState.AddModelError(
-                string.Empty,
-                "This site does not have any SDH links.");
-        }
+            Category = card.Category,
+            Section = card.Section,
+            ShelfNumber = card.ShelfNumber,
+            SlotNumber = card.SlotNumber,
+            PortCount = card.PortCount,
+            IsRequired = card.IsRequired
+        }).ToList();
 
-
-        /* =====================================================
-           Validate MUX Type
-           ===================================================== */
-
-        MuxType? muxType = null;
-
-
-        if (model.MuxTypeId.HasValue)
-        {
-            muxType =
-                await _context.MuxTypes
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(type =>
-                        type.Id ==
-                        model.MuxTypeId.Value);
-        }
-
-
-        if (muxType is null)
+        if (type == null)
         {
             ModelState.AddModelError(
                 nameof(model.MuxTypeId),
-                "The selected MUX type is invalid.");
+                "Select a valid MUX type.");
         }
-        else if (
-            muxType.StmCardCount <= 0 ||
-            muxType.StmPortsPerCard <= 0)
+        else
         {
-            ModelState.AddModelError(
-                nameof(model.MuxTypeId),
-                "The selected MUX type does not contain valid STM ports.");
+            model.Model = type.Model;
+
+            foreach (string error in MuxStructureRules.Validate(
+                type.Model, definitions))
+            {
+                ModelState.AddModelError(string.Empty, error);
+            }
+
+            foreach (var required in type.DefaultCards.Where(c => c.IsRequired))
+            {
+                bool exists = definitions.Any(card =>
+                    card.Category == required.Category &&
+                    card.Section == required.Section &&
+                    card.ShelfNumber == required.ShelfNumber &&
+                    card.SlotNumber == required.SlotNumber &&
+                    card.PortCount == required.PortCount &&
+                    card.IsRequired);
+
+                if (!exists)
+                {
+                    ModelState.AddModelError(
+                        string.Empty,
+                        $"Required card {required.SlotNumber} " +
+                        $"in {required.Section}, shelf {required.ShelfNumber}, " +
+                        "must retain its default configuration.");
+                }
+            }
+
+            if (type.Model == MuxModel.Tellab)
+            {
+                if (!model.FirstPhysicalStmNumber.HasValue ||
+                    !model.SecondPhysicalStmNumber.HasValue)
+                {
+                    ModelState.AddModelError(
+                        string.Empty,
+                        "Select both physical STM numbers for Tellab.");
+                }
+                else if (model.FirstPhysicalStmNumber ==
+                         model.SecondPhysicalStmNumber)
+                {
+                    ModelState.AddModelError(
+                        string.Empty,
+                        "Tellab physical STM numbers must be different.");
+                }
+            }
+            else
+            {
+                model.FirstPhysicalStmNumber = null;
+                model.SecondPhysicalStmNumber = null;
+            }
         }
 
-
-        /* =====================================================
-           Validate MUX Name
-           ===================================================== */
-
-        bool duplicateMuxName =
-            await _context.Muxes
-                .AnyAsync(mux =>
-                    mux.SiteId == model.SiteId &&
-                    mux.Name == model.MuxName);
-
-
-        if (duplicateMuxName)
+        if (await _context.Muxes.AnyAsync(mux =>
+            mux.SiteId == model.SiteId && mux.Name == model.MuxName))
         {
             ModelState.AddModelError(
                 nameof(model.MuxName),
                 "A MUX with this name already exists at this site.");
         }
 
+        if (!ModelState.IsValid)
+        {
+            await PopulateInstallationAsync(model);
+            return View(model);
+        }
 
-        /* =====================================================
-           Load trusted available STMs from database
-           ===================================================== */
+        var mux = new Mux
+        {
+            Id = Guid.NewGuid(),
+            SiteId = model.SiteId,
+            Name = model.MuxName,
+            MuxTypeId = type!.Id,
+            Model = type.Model,
+            FirstPhysicalStmNumber = model.FirstPhysicalStmNumber,
+            SecondPhysicalStmNumber = model.SecondPhysicalStmNumber
+        };
 
-        var availableStms =
-            await _context.Stms
-                .AsNoTracking()
+        foreach (var definition in definitions)
+        {
+            var card = new MuxCard
+            {
+                Id = Guid.NewGuid(),
+                MuxId = mux.Id,
+                Category = definition.Category,
+                Section = definition.Section,
+                ShelfNumber = definition.ShelfNumber,
+                SlotNumber = definition.SlotNumber,
+                IsRequired = definition.IsRequired
+            };
 
-                .Where(stm =>
-                    stm.Link.SiteFromId ==
-                        model.SiteId &&
-
-                    stm.Link.LinkType.Name ==
-                        "SDH" &&
-
-                    !_context.MuxPorts.Any(port =>
-                        port.StmId == stm.Id))
-
-                .Select(stm => new
+            for (int number = 1; number <= definition.PortCount; number++)
+            {
+                card.Ports.Add(new MuxPort
                 {
-                    stm.Id,
-                    stm.Number,
+                    Id = Guid.NewGuid(),
+                    MuxCardId = card.Id,
+                    PortNumber = number,
+                    Status = MuxPortStatus.Available
+                });
+            }
 
-                    LinkName =
-                        stm.Link.Name,
-
-                    RemoteSiteId =
-                        stm.Link.SiteToId
-                })
-
-                .ToListAsync();
-
-
-        var availableStmIds =
-            availableStms
-                .Select(stm =>
-                    stm.Id)
-                .ToHashSet();
-
-
-        /* =====================================================
-           Validate Posted STM IDs
-           ===================================================== */
-
-        bool containsInvalidStm =
-            model.StmAssignments
-                .Any(assignment =>
-                    !availableStmIds.Contains(
-                        assignment.StmId));
-
-
-        if (containsInvalidStm)
-        {
-            ModelState.AddModelError(
-                string.Empty,
-                "One of the selected STMs is invalid or is already assigned to another MUX.");
+            mux.Cards.Add(card);
         }
 
+        var ports = mux.Cards
+            .Where(card => card.Category == CardCategory.STM)
+            .SelectMany(card => card.Ports.Select(port => new
+            {
+                Key = $"{(int)card.Section}:{card.ShelfNumber}:" +
+                      $"{card.SlotNumber}:{port.PortNumber}",
+                Port = port
+            }))
+            .ToDictionary(item => item.Key, item => item.Port);
 
-        bool containsDuplicateStm =
-            model.StmAssignments
-                .GroupBy(assignment =>
-                    assignment.StmId)
-                .Any(group =>
-                    group.Count() > 1);
+        var assignments = model.StmAssignments
+            .Where(item => !string.IsNullOrWhiteSpace(item.PortKey))
+            .ToList();
 
-
-        if (containsDuplicateStm)
+        if (assignments.GroupBy(item => item.StmId)
+            .Any(group => group.Count() > 1))
         {
             ModelState.AddModelError(
-                string.Empty,
-                "An STM cannot appear more than once.");
+                string.Empty, "An STM cannot be assigned twice.");
         }
 
-
-        /* =====================================================
-           Selected Assignments
-           ===================================================== */
-
-        var selectedAssignments =
-            model.StmAssignments
-                .Where(assignment =>
-                    !string.IsNullOrWhiteSpace(
-                        assignment.PortKey))
-                .ToList();
-
-
-        if (selectedAssignments.Count == 0)
+        if (assignments.GroupBy(item => item.PortKey!.Trim())
+            .Any(group => group.Count() > 1))
         {
             ModelState.AddModelError(
-                string.Empty,
-                "Assign at least one STM to a MUX port.");
+                string.Empty, "A MUX port cannot be assigned twice.");
         }
 
-
-        /* =====================================================
-           Prevent Same MUX Port Being Used Twice
-           ===================================================== */
-
-        bool duplicatePort =
-            selectedAssignments
-                .GroupBy(
-                    assignment =>
-                        assignment.PortKey!.Trim(),
-                    StringComparer.OrdinalIgnoreCase)
-
-                .Any(group =>
-                    group.Count() > 1);
-
-
-        if (duplicatePort)
+        foreach (var assignment in assignments)
         {
-            ModelState.AddModelError(
-                string.Empty,
-                "A MUX port cannot be assigned to more than one STM.");
-        }
-
-
-        /* =====================================================
-           Validate MUX Capacity / Port Positions
-           ===================================================== */
-
-        if (muxType is not null)
-        {
-            int totalStmPorts =
-                muxType.StmCardCount *
-                muxType.StmPortsPerCard;
-
-
-            if (selectedAssignments.Count >
-                totalStmPorts)
+            if (!ports.ContainsKey(assignment.PortKey!.Trim()))
             {
                 ModelState.AddModelError(
-                    string.Empty,
-                    $"The selected MUX contains only " +
-                    $"{totalStmPorts} STM ports.");
-            }
-
-
-            int firstStmSlot =
-                muxType.LtuCardCount + 1;
-
-
-            int lastStmSlot =
-                muxType.LtuCardCount +
-                muxType.StmCardCount;
-
-
-            foreach (var assignment
-                     in selectedAssignments)
-            {
-                if (!TryParsePortKey(
-                        assignment.PortKey,
-                        out int slotNumber,
-                        out int portNumber) ||
-
-                    slotNumber <
-                        firstStmSlot ||
-
-                    slotNumber >
-                        lastStmSlot ||
-
-                    portNumber < 1 ||
-
-                    portNumber >
-                        muxType.StmPortsPerCard)
-                {
-                    ModelState.AddModelError(
-                        string.Empty,
-                        "One of the selected STM ports is invalid.");
-                }
+                    string.Empty, "A selected STM port is invalid.");
             }
         }
 
+        await using var transaction =
+            await _context.Database.BeginTransactionAsync(
+                IsolationLevel.Serializable);
 
-        /* =====================================================
-           Rebuild ViewModel from trusted DB data
-           ===================================================== */
+        var ids = assignments.Select(item => item.StmId).Distinct().ToList();
 
-        var postedPortLookup =
-            model.StmAssignments
+        int availableCount = await _context.Stms.CountAsync(stm =>
+            ids.Contains(stm.Id) &&
+            stm.Link.SiteFromId == model.SiteId &&
+            stm.Link.LinkType.Name == "SDH" &&
+            !_context.MuxPorts.Any(port => port.StmId == stm.Id));
 
-                .GroupBy(assignment =>
-                    assignment.StmId)
-
-                .ToDictionary(
-                    group =>
-                        group.Key,
-
-                    group =>
-                        group.First().PortKey);
-
-
-        model.StmAssignments =
-            availableStms
-
-                .OrderBy(stm =>
-                    stm.RemoteSiteId)
-
-                .ThenBy(stm =>
-                    stm.LinkName)
-
-                .ThenBy(stm =>
-                    stm.Number)
-
-                .Select(stm =>
-                    new SiteSdhStmPortAssignmentViewModel
-                    {
-                        StmId =
-                            stm.Id,
-
-                        StmNumber =
-                            stm.Number,
-
-                        LinkName =
-                            stm.LinkName,
-
-                        RemoteSiteId =
-                            stm.RemoteSiteId,
-
-                        PortKey =
-                            postedPortLookup
-                                .GetValueOrDefault(
-                                    stm.Id)
-                    })
-
-                .ToList();
-
-
-        /* =====================================================
-           Invalid Form
-           ===================================================== */
+        if (availableCount != ids.Count)
+        {
+            ModelState.AddModelError(
+                string.Empty,
+                "A selected STM is unavailable or belongs to another site.");
+        }
 
         if (!ModelState.IsValid)
         {
-            await PopulateInstallMuxTypeOptionsAsync(
-                model);
-
-            return View(
-                "InstallForSite",
-                model);
+            await transaction.RollbackAsync();
+            await PopulateInstallationAsync(model);
+            return View(model);
         }
 
-
-        /* =====================================================
-           Re-check Selected STMs
-           ===================================================== */
-
-        var selectedStmIds =
-            selectedAssignments
-                .Select(assignment =>
-                    assignment.StmId)
-                .ToList();
-
-
-        bool stmAlreadyAssigned =
-            await _context.MuxPorts
-                .AnyAsync(port =>
-                    port.StmId.HasValue &&
-
-                    selectedStmIds.Contains(
-                        port.StmId.Value));
-
-
-        if (stmAlreadyAssigned)
+        foreach (var assignment in assignments)
         {
+            var port = ports[assignment.PortKey!.Trim()];
+            port.StmId = assignment.StmId;
+            port.Status = MuxPortStatus.Connected;
+        }
+
+        try
+        {
+            _context.Muxes.Add(mux);
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+        }
+        catch (DbUpdateException)
+        {
+            await transaction.RollbackAsync();
+            _context.ChangeTracker.Clear();
+
             ModelState.AddModelError(
                 string.Empty,
-                "One of the selected STMs was assigned to another MUX before this request was completed.");
+                "Installation could not be saved. Check the MUX name " +
+                "and whether another user assigned one of the selected STMs.");
 
-            await PopulateInstallMuxTypeOptionsAsync(
-                model);
-
-            return View(
-                "InstallForSite",
-                model);
+            await PopulateInstallationAsync(model);
+            return View(model);
         }
-
-
-        /* =====================================================
-           Create MUX
-           ===================================================== */
-
-        var mux =
-            new Mux
-            {
-                Id =
-                    Guid.NewGuid(),
-
-                Name =
-                    model.MuxName,
-
-                SiteId =
-                    model.SiteId,
-
-                MuxTypeId =
-                    muxType!.Id
-            };
-
-
-        int nextSlotNumber = 1;
-
-
-        AddCards(
-            mux,
-            CardCategory.LTU,
-            muxType.LtuCardCount,
-            muxType.LtuPortsPerCard,
-            ref nextSlotNumber);
-
-
-        AddCards(
-            mux,
-            CardCategory.STM,
-            muxType.StmCardCount,
-            muxType.StmPortsPerCard,
-            ref nextSlotNumber);
-
-
-
-
-        /* =====================================================
-           Connect STMs to Selected Ports
-           ===================================================== */
-
-        foreach (var assignment
-                 in selectedAssignments)
-        {
-            TryParsePortKey(
-                assignment.PortKey,
-                out int slotNumber,
-                out int portNumber);
-
-
-            var port =
-                mux.Cards
-
-                    .Where(card =>
-                        card.Category ==
-                            CardCategory.STM &&
-
-                        card.SlotNumber ==
-                            slotNumber)
-
-                    .SelectMany(card =>
-                        card.Ports)
-
-                    .Single(item =>
-                        item.PortNumber ==
-                            portNumber);
-
-
-            port.StmId =
-                assignment.StmId;
-
-
-            port.Status =
-                MuxPortStatus.Connected;
-        }
-
-
-        /* =====================================================
-           Save
-           ===================================================== */
-
-        _context.Muxes.Add(
-            mux);
-
-
-        await _context.SaveChangesAsync();
-
 
         TempData["SuccessMessage"] =
-            $"MUX '{mux.Name}' was installed at site " +
-            $"'{model.SiteId}' and " +
-            $"{selectedAssignments.Count} STM(s) were connected.";
+            $"MUX '{mux.Name}' installed with {mux.Cards.Count} cards.";
 
-
-        return RedirectToAction(
-            "Details",
-            "Sites",
-            new
-            {
-                id = model.SiteId
-            });
+        return RedirectToAction(nameof(Details), new { id = mux.Id });
     }
 
-    // GET: Muxes/InstallForSdhLink
-    [HttpGet]
-    [Authorize(
-        Roles =
-            AppRoles.Admin + "," +
-            AppRoles.Operator)]
-    public async Task<IActionResult> InstallForSdhLink(
-        Guid linkId,
-        string? siteId)
+    public async Task<IActionResult> Details(Guid? id)
     {
-        siteId =
-            siteId?.Trim() ?? string.Empty;
-
-        if (linkId == Guid.Empty ||
-            string.IsNullOrWhiteSpace(siteId))
-        {
-            return NotFound();
-        }
-
-        /*
-         * Select the directional link whose resources
-         * physically belong to the selected site.
-         */
-        var link =
-            await _context.CommunicationLinks
-                .AsNoTracking()
-                .Include(item => item.LinkType)
-                .Include(item => item.Stms)
-                .FirstOrDefaultAsync(item =>
-                    (
-                        item.Id == linkId ||
-                        item.ConnectedLinkId == linkId
-                    ) &&
-                    item.SiteFromId == siteId);
-
-        if (link is null)
-        {
-            return NotFound();
-        }
-
-        if (!string.Equals(
-                link.LinkType.Name,
-                "SDH",
-                StringComparison.OrdinalIgnoreCase))
-        {
-            TempData["ErrorMessage"] =
-                "Only SDH links can be connected to a MUX.";
-
-            return RedirectToAction(
-                "Details",
-                "CommunicationLinks",
-                new { id = linkId });
-        }
-
-        var model =
-            new InstallSdhLinkMuxViewModel
-            {
-                LinkId = link.Id,
-                SiteId = siteId,
-                LinkName = link.Name,
-
-                MuxName =
-                    $"{link.Name} MUX",
-
-                StmAssignments =
-                    link.Stms
-                        .OrderBy(stm =>
-                            int.TryParse(
-                                stm.Number,
-                                out int number)
-                                    ? number
-                                    : int.MaxValue)
-                        .Select(stm =>
-                            new SdhStmPortAssignmentViewModel
-                            {
-                                StmId = stm.Id,
-                                StmNumber = stm.Number
-                            })
-                        .ToList()
-            };
-
-        await PopulateInstallMuxTypeOptionsAsync(
-            model);
-
-        return View(model);
-    }
-
-
-    // GET: Muxes/GetMuxTypeStmPorts
-    [HttpGet]
-    public async Task<IActionResult> GetMuxTypeStmPorts(
-        Guid? muxTypeId)
-    {
-        if (!muxTypeId.HasValue ||
-            muxTypeId.Value == Guid.Empty)
-        {
-            return Json(Array.Empty<object>());
-        }
-
-        var muxType =
-            await _context.MuxTypes
-                .AsNoTracking()
-                .FirstOrDefaultAsync(type =>
-                    type.Id == muxTypeId.Value);
-
-        if (muxType is null ||
-            muxType.StmCardCount <= 0 ||
-            muxType.StmPortsPerCard <= 0)
-        {
-            return Json(Array.Empty<object>());
-        }
-
-        var ports =
-            new List<object>();
-
-        int firstStmSlot =
-            muxType.LtuCardCount + 1;
-
-        for (int cardNumber = 1;
-             cardNumber <= muxType.StmCardCount;
-             cardNumber++)
-        {
-            int slotNumber =
-                firstStmSlot +
-                cardNumber -
-                1;
-
-            for (int portNumber = 1;
-                 portNumber <= muxType.StmPortsPerCard;
-                 portNumber++)
-            {
-                ports.Add(
-                    new
-                    {
-                        value =
-                            $"{slotNumber}:{portNumber}",
-
-                        text =
-                            $"STM Card {cardNumber} " +
-                            $"(Slot {slotNumber}) / " +
-                            $"Port {portNumber}"
-                    });
-            }
-        }
-
-        return Json(ports);
-    }
-    // GET: Muxes/Details/{id}
-    public async Task<IActionResult> Details(
-        Guid? id)
-    {
-        if (!id.HasValue ||
-            id.Value == Guid.Empty)
-        {
-            return NotFound();
-        }
-
         var mux = await _context.Muxes
             .AsNoTracking()
             .Include(item => item.Site)
             .Include(item => item.MuxType)
             .Include(item => item.Cards)
                 .ThenInclude(card => card.Ports)
-            .FirstOrDefaultAsync(item =>
-                item.Id == id.Value);
+                    .ThenInclude(port => port.Stm)
+                        .ThenInclude(stm => stm!.Link)
+            .Include(item => item.Cards)
+                .ThenInclude(card => card.Ports)
+                    .ThenInclude(port => port.E1)
+            .FirstOrDefaultAsync(item => item.Id == id);
 
-        if (mux == null)
-        {
-            return NotFound();
-        }
-
-        return View(mux);
+        return mux == null ? NotFound() : View(mux);
     }
 
-
-    private async Task PopulateOptionsAsync(
-        CreateMuxViewModel model)
+    private async Task PopulateInstallationAsync(
+        InstallSiteMuxViewModel model)
     {
-        model.SiteOptions =
-            await _context.Sites
-                .AsNoTracking()
-                .OrderBy(site => site.Name)
-                .Select(site =>
-                    new SelectListItem
-                    {
-                        Value = site.Id,
-                        Text =
-                            site.Id +
-                            " - " +
-                            site.Name
-                    })
-                .ToListAsync();
-
-
-        var muxTypes = await _context.MuxTypes
+        model.MuxTypeOptions = await _context.MuxTypes
             .AsNoTracking()
+            .Where(type =>
+                type.Model != MuxModel.Undefined &&
+                type.DefaultCards.Any(card => card.Category == CardCategory.STM))
             .OrderBy(type => type.Name)
+            .Select(type => new SelectListItem
+            {
+                Value = type.Id.ToString(),
+                Text = type.Name
+            })
             .ToListAsync();
 
+        var selected = model.StmAssignments
+            .GroupBy(item => item.StmId)
+            .ToDictionary(group => group.Key, group => group.First().PortKey);
 
-        model.MuxTypeOptions =
-            muxTypes
-                .Select(type =>
-                    new SelectListItem
-                    {
-                        Value =
-                            type.Id.ToString(),
-
-                        Text =
-    type.Name +
-    " — " +
-    (
-        type.LtuCardCount +
-        type.StmCardCount
-    ) +
-    " cards"
-                    })
-                .ToList();
-    }
-
-
-    private static void AddCards(
-        Mux mux,
-        CardCategory category,
-        int cardCount,
-        int portsPerCard,
-        ref int nextSlotNumber)
-    {
-        for (int cardNumber = 1;
-             cardNumber <= cardCount;
-             cardNumber++)
+        // Rebuilt rows must use trusted IDs and labels.
+        foreach (string key in ModelState.Keys
+            .Where(key => key.StartsWith("StmAssignments[")).ToList())
         {
-            var card = new MuxCard
+            ModelState.Remove(key);
+        }
+
+        model.StmAssignments = await _context.Stms
+            .AsNoTracking()
+            .Where(stm =>
+                stm.Link.SiteFromId == model.SiteId &&
+                stm.Link.LinkType.Name == "SDH" &&
+                !_context.MuxPorts.Any(port => port.StmId == stm.Id))
+            .OrderBy(stm => stm.Link.SiteToId)
+            .ThenBy(stm => stm.Link.Name)
+            .ThenBy(stm => stm.Number)
+            .Select(stm => new SiteSdhStmPortAssignmentViewModel
             {
-                Id = Guid.NewGuid(),
-                MuxId = mux.Id,
-                Category = category,
-                SlotNumber = nextSlotNumber
-            };
-
-            for (int portNumber = 1;
-                 portNumber <= portsPerCard;
-                 portNumber++)
-            {
-                card.Ports.Add(
-                    new MuxPort
-                    {
-                        Id = Guid.NewGuid(),
-                        MuxCardId = card.Id,
-                        PortNumber = portNumber,
-                        Status = MuxPortStatus.Available
-                    });
-            }
-
-            mux.Cards.Add(card);
-
-            nextSlotNumber++;
-        }
-    }
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    [Authorize(
-    Roles =
-        AppRoles.Admin + "," +
-        AppRoles.Operator)]
-    public async Task<IActionResult> InstallForSdhLink(
-    InstallSdhLinkMuxViewModel model)
-    {
-        model.SiteId =
-            model.SiteId?.Trim() ?? string.Empty;
-
-        model.MuxName =
-            model.MuxName?.Trim() ?? string.Empty;
-
-
-        var link =
-            await _context.CommunicationLinks
-                .AsNoTracking()
-                .Include(item => item.LinkType)
-                .Include(item => item.Stms)
-                .FirstOrDefaultAsync(item =>
-                    item.Id == model.LinkId &&
-                    item.SiteFromId == model.SiteId);
-
-        if (link is null)
-        {
-            return NotFound();
-        }
-
-        model.LinkName =
-            link.Name;
-
-
-        if (!string.Equals(
-                link.LinkType.Name,
-                "SDH",
-                StringComparison.OrdinalIgnoreCase))
-        {
-            ModelState.AddModelError(
-                string.Empty,
-                "Only SDH links can be connected to a MUX.");
-        }
-
-
-        MuxType? muxType = null;
-
-        if (model.MuxTypeId.HasValue)
-        {
-            muxType =
-                await _context.MuxTypes
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(type =>
-                        type.Id ==
-                        model.MuxTypeId.Value);
-        }
-
-        if (muxType is null)
-        {
-            ModelState.AddModelError(
-                nameof(model.MuxTypeId),
-                "The selected MUX type is invalid.");
-        }
-        else if (muxType.StmCardCount <= 0 ||
-                 muxType.StmPortsPerCard <= 0)
-        {
-            ModelState.AddModelError(
-                nameof(model.MuxTypeId),
-                "The selected MUX type does not contain valid STM ports.");
-        }
-
-
-        bool duplicateMuxName =
-            await _context.Muxes
-                .AnyAsync(mux =>
-                    mux.SiteId == model.SiteId &&
-                    mux.Name == model.MuxName);
-
-        if (duplicateMuxName)
-        {
-            ModelState.AddModelError(
-                nameof(model.MuxName),
-                "A MUX with this name already exists at this site.");
-        }
-
-
-        var validStmIds =
-            link.Stms
-                .Select(stm => stm.Id)
-                .ToHashSet();
-
-        bool containsInvalidStm =
-            model.StmAssignments
-                .Any(assignment =>
-                    !validStmIds.Contains(
-                        assignment.StmId));
-
-        if (containsInvalidStm)
-        {
-            ModelState.AddModelError(
-                string.Empty,
-                "One of the selected STMs does not belong to this link.");
-        }
-
-
-        bool containsDuplicateStm =
-            model.StmAssignments
-                .GroupBy(assignment =>
-                    assignment.StmId)
-                .Any(group =>
-                    group.Count() > 1);
-
-        if (containsDuplicateStm)
-        {
-            ModelState.AddModelError(
-                string.Empty,
-                "An STM cannot appear more than once.");
-        }
-
-
-        var selectedAssignments =
-            model.StmAssignments
-                .Where(assignment =>
-                    !string.IsNullOrWhiteSpace(
-                        assignment.PortKey))
-                .ToList();
-
-        if (selectedAssignments.Count == 0)
-        {
-            ModelState.AddModelError(
-                string.Empty,
-                "Assign at least one STM to a MUX port.");
-        }
-
-
-        bool duplicatePort =
-            selectedAssignments
-                .GroupBy(
-                    assignment =>
-                        assignment.PortKey!.Trim(),
-                    StringComparer.OrdinalIgnoreCase)
-                .Any(group =>
-                    group.Count() > 1);
-
-        if (duplicatePort)
-        {
-            ModelState.AddModelError(
-                string.Empty,
-                "A MUX port cannot be assigned to more than one STM.");
-        }
-
-
-        if (muxType is not null)
-        {
-            int firstStmSlot =
-                muxType.LtuCardCount + 1;
-
-            int lastStmSlot =
-                muxType.LtuCardCount +
-                muxType.StmCardCount;
-
-            foreach (var assignment
-                     in selectedAssignments)
-            {
-                if (!TryParsePortKey(
-                        assignment.PortKey,
-                        out int slotNumber,
-                        out int portNumber) ||
-                    slotNumber < firstStmSlot ||
-                    slotNumber > lastStmSlot ||
-                    portNumber < 1 ||
-                    portNumber >
-                        muxType.StmPortsPerCard)
-                {
-                    ModelState.AddModelError(
-                        string.Empty,
-                        "One of the selected STM ports is invalid.");
-                }
-            }
-        }
-
-
-        var selectedStmIds =
-            selectedAssignments
-                .Select(assignment =>
-                    assignment.StmId)
-                .ToList();
-
-        bool stmAlreadyAssigned =
-            await _context.MuxPorts
-                .AnyAsync(port =>
-                    port.StmId.HasValue &&
-                    selectedStmIds.Contains(
-                        port.StmId.Value));
-
-        if (stmAlreadyAssigned)
-        {
-            ModelState.AddModelError(
-                string.Empty,
-                "One of the selected STMs is already assigned to a MUX port.");
-        }
-
-
-        var postedPortLookup =
-            model.StmAssignments
-                .GroupBy(assignment =>
-                    assignment.StmId)
-                .ToDictionary(
-                    group => group.Key,
-                    group => group
-                        .First()
-                        .PortKey);
-
-        model.StmAssignments =
-            link.Stms
-                .OrderBy(stm =>
-                    int.TryParse(
-                        stm.Number,
-                        out int number)
-                            ? number
-                            : int.MaxValue)
-                .Select(stm =>
-                    new SdhStmPortAssignmentViewModel
-                    {
-                        StmId = stm.Id,
-                        StmNumber = stm.Number,
-
-                        PortKey =
-                            postedPortLookup
-                                .GetValueOrDefault(
-                                    stm.Id)
-                    })
-                .ToList();
-
-
-        if (!ModelState.IsValid)
-        {
-            await PopulateInstallMuxTypeOptionsAsync(
-                model);
-
-            return View(model);
-        }
-
-
-        var mux = new Mux
-        {
-            Id = Guid.NewGuid(),
-            Name = model.MuxName,
-            SiteId = model.SiteId,
-            MuxTypeId = muxType!.Id
-        };
-
-
-        int nextSlotNumber = 1;
-
-        AddCards(
-            mux,
-            CardCategory.LTU,
-            muxType.LtuCardCount,
-            muxType.LtuPortsPerCard,
-            ref nextSlotNumber);
-
-        AddCards(
-            mux,
-            CardCategory.STM,
-            muxType.StmCardCount,
-            muxType.StmPortsPerCard,
-            ref nextSlotNumber);
-
-
-
-
-        foreach (var assignment
-                 in selectedAssignments)
-        {
-            TryParsePortKey(
-                assignment.PortKey,
-                out int slotNumber,
-                out int portNumber);
-
-            var port =
-                mux.Cards
-                    .Where(card =>
-                        card.Category ==
-                            CardCategory.STM &&
-                        card.SlotNumber ==
-                            slotNumber)
-                    .SelectMany(card =>
-                        card.Ports)
-                    .Single(item =>
-                        item.PortNumber ==
-                            portNumber);
-
-            port.StmId =
-                assignment.StmId;
-
-            port.Status =
-                MuxPortStatus.Connected;
-        }
-
-
-        _context.Muxes.Add(mux);
-
-        await _context.SaveChangesAsync();
-
-
-        TempData["SuccessMessage"] =
-            $"MUX '{mux.Name}' was installed at site " +
-            $"'{mux.SiteId}', and " +
-            $"{selectedAssignments.Count} STM(s) were connected.";
-
-        return RedirectToAction(
-            nameof(Details),
-            new { id = mux.Id });
-    }
-
-    private async Task PopulateInstallMuxTypeOptionsAsync(
-    InstallSdhLinkMuxViewModel model)
-    {
-        model.MuxTypeOptions =
-            await _context.MuxTypes
-                .AsNoTracking()
-                .Where(type =>
-                    type.StmCardCount > 0 &&
-                    type.StmPortsPerCard > 0)
-                .OrderBy(type => type.Name)
-                .Select(type =>
-                    new SelectListItem
-                    {
-                        Value =
-                            type.Id.ToString(),
-
-                        Text =
-                            type.Name +
-                            " — " +
-                            type.StmCardCount +
-                            " STM cards × " +
-                            type.StmPortsPerCard +
-                            " ports"
-                    })
-                .ToListAsync();
-    }
-    private async Task PopulateInstallMuxTypeOptionsAsync(
-    InstallSiteMuxViewModel model)
-    {
-        model.MuxTypeOptions =
-            await _context.MuxTypes
-                .AsNoTracking()
-
-                .Where(type =>
-                    type.StmCardCount > 0 &&
-                    type.StmPortsPerCard > 0)
-
-                .OrderBy(type =>
-                    type.Name)
-
-                .Select(type =>
-                    new SelectListItem
-                    {
-                        Value =
-                            type.Id.ToString(),
-
-                        Text =
-                            type.Name +
-                            " — " +
-                            type.StmCardCount +
-                            " STM cards × " +
-                            type.StmPortsPerCard +
-                            " ports"
-                    })
-
-                .ToListAsync();
-    }
-
-    private static bool TryParsePortKey(
-    string? portKey,
-    out int slotNumber,
-    out int portNumber)
-    {
-        slotNumber = 0;
-        portNumber = 0;
-
-        if (string.IsNullOrWhiteSpace(
-                portKey))
-        {
-            return false;
-        }
-
-        string[] parts =
-            portKey.Split(
-                ':',
-                StringSplitOptions.TrimEntries);
-
-        return
-            parts.Length == 2 &&
-            int.TryParse(
-                parts[0],
-                out slotNumber) &&
-            int.TryParse(
-                parts[1],
-                out portNumber);
+                StmId = stm.Id,
+                StmNumber = stm.Number,
+                LinkName = stm.Link.Name,
+                RemoteSiteId = stm.Link.SiteToId
+            })
+            .ToListAsync();
+
+        foreach (var assignment in model.StmAssignments)
+            assignment.PortKey = selected.GetValueOrDefault(assignment.StmId);
     }
 }

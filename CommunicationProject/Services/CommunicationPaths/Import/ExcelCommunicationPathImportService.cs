@@ -117,6 +117,10 @@ public sealed partial class ExcelCommunicationPathImportService
             {
                 var address = row.StmNumber.Split('.');
 
+                int shelf = int.Parse(
+    address[0],
+    CultureInfo.InvariantCulture);
+
                 int slot = int.Parse(
                     address[1],
                     CultureInfo.InvariantCulture);
@@ -130,6 +134,11 @@ public sealed partial class ExcelCommunicationPathImportService
                     .Where(port =>
                         port.MuxCard.Category == CardCategory.STM &&
                         port.MuxCard.Mux.SiteId == row.SiteFromId &&
+                        port.MuxCard.ShelfNumber == shelf &&
+                        port.MuxCard.Section ==
+    (port.MuxCard.Mux.Model == MuxModel.Tellab
+        ? MuxSection.Main
+        : MuxSection.Standard) &&
                         port.MuxCard.SlotNumber == slot &&
                         port.PortNumber == portNumber &&
                         port.StmId.HasValue &&
@@ -279,7 +288,67 @@ public sealed partial class ExcelCommunicationPathImportService
                 }
             }
         }
+        for (int i = 1; i < pairs.Count; i++)
+        {
+            var incoming = pairs[i - 1].Remote;
+            var outgoing = pairs[i].Local;
 
+            if (incoming.StmId.HasValue == outgoing.StmId.HasValue)
+                continue;
+
+            var sdh = incoming.StmId.HasValue ? incoming : outgoing;
+
+            var bridge = await _context.MuxPorts
+                .Include(port => port.MuxCard)
+                    .ThenInclude(card => card.Mux)
+                .SingleOrDefaultAsync(port => port.E1Id == sdh.Id, ct);
+
+            Guid? stmMuxId = await _context.MuxPorts
+                .Where(port =>
+                    port.StmId == sdh.StmId &&
+                    port.MuxCard.Category == CardCategory.STM)
+                .Select(port => (Guid?)port.MuxCard.MuxId)
+                .SingleOrDefaultAsync(ct);
+
+            bool availableBridge = bridge != null &&
+                bridge.MuxCard.Category == CardCategory.LTU &&
+                bridge.MuxCard.MuxId == stmMuxId &&
+                bridge.StmId == null &&
+                (
+                    bridge.Status == MuxPortStatus.Available ||
+                    bridge.Status == MuxPortStatus.Connected ||
+                    (
+                        bridge.Status == MuxPortStatus.Wrong &&
+                        sdh.Status == E1OperationalStatus.Wrong
+                    )
+                );
+
+            if (!availableBridge)
+            {
+                throw new InvalidDataException(
+                    "SDH/PDH imports require an existing LTU assignment " +
+                    "on the SDH endpoint's MUX.");
+            }
+
+            var mux = bridge!.MuxCard.Mux;
+
+            if (mux.Model == MuxModel.Tellab &&
+                (
+                    !bridge.PhysicalStmNumber.HasValue ||
+                    bridge.PhysicalStmNumber.Value is < 29 or > 31 ||
+                    !mux.FirstPhysicalStmNumber.HasValue ||
+                    !mux.SecondPhysicalStmNumber.HasValue ||
+                    mux.FirstPhysicalStmNumber == mux.SecondPhysicalStmNumber ||
+                    (
+                        bridge.PhysicalStmNumber != mux.FirstPhysicalStmNumber &&
+                        bridge.PhysicalStmNumber != mux.SecondPhysicalStmNumber
+                    )
+                ))
+            {
+                throw new InvalidDataException(
+                    "The Tellab LTU assignment requires a configured physical VC4.");
+            }
+        }
         string customerName = rows[0].CustomerName;
 
         var customers = await _context.Customers

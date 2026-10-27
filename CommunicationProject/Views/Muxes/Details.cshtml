@@ -1,26 +1,27 @@
 ﻿@model CommunicationProject.Models.Mux
-@using CommunicationProject.Models
+@using CommunicationProject.Security
+@using CommunicationProject.Services.Muxes
 
 @{
     ViewData["Title"] = "MUX Details";
 
-    var cards =
-        Model.Cards
-            .OrderBy(card => card.SlotNumber)
-            .ToList();
+    bool canManage =
+        User.IsInRole(AppRoles.Admin) ||
+        User.IsInRole(AppRoles.Operator);
 
-    int totalPorts =
-        cards.Sum(card => card.Ports.Count);
+    var groups = Model.Cards
+        .OrderBy(card => card.Section)
+        .ThenBy(card => card.ShelfNumber)
+        .ThenBy(card => card.SlotNumber)
+        .GroupBy(card => new { card.Section, card.ShelfNumber });
 
-    int connectedPorts =
-        cards.Sum(card =>
-            card.Ports.Count(port =>
-                port.Status == MuxPortStatus.Connected));
+    int stmPorts = Model.Cards
+        .Where(card => card.Category == CardCategory.STM)
+        .Sum(card => card.Ports.Count);
 
-    int availablePorts =
-        cards.Sum(card =>
-            card.Ports.Count(port =>
-                port.Status == MuxPortStatus.Available));
+    int ltuPorts = Model.Cards
+        .Where(card => card.Category == CardCategory.LTU)
+        .Sum(card => card.Ports.Count);
 }
 
 @section Styles {
@@ -30,662 +31,142 @@
 }
 
 <div class="mux-details-page">
-
-    <!-- =====================================================
-         Header
-         ===================================================== -->
-
     <div class="mux-details-top">
-
-        <a href="@Url.Action("Index", "Muxes")"
-               data-fallback-url="@Url.Action("Index", "Muxes")"
-               class="mux-details-back js-back-link">
-            ← Back
-        </a>
-
-        <div class="mux-details-heading">
-
-            <div>
-                <h1 class="mux-details-title">
-                    @Model.Name
-                </h1>
-
-                <p class="mux-details-subtitle">
-                    Physical MUX shelf and port layout.
-                </p>
-            </div>
-
+        <div>
+            <h1>@Model.Name</h1>
+            <p>
+                Site @Model.SiteId — @Model.Site.Name ·
+                @MuxStructureRules.GetName(Model.Model)
+            </p>
         </div>
 
+        @if (canManage &&
+             !MuxStructureRules.HasFixedStructure(Model.Model))
+        {
+            <a asp-controller="MuxCards"
+                   asp-action="Create"
+                   asp-route-muxId="@Model.Id"
+                   class="mux-primary-btn">
+                + Add Card
+            </a>
+        }
     </div>
-
-
-    <!-- =====================================================
-         Summary
-         ===================================================== -->
 
     <div class="mux-details-summary">
-
         <div class="mux-summary-item">
-
-            <span class="mux-summary-label">
-                Site
-            </span>
-
-            <strong>
-                @Model.Site.Id
-            </strong>
-
-            <span class="mux-summary-secondary">
-                @Model.Site.Name
-            </span>
-
+            <span>Installed Cards</span>
+            <strong>@Model.Cards.Count</strong>
         </div>
-
-
         <div class="mux-summary-item">
-
-            <span class="mux-summary-label">
-                MUX Type
-            </span>
-
-            <strong>
-                @(Model.MuxType?.Name ?? "Not assigned")
-            </strong>
-
+            <span>STM Positions</span>
+            <strong>@stmPorts</strong>
         </div>
-
-
         <div class="mux-summary-item">
-
-            <span class="mux-summary-label">
-                Installed Cards
-            </span>
-
-            <strong>
-                @cards.Count
-            </strong>
-
+            <span>E1 Channel Capacity</span>
+            <strong>@(stmPorts * 63)</strong>
         </div>
-
-
         <div class="mux-summary-item">
-
-            <span class="mux-summary-label">
-                Port Usage
-            </span>
-
-            <strong>
-                @connectedPorts / @totalPorts
-            </strong>
-
-            <span class="mux-summary-secondary">
-                @availablePorts available
-            </span>
-
+            <span>LTU Ports</span>
+            <strong>@ltuPorts</strong>
         </div>
-
     </div>
 
+    @if (Model.Model == MuxModel.Tellab)
+    {
+        <section class="mux-install-card">
+            <h2>Physical STM Group</h2>
+            <p>
+                STM @Model.FirstPhysicalStmNumber
+                → VC4 @(Model.FirstPhysicalStmNumber - 1)
+                ·
+                STM @Model.SecondPhysicalStmNumber
+                → VC4 @(Model.SecondPhysicalStmNumber - 1)
+            </p>
+            <p>Either physical VC4 can use either LTU card.</p>
+        </section>
+    }
 
-    <!-- =====================================================
-         Rack
-         ===================================================== -->
+    @foreach (var group in groups)
+    {
+        <section class="mux-install-card">
+            <h2>
+                @if (group.Key.Section != MuxSection.Standard)
+                {
+                    @group.Key.Section
+                }
+                else if (group.Key.ShelfNumber > 0)
+                {
+                    <text>Shelf @group.Key.ShelfNumber</text>
+                }
+                else
+                {
+                    <text>Installed Cards</text>
+                }
+            </h2>
 
-    <section class="mux-rack-section">
+            @foreach (var card in group)
+            {
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h3>
+                            @card.Category —
+                            @MuxDisplay.CardPosition(card)
+                        </h3>
 
-        <div class="mux-rack-header">
+                        <p>
+                            @card.Ports.Count ports ·
+                            @(card.IsRequired ? "Required card" : "Optional card")
+                        </p>
 
-            <div>
-                <span class="mux-rack-eyebrow">
-                    MUX CHASSIS
-                </span>
-
-                <h2>
-                    Shelf 1
-                </h2>
-            </div>
-
-
-            <div class="mux-rack-legend">
-
-                <span>
-                    <i class="mux-status-dot status-available"></i>
-                    Available
-                </span>
-
-                <span>
-                    <i class="mux-status-dot status-connected"></i>
-                    Connected
-                </span>
-
-                <span>
-                    <i class="mux-status-dot status-wrong"></i>
-                    Wrong
-                </span>
-
-                <span>
-                    <i class="mux-status-dot status-damaged"></i>
-                    Damaged
-                </span>
-
-            </div>
-
-        </div>
-
-
-        <div class="mux-rack-shell">
-
-            <div class="mux-rack-brand">
-
-                <div>
-                    @Model.Name
-                </div>
-
-                <span>
-                    SHELF 1
-                </span>
-
-            </div>
-
-
-            <div class="mux-rack-scroll">
-
-                <div class="mux-rack-slots">
-
-                    @foreach (var card in cards)
-                    {
-                        string categoryClass =
-                            card.Category switch
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            @foreach (var port in card.Ports.OrderBy(p => p.PortNumber))
                             {
-                                CardCategory.STM => "mux-rack-card-stm",
-                                CardCategory.LTU => "mux-rack-card-e1",
-                                _ => string.Empty
-                            };
+                                string label = card.Category == CardCategory.STM
+                                    ? MuxDisplay.StmLabel(
+                                        Model.Model,
+                                        card.ShelfNumber,
+                                        card.SlotNumber,
+                                        port.PortNumber,
+                                        port.Stm?.Number)
+                                    : MuxDisplay.LtuLabel(
+                                        Model.Model,
+                                        card.ShelfNumber,
+                                        card.SlotNumber,
+                                        port.PortNumber,
+                                        port.PhysicalStmNumber);
 
-
-                        int cardConnectedPorts =
-                            card.Ports.Count(port =>
-                                port.Status ==
-                                MuxPortStatus.Connected);
-
-
-                        <article class="mux-rack-card @categoryClass">
-
-                            <!-- Card Header -->
-
-                            <div class="mux-rack-card-header">
-
-                                <div>
-                                    <span class="mux-slot-number">
-                                        SLOT @card.SlotNumber
-                                    </span>
-
-                                    <h3>
-                                        @card.Category
-                                    </h3>
-                                </div>
-
-                                <span class="mux-card-usage">
-                                    @cardConnectedPorts/@card.Ports.Count
-                                </span>
-
-                            </div>
-
-
-                            <!-- Face Plate -->
-
-                            <div class="mux-card-face">
-
-                                <div class="mux-card-handle"></div>
-
-
-                                <div class="mux-port-grid">
-
-                                    @foreach (var port in
-                                        card.Ports
-                                            .OrderBy(port =>
-                                                port.PortNumber))
-                                    {
-                                        string statusClass =
-                                            port.Status
-                                                .ToString()
-                                                .ToLowerInvariant();
-
-
-                                        string resourceType =
-                                            card.Category switch
-                                            {
-                                                CardCategory.STM
-                                                    when port.StmId.HasValue
-                                                        => "STM",
-
-                                                CardCategory.LTU
-                                                    when port.E1Id.HasValue
-                                                        => "E1",
-
-                                                _ => ""
-                                            };
-
-
-                                        string resourceId =
-                                            port.StmId?.ToString()
-                                            ??
-                                            port.E1Id?.ToString()
-                                            ??
-                                            "";
-
-
-                                        string actionUrl =
-                                            string.Empty;
-
-
-                                        string actionText =
-                                            string.Empty;
-
-
-                                        if (port.Status ==
-                                            MuxPortStatus.Available)
-                                        {
-                                            if (card.Category ==
-                                                CardCategory.STM)
-                                            {
-                                                actionUrl =
-                                                    Url.Action(
-                                                        "AssignStm",
-                                                        "MuxPorts",
-                                                        new
-                                                        {
-                                                            id = port.Id
-                                                        })
-                                                    ?? string.Empty;
-
-                                                actionText =
-                                                    "Assign STM";
-                                            }
-                                            else if (
-                                                card.Category ==
-                                                CardCategory.LTU)
-                                            {
-                                                actionUrl =
-                                                    Url.Action(
-                                                        "AssignE1",
-                                                        "MuxPorts",
-                                                        new
-                                                        {
-                                                            id = port.Id
-                                                        })
-                                                    ?? string.Empty;
-
-                                                actionText =
-                                                    "Assign E1";
-                                            }
-                                        }
-
-
-                                        string cardUrl =
-                                            Url.Action(
-                                                "Details",
-                                                "MuxCards",
-                                                new
-                                                {
-                                                    id = card.Id
-                                                })
-                                            ?? string.Empty;
-
-
-                                        <button type="button"
-                                                class="mux-port-button status-@statusClass"
-                                                data-slot="@card.SlotNumber"
-                                                data-port="@port.PortNumber"
-                                                data-category="@card.Category"
-                                                data-status="@port.Status"
-                                                data-resource="@resourceType"
-                                                data-resource-id="@resourceId"
-                                                data-action-url="@actionUrl"
-                                                data-action-text="@actionText"
-                                                data-card-url="@cardUrl"
-                                                title="Card @card.SlotNumber / Port @port.PortNumber">
-
-                                            <span class="mux-port-socket"></span>
-
-                                            <span class="mux-port-number">
-                                                @port.PortNumber
-                                            </span>
-
-                                        </button>
-                                    }
-
-                                </div>
-
-
-                                <div class="mux-card-handle mux-card-handle-bottom"></div>
-
-                            </div>
-
-
-                            <!-- Card Footer -->
-
-                            <div class="mux-rack-card-footer">
-
-                                <span>
-                                    @card.Ports.Count ports
-                                </span>
+                                string resource = port.Stm != null
+                                    ? port.Stm.Link.Name
+                                    : port.E1 != null
+                                        ? $"E1 {port.E1.E1Number}"
+                                        : "Unassigned";
 
                                 <a asp-controller="MuxCards"
                                        asp-action="Details"
-                                       asp-route-id="@card.Id">
-                                    View card
+                                       asp-route-id="@card.Id"
+                                       class="btn btn-outline-secondary"
+                                       title="@($"{resource} · {port.Status}")">
+                                    @label
                                 </a>
+                            }
+                        </div>
 
-                            </div>
-
-                        </article>
-                    }
-
+                        <a asp-controller="MuxCards"
+                               asp-action="Details"
+                               asp-route-id="@card.Id"
+                               class="mux-details-secondary-btn">
+                            Open Card / Manage Assignments
+                        </a>
+                    </div>
                 </div>
-
-            </div>
-
-
-            <div class="mux-rack-bottom">
-
-                <span>
-                    Communication Network MUX
-                </span>
-
-                <span>
-                    @cards.Count installed slots
-                </span>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         Selected Port
-         ===================================================== -->
-
-    <section class="mux-selected-port">
-
-        <div class="mux-selected-port-header">
-
-            <div>
-                <span class="mux-rack-eyebrow">
-                    PORT INSPECTOR
-                </span>
-
-                <h2 id="selectedPortTitle">
-                    Select a port
-                </h2>
-            </div>
-
-            <span id="selectedPortBadge"
-                  class="mux-port-status-badge">
-                —
-            </span>
-
-        </div>
-
-
-        <div id="selectedPortEmpty"
-             class="mux-selected-empty">
-
-            Click any physical port above to inspect it.
-
-        </div>
-
-
-        <div id="selectedPortContent"
-             class="mux-selected-content"
-             hidden>
-
-            <div class="mux-selected-grid">
-
-                <div>
-                    <span>Shelf</span>
-                    <strong>1</strong>
-                </div>
-
-                <div>
-                    <span>Card</span>
-                    <strong id="selectedCard"></strong>
-                </div>
-
-                <div>
-                    <span>Port</span>
-                    <strong id="selectedPort"></strong>
-                </div>
-
-                <div>
-                    <span>Category</span>
-                    <strong id="selectedCategory"></strong>
-                </div>
-
-                <div>
-                    <span>Status</span>
-                    <strong id="selectedStatus"></strong>
-                </div>
-
-                <div>
-                    <span>Resource</span>
-                    <strong id="selectedResource"></strong>
-                </div>
-
-            </div>
-
-
-            <div class="mux-selected-actions">
-
-                <a id="selectedPrimaryAction"
-                       href="#"
-                       class="mux-primary-btn"
-                       hidden>
-                </a>
-
-                <a id="selectedCardAction"
-                       href="#"
-                       class="mux-details-secondary-btn">
-                    View card
-                </a>
-
-            </div>
-
-        </div>
-
-    </section>
-
-</div>
-
-
-@section Scripts {
-
-    <script>
-        (() => {
-
-            const page =
-                document.querySelector(".mux-details-page");
-
-            if (!page) {
-                return;
             }
+        </section>
+    }
 
-
-            const ports =
-                page.querySelectorAll(".mux-port-button");
-
-
-            const empty =
-                document.getElementById(
-                    "selectedPortEmpty");
-
-            const content =
-                document.getElementById(
-                    "selectedPortContent");
-
-            const title =
-                document.getElementById(
-                    "selectedPortTitle");
-
-            const badge =
-                document.getElementById(
-                    "selectedPortBadge");
-
-            const cardField =
-                document.getElementById(
-                    "selectedCard");
-
-            const portField =
-                document.getElementById(
-                    "selectedPort");
-
-            const categoryField =
-                document.getElementById(
-                    "selectedCategory");
-
-            const statusField =
-                document.getElementById(
-                    "selectedStatus");
-
-            const resourceField =
-                document.getElementById(
-                    "selectedResource");
-
-            const primaryAction =
-                document.getElementById(
-                    "selectedPrimaryAction");
-
-            const cardAction =
-                document.getElementById(
-                    "selectedCardAction");
-
-
-            ports.forEach(port => {
-
-                port.addEventListener(
-                    "click",
-                    () => {
-
-                        ports.forEach(item =>
-                            item.classList.remove(
-                                "is-selected"));
-
-
-                        port.classList.add(
-                            "is-selected");
-
-
-                        const slot =
-                            port.dataset.slot;
-
-                        const portNumber =
-                            port.dataset.port;
-
-                        const category =
-                            port.dataset.category;
-
-                        const status =
-                            port.dataset.status;
-
-                        const resource =
-                            port.dataset.resource;
-
-                        const resourceId =
-                            port.dataset.resourceId;
-
-                        const actionUrl =
-                            port.dataset.actionUrl;
-
-                        const actionText =
-                            port.dataset.actionText;
-
-                        const cardUrl =
-                            port.dataset.cardUrl;
-
-
-                        title.textContent =
-                            `Card ${slot} / Port ${portNumber}`;
-
-
-                        badge.textContent =
-                            status;
-
-
-                        badge.className =
-                            "mux-port-status-badge " +
-                            "status-badge-" +
-                            status.toLowerCase();
-
-
-                        cardField.textContent =
-                            slot;
-
-                        portField.textContent =
-                            portNumber;
-
-                        categoryField.textContent =
-                            category;
-
-                        statusField.textContent =
-                            status;
-
-
-                        if (resource) {
-
-                            resourceField.textContent =
-                                `${resource} assigned`;
-
-                            resourceField.title =
-                                resourceId;
-
-                        }
-                        else {
-
-                            resourceField.textContent =
-                                status === "Available"
-                                    ? "Not assigned"
-                                    : "—";
-                        }
-
-
-                        if (actionUrl &&
-                            actionText) {
-
-                            primaryAction.href =
-                                actionUrl;
-
-                            primaryAction.textContent =
-                                actionText;
-
-                            primaryAction.hidden =
-                                false;
-
-                        }
-                        else {
-
-                            primaryAction.hidden =
-                                true;
-                        }
-
-
-                        cardAction.href =
-                            cardUrl;
-
-
-                        empty.hidden =
-                            true;
-
-                        content.hidden =
-                            false;
-
-                    });
-
-            });
-
-        })();
-    </script>
-
-}
+    <a asp-controller="Sites"
+           asp-action="Details"
+           asp-route-id="@Model.SiteId"
+           class="mux-details-secondary-btn">
+        Back to Site
+    </a>
+</div>

@@ -38,6 +38,7 @@ public class CommunicationDbContext
     public DbSet<MuxType> MuxTypes { get; set; }
     public DbSet<MuxCard> MuxCards { get; set; }
     public DbSet<MuxPort> MuxPorts { get; set; }
+    public DbSet<MuxTypeCard> MuxTypeCards { get; set; }
 
 
 
@@ -52,6 +53,7 @@ public class CommunicationDbContext
         ConfigureE1(modelBuilder);
         ConfigureMux(modelBuilder);
         ConfigureMuxType(modelBuilder);
+        ConfigureMuxTypeCard(modelBuilder);
         ConfigureMuxCard(modelBuilder);
         ConfigureMuxPort(modelBuilder);
         ConfigureCommunicationPath(modelBuilder);
@@ -318,60 +320,104 @@ public class CommunicationDbContext
             .IsRequired();
     }
     private static void ConfigureMux(
-    ModelBuilder modelBuilder)
+        ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Mux>()
-            .HasOne(mux => mux.Site)
+        var entity = modelBuilder.Entity<Mux>();
+
+        entity.HasOne(mux => mux.Site)
             .WithMany()
             .HasForeignKey(mux => mux.SiteId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        entity.HasOne(mux => mux.MuxType)
+            .WithMany(type => type.Muxes)
+            .HasForeignKey(mux => mux.MuxTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        entity.Property(mux => mux.Model)
+            .HasConversion<string>()
+            .HasMaxLength(32)
+            .IsRequired();
+
+        entity.HasIndex(mux => new
+        {
+            mux.SiteId,
+            mux.Name
+        })
+        .IsUnique();
     }
     private static void ConfigureMuxType(
         ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<MuxType>()
-            .HasIndex(type => type.Name)
+        var entity = modelBuilder.Entity<MuxType>();
+
+        entity.HasIndex(type => type.Name)
             .IsUnique();
 
-        modelBuilder.Entity<MuxType>()
-            .HasData(
-                new MuxType
-                {
-                    Id = Guid.Parse(
-                        "11111111-1111-1111-1111-111111111111"),
-                    Name = "Ericsson"
-                },
-                new MuxType
-                {
-                    Id = Guid.Parse(
-                        "22222222-2222-2222-2222-222222222222"),
-                    Name = "OSP"
-                });
+        entity.Property(type => type.Model)
+            .HasConversion<string>()
+            .HasMaxLength(32)
+            .IsRequired();
+    }
+
+    private static void ConfigureMuxTypeCard(
+        ModelBuilder modelBuilder)
+    {
+        var entity = modelBuilder.Entity<MuxTypeCard>();
+
+        entity.HasOne(card => card.MuxType)
+            .WithMany(type => type.DefaultCards)
+            .HasForeignKey(card => card.MuxTypeId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        entity.Property(card => card.Category)
+            .HasConversion<string>()
+            .HasMaxLength(32)
+            .IsRequired();
+
+        entity.Property(card => card.Section)
+            .HasConversion<string>()
+            .HasMaxLength(32)
+            .IsRequired();
+
+        entity.HasIndex(card => new
+        {
+            card.MuxTypeId,
+            card.Section,
+            card.ShelfNumber,
+            card.SlotNumber
+        })
+        .IsUnique();
     }
 
     private static void ConfigureMuxCard(
         ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<MuxCard>()
-            .HasOne(card => card.Mux)
+        var entity = modelBuilder.Entity<MuxCard>();
+
+        entity.HasOne(card => card.Mux)
             .WithMany(mux => mux.Cards)
             .HasForeignKey(card => card.MuxId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<MuxCard>()
-            .Property(card => card.Category)
+        entity.Property(card => card.Category)
             .HasConversion<string>()
             .HasMaxLength(32)
             .IsRequired();
 
-        modelBuilder.Entity<MuxCard>()
-            .HasIndex(card => new
-            {
-                card.MuxId,
-                card.SlotNumber
-            })
-            .IsUnique();
+        entity.Property(card => card.Section)
+            .HasConversion<string>()
+            .HasMaxLength(32)
+            .IsRequired();
+
+        entity.HasIndex(card => new
+        {
+            card.MuxId,
+            card.Section,
+            card.ShelfNumber,
+            card.SlotNumber
+        })
+        .IsUnique();
     }
     private static void ConfigureMuxPort(
     ModelBuilder modelBuilder)
