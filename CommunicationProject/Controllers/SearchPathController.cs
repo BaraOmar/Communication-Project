@@ -372,38 +372,60 @@ namespace CommunicationProject.Controllers
                                 var crossConnections =
     new List<CustomerPathCrossConnectionViewModel>();
 
-
-                                /*
-                                 * Intermediate sites.
-                                 *
-                                 * For:
-                                 *
-                                 * A -> B -> C
-                                 *
-                                 * the cross connection at B is:
-                                 *
-                                 * previousSegment.E1.ConnectedE1
-                                 *                  *
-                                 * currentSegment.E1
-                                 */
-                                for (int i = 1;
-                                     i < customerSegments.Count;
-                                     i++)
+                                string MuxTypeOf(E1 endpoint)
                                 {
-                                    var previousSegment =
-                                        customerSegments[i - 1];
+                                    MuxPort? port = null;
 
-                                    var currentSegment =
-                                        customerSegments[i];
+                                    if (endpoint.StmId.HasValue)
+                                        stmPortLookup.TryGetValue(endpoint.StmId.Value, out port);
 
-                                  
-                                    var incomingE1 =
-                                        previousSegment.E1.ConnectedE1;
+                                    if (port == null)
+                                        ltuPortLookup.TryGetValue(endpoint.Id, out port);
 
-                                    var outgoingE1 =
-                                        currentSegment.E1;
+                                    if (port == null ||
+                                        !MuxStructureRules.IsSupported(port.MuxCard.Mux.Model))
+                                    {
+                                        return string.Empty;
+                                    }
 
-                                    // Show only adjacent route segments with a real reciprocal join.
+                                    return MuxStructureRules.GetName(port.MuxCard.Mux.Model);
+                                }
+
+                                string MuxTypesFor(params E1[] endpoints)
+                                {
+                                    return string.Join(
+                                        " / ",
+                                        endpoints.Select(MuxTypeOf)
+                                            .Where(name => !string.IsNullOrWhiteSpace(name))
+                                            .Distinct());
+                                }
+
+                                // Source: show the actual outgoing resource.
+                                if (customerSegments.Count > 0)
+                                {
+                                    var firstSegment = customerSegments[0];
+                                    var sourceE1 = firstSegment.E1;
+
+                                    crossConnections.Add(new CustomerPathCrossConnectionViewModel
+                                    {
+                                        SiteId = firstSegment.CommunicationPathSegment
+                                            .CommunicationLink.SiteFromId,
+
+                                        IncomingSide = BuildStmE1Display(sourceE1, stmPortLookup),
+                                        MuxTypeDisplay = MuxTypesFor(sourceE1),
+                                        IsSource = true
+                                    });
+                                }
+
+                                // Intermediate sites.
+                                for (int i = 1; i < customerSegments.Count; i++)
+                                {
+                                    var previousSegment = customerSegments[i - 1];
+                                    var currentSegment = customerSegments[i];
+
+                                    var incomingE1 = previousSegment.E1.ConnectedE1;
+                                    var outgoingE1 = currentSegment.E1;
+
                                     if (incomingE1 == null ||
                                         currentSegment.CommunicationPathSegment.Order !=
                                             previousSegment.CommunicationPathSegment.Order + 1 ||
@@ -419,127 +441,103 @@ namespace CommunicationProject.Controllers
                                         continue;
                                     }
 
+                                    var cross = new CustomerPathCrossConnectionViewModel
+                                    {
+                                        SiteId = currentSegment.CommunicationPathSegment
+                                            .CommunicationLink.SiteFromId,
 
-                                    string crossSiteId =
-    currentSegment.CommunicationPathSegment
-        .CommunicationLink.SiteFromId;
+                                        IncomingSide = BuildStmE1Display(incomingE1, stmPortLookup),
+                                        OutgoingSide = BuildStmE1Display(outgoingE1, stmPortLookup),
+                                        MuxTypeDisplay = MuxTypesFor(incomingE1, outgoingE1)
+                                    };
 
-                                    bool incomingIsSdh = incomingE1.StmId.HasValue;
-                                    bool outgoingIsSdh = outgoingE1.StmId.HasValue;
-
-                                    bool isMixed = incomingIsSdh != outgoingIsSdh;
+                                    bool isMixed =
+                                        incomingE1.StmId.HasValue != outgoingE1.StmId.HasValue;
 
                                     if (isMixed)
                                     {
-                                        var sdhE1 = incomingIsSdh
+                                        var sdhE1 = incomingE1.StmId.HasValue
                                             ? incomingE1
                                             : outgoingE1;
 
-                                        var pdhE1 = incomingIsSdh
+                                        var pdhE1 = incomingE1.StmId.HasValue
                                             ? outgoingE1
                                             : incomingE1;
 
-                                        string pdhLinkName = incomingIsSdh
-                                            ? currentSegment.CommunicationPathSegment
-                                                .CommunicationLink.Name
-                                            : previousSegment.CommunicationPathSegment
-                                                .CommunicationLink.Name;
+                                        ltuPortLookup.TryGetValue(sdhE1.Id, out var ltuPort);
 
-                                        string ltuSide = ltuPortLookup.TryGetValue(
-    sdhE1.Id,
-    out var intermediateLtuPort)
-        ? BuildLtuDisplay(intermediateLtuPort)
-        : "LTU (Not assigned)";
+                                        string ltuSide = ltuPort != null
+                                            ? BuildLtuDisplay(ltuPort)
+                                            : "LTU (Not assigned)";
 
-                                        crossConnections.Add(
-                                            new CustomerPathCrossConnectionViewModel
-                                            {
-                                                SiteId = crossSiteId,
+                                        string pdhSide = BuildStmE1Display(pdhE1, stmPortLookup);
 
-                                                IncomingSide =
-                                                    BuildStmE1Display(sdhE1, stmPortLookup),
+                                        cross.IncomingSide = BuildStmE1Display(sdhE1, stmPortLookup);
 
-                                                OutgoingSide = ltuSide,
+                                        if (ltuPort?.MuxCard.Mux.Model == MuxModel.Tellab)
+                                        {
+                                            string physicalSide =
+                                                BuildPhysicalTellabDisplay(sdhE1, ltuPort);
 
-                                                SecondLine =
-    $"{ltuSide} * {pdhLinkName} Port {pdhE1.E1Number}",
+                                            cross.OutgoingSide = physicalSide;
 
-                                                IsPhysicalTermination = false
-                                            });
+                                            cross.SecondLine =
+                                                $"{physicalSide} * {ltuSide} * {pdhSide}";
+                                        }
+                                        else
+                                        {
+                                            cross.OutgoingSide = ltuSide;
+                                            cross.SecondLine = $"{ltuSide} * {pdhSide}";
+                                        }
                                     }
-                                    else
-                                    {
-                                        crossConnections.Add(
-                                            new CustomerPathCrossConnectionViewModel
-                                            {
-                                                SiteId = crossSiteId,
 
-                                                IncomingSide =
-                                                    BuildStmE1Display(incomingE1, stmPortLookup),
-
-                                                OutgoingSide =
-                                                    BuildStmE1Display(outgoingE1, stmPortLookup),
-
-                                                IsPhysicalTermination = false
-                                            });
-                                    }
+                                    crossConnections.Add(cross);
                                 }
 
-
-                                /*
-                                 * Final destination.
-                                 *
-                                 * The last segment reaches its destination through:
-                                 *
-                                 * lastSegment.E1.ConnectedE1
-                                 *
-                                 * and that physical E1 endpoint is connected
-                                 * to an E1-category MUX port, displayed as LTU.
-                                 */
+                                // Destination: show its own equipment and termination.
                                 if (customerSegments.Count > 0)
                                 {
-                                    var lastSegment =
-                                        customerSegments[^1];
-
-                                    var destinationE1 =
-                                        lastSegment.E1.ConnectedE1;
-
+                                    var lastSegment = customerSegments[^1];
+                                    var destinationE1 = lastSegment.E1.ConnectedE1;
 
                                     if (destinationE1 != null)
                                     {
-                                        string incomingSide =
-                                            BuildStmE1Display(
-                                                destinationE1,
-                                                stmPortLookup);
+                                        var destination = new CustomerPathCrossConnectionViewModel
+                                        {
+                                            SiteId = lastSegment.CommunicationPathSegment
+                                                .CommunicationLink.SiteToId,
 
+                                            IncomingSide =
+                                                BuildStmE1Display(destinationE1, stmPortLookup),
 
-                                        string ltuSide = ltuPortLookup.TryGetValue(
-                                            destinationE1.Id,
-                                            out var ltuPort)
-                                                ? BuildLtuDisplay(ltuPort)
-                                                : destinationE1.StmId.HasValue
-                                                    ? "LTU (Not assigned)"
-                                                    : string.Empty;
+                                            MuxTypeDisplay = MuxTypesFor(destinationE1),
+                                            IsDestination = true,
 
+                                            // A direct PDH endpoint is a physical termination.
+                                            IsPhysicalTermination = !destinationE1.StmId.HasValue
+                                        };
 
-                                        crossConnections.Add(
-                                            new CustomerPathCrossConnectionViewModel
+                                        if (ltuPortLookup.TryGetValue(destinationE1.Id, out var ltuPort))
+                                        {
+                                            destination.IsPhysicalTermination = true;
+
+                                            string ltuSide = BuildLtuDisplay(ltuPort);
+
+                                            if (ltuPort.MuxCard.Mux.Model == MuxModel.Tellab)
                                             {
-                                                SiteId =
-                                                    lastSegment
-                                                        .CommunicationPathSegment
-                                                        .CommunicationLink
-                                                        .SiteToId,
+                                                string physicalSide =
+                                                    BuildPhysicalTellabDisplay(destinationE1, ltuPort);
 
-                                                IncomingSide =
-                                                    incomingSide,
+                                                destination.OutgoingSide = physicalSide;
+                                                destination.SecondLine = $"{physicalSide} * {ltuSide}";
+                                            }
+                                            else
+                                            {
+                                                destination.OutgoingSide = ltuSide;
+                                            }
+                                        }
 
-                                                OutgoingSide =
-                                                    ltuSide,
-
-                                                IsPhysicalTermination =
-                                                    true
-                                            });
+                                        crossConnections.Add(destination);
                                     }
                                 }
 
@@ -1360,7 +1358,6 @@ e1.LinkId ==
             }
         }
 
-
         private static string BuildStmE1Display(
     E1 e1,
     IReadOnlyDictionary<Guid, MuxPort> stmPortLookup)
@@ -1371,40 +1368,46 @@ e1.LinkId ==
             if (!stmPortLookup.TryGetValue(e1.StmId.Value, out var port))
             {
                 return $"STM {e1.Stm?.Number} (Not installed) " +
-                       $"E1 ({e1.E1Number})";
+                       $"({e1.E1Number})";
             }
 
             var card = port.MuxCard;
-            var mux = card.Mux;
 
-            string stm = MuxDisplay.StmLabel(
-                mux.Model,
+            return MuxDisplay.PathEndpoint(
+                card.Mux.Model,
                 card.ShelfNumber,
                 card.SlotNumber,
                 port.PortNumber,
-                e1.Stm?.Number);
-
-            string channel = MuxDisplay.E1Label(
-                mux.Model,
                 e1.E1Number);
-
-            return $"{stm} {channel}";
         }
 
         private static string BuildLtuDisplay(MuxPort port)
         {
             var card = port.MuxCard;
-            var mux = card.Mux;
 
-            string position = MuxDisplay.LtuLabel(
-                mux.Model,
+            // The physical VC4 is displayed separately from the LTU.
+            return MuxDisplay.LtuLabel(
+                card.Mux.Model,
                 card.ShelfNumber,
                 card.SlotNumber,
-                port.PortNumber,
-                port.PhysicalStmNumber);
-
-            return position;
+                port.PortNumber);
         }
+
+        private static string BuildPhysicalTellabDisplay(
+            E1 associatedE1,
+            MuxPort ltuPort)
+        {
+            if (!ltuPort.PhysicalStmNumber.HasValue)
+                return $"VC4 (Not assigned) ({associatedE1.E1Number})";
+
+            // Convert the configured STM number once.
+            int vc4 = ltuPort.PhysicalStmNumber.Value - 1;
+
+            return $"VC4 {vc4} ({associatedE1.E1Number})";
+        }
+
+
+
         private static List<PathSearchResultViewModel>
     BuildCommunicationPathResults(
         List<CommunicationPath> paths)

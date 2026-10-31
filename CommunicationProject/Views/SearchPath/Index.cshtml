@@ -613,8 +613,7 @@
              Cross Connection
              Starting from second node
              ============================= -->
-                                    @if (i > 0 &&
-                                                 nodeCrossConnections.Any())
+                                    @if (nodeCrossConnections.Any())
                                     {
                                         <div class="path-readable-cross">
 
@@ -628,24 +627,14 @@
                                                     <div class="
                                                         path-readable-cross-main">
 
-                                                        <div class="
-                                                            path-readable-cross-title">
+                                                        <div class="path-readable-cross-title">
+                                                            <span>@item.CrossConnection.Heading</span>
 
-                                                            @if (
-                                                                item.CrossConnection
-                                                                    .IsPhysicalTermination)
+                                                            @if (!string.IsNullOrWhiteSpace(
+                                                                item.CrossConnection.MuxTypeDisplay))
                                                             {
-                                                                <span>
-                                                                    Physical Termination
-                                                                </span>
+                                                                <span> · @item.CrossConnection.MuxTypeDisplay</span>
                                                             }
-                                                            else
-                                                            {
-                                                                <span>
-                                                                    Cross Connection
-                                                                </span>
-                                                            }
-
                                                         </div>
 
 

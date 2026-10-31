@@ -130,4 +130,19 @@ public class CustomerPathCrossConnectionViewModel
             : $"{IncomingSide} * {OutgoingSide}";
 
     public string SecondLine { get; set; } = string.Empty;
+
+    public bool IsSource { get; set; }
+
+    public bool IsDestination { get; set; }
+
+    public string MuxTypeDisplay { get; set; } = string.Empty;
+
+    public string Heading =>
+        IsSource
+            ? "Source"
+            : IsPhysicalTermination
+                ? "Physical Termination"
+                : IsDestination
+                    ? "Destination"
+                    : "Cross Connection";
 }

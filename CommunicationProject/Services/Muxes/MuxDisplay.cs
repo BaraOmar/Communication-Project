@@ -93,4 +93,31 @@ public static class MuxDisplay
 
         return $"TU12 {tu12}";
     }
+
+    public static string PathEndpoint(
+    MuxModel model,
+    int shelfNumber,
+    int cardNumber,
+    int portNumber,
+    string e1Number)
+    {
+        if (model == MuxModel.Tellab)
+            return $"VC4 {portNumber - 1} ({e1Number})";
+
+        if (model == MuxModel.Xmp)
+        {
+            return StmLabel(
+                model,
+                shelfNumber,
+                cardNumber,
+                portNumber)
+                + " " + E1Label(model, e1Number);
+        }
+
+        string position = MuxStructureRules.UsesShelves(model)
+            ? $"{shelfNumber}.{cardNumber}.{portNumber}"
+            : $"{cardNumber}.{portNumber}";
+
+        return $"({position}) ({e1Number})";
+    }
 }
